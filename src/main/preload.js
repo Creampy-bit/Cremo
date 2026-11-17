@@ -75,6 +75,11 @@ contextBridge.exposeInMainWorld('electronAPI', {
   onMediaCommand: (cb) => ipcRenderer.on('media-command', (e, cmd) => cb(cmd)),
   onMediaControl: (cb) => ipcRenderer.on('media-control', (e, action) => cb(action)),
   toggleMiniWindow: () => ipcRenderer.invoke('toggle-mini-window'),
+  // Cremo backups
+  cremoBackupInfo: () => ipcRenderer.invoke('cremo-backup-info'),
+  cremoBackupNow: () => ipcRenderer.invoke('cremo-backup-now'),
+  cremoBackupOpenFolder: () => ipcRenderer.invoke('cremo-backup-open-folder'),
+  cremoBackupRestore: () => ipcRenderer.invoke('cremo-backup-restore'),
   setMiniLyrics: (enabled) => ipcRenderer.invoke('set-mini-lyrics', enabled),
   isWindows: process.platform === 'win32',
   platform: process.platform,

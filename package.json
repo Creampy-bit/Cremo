@@ -1,6 +1,6 @@
 {
   "name": "cremo",
-  "version": "0.7.6",
+  "version": "0.0.1",
   "main": "src/main/main.js",
   "bin": {
     "cremo": "src/main/cli.js"
@@ -36,6 +36,11 @@
   },
   "bugs": {
     "url": "https://github.com/Creampy-bit/cremo/issues"
+  },
+  "cremo": {
+    "discordClientId": "1520100510877749358",
+    "googleClientId": "171523925886-acon5eeqsfuffmjpfvp315ev7d96s2pj.apps.googleusercontent.com",
+    "_comment": "IDs de Discord y Google. Cambialos por los de tus propias aplicaciones."
   },
   "build": {
     "appId": "local.cremo.player",

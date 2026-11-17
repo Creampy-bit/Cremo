@@ -2,7 +2,8 @@
 
 const crypto = require('crypto');
 
-const GOOGLE_CLIENT_ID = '171523925886-acon5eeqsfuffmjpfvp315ev7d96s2pj.apps.googleusercontent.com';
+// Cremo: the Google OAuth client lives in package.json ("cremo".googleClientId).
+const GOOGLE_CLIENT_ID = String((require('../../package.json').cremo || {}).googleClientId || '');
 const GOOGLE_SCOPES = [
   'https://www.googleapis.com/auth/youtube.readonly'
 ];

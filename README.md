@@ -47,11 +47,10 @@ npm version patch
 git push --follow-tags
 ```
 
-`npm version patch` sube la versión (0.7.6 → 0.7.7), crea el commit y la etiqueta; al hacer push, el flujo
+`npm version patch` sube la versión (0.0.1 → 0.0.2), crea el commit y la etiqueta; al hacer push, el flujo
 [`release.yml`](.github/workflows/release.yml) compila el instalador y lo publica en Releases. Las copias
 instaladas de tus amigos lo detectan y se actualizan.
 
-## Créditos
+## Licencia
 
-Cremo es un fork de [Riff](https://github.com/rootscripts/riff) de rootscripts, publicado bajo licencia MIT.
-Ver [LICENSE](LICENSE).
+Cremo se publica bajo licencia MIT. Ver [LICENSE](LICENSE).

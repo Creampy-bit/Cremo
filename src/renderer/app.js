@@ -45,8 +45,10 @@ document.addEventListener('DOMContentLoaded', async () => {
 });
 
 document.addEventListener('DOMContentLoaded', () => {
-  // Cremo: open on Explorar instead of the local library.
-  if (typeof switchView === 'function') switchView('discover');
+  // Cremo: open on the screen chosen in Ajustes → Interfaz → Pantalla al abrir
+  // (Explorar by default; see cremo.js).
+  if (typeof window.cremoOpenStartView === 'function') window.cremoOpenStartView();
+  else if (typeof switchView === 'function') switchView('discover');
 
   if (typeof deduplicateSidebarNavIcons === 'function') deduplicateSidebarNavIcons();
 

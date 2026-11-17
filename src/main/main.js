@@ -230,6 +230,7 @@ function runGUI() {
   let storageFlushTimer = null;
   let latestStorageSnapshot = null;
   let storageDirty = false;
+  let cremoStorageLocked = false; // Cremo: set while restoring a backup
 
   ipcMain.on('storage-get-all-sync', (event) => {
     event.returnValue = latestStorageSnapshot || readStorageDiskSync();
@@ -237,6 +238,7 @@ function runGUI() {
 
   ipcMain.on('storage-save-batch', (event, data) => {
     if (!data || typeof data !== 'object') return;
+    if (cremoStorageLocked) return;
     latestStorageSnapshot = data;
     storageDirty = true;
     if (storageFlushTimer) clearTimeout(storageFlushTimer);
@@ -248,6 +250,7 @@ function runGUI() {
   });
 
   ipcMain.on('storage-save-sync', (event, data) => {
+    if (cremoStorageLocked) { event.returnValue = true; return; }
     if (data && typeof data === 'object') {
       if (storageFlushTimer) { clearTimeout(storageFlushTimer); storageFlushTimer = null; }
       latestStorageSnapshot = data;
@@ -266,6 +269,98 @@ function runGUI() {
       storageDirty = false;
       writeStorageDiskSync(latestStorageSnapshot);
     }
+  });
+
+  // ---- Cremo: backups of storage.json (playlists, Me gusta, ajustes) ----
+  // Copies go to Documentos\Cremo\Copias de seguridad; the renderer decides
+  // when (weekly by default). Restoring locks storage writes so the running
+  // renderer cannot overwrite the restored file before the relaunch.
+  const CREMO_BACKUP_DIR = path.join(app.getPath('documents'), 'Cremo', 'Copias de seguridad');
+  const CREMO_BACKUP_KEEP = 8;
+
+  function cremoListBackups() {
+    try {
+      return fs.readdirSync(CREMO_BACKUP_DIR)
+        .filter((f) => /^cremo-.*\.json$/i.test(f))
+        .map((f) => {
+          const file = path.join(CREMO_BACKUP_DIR, f);
+          return { file, name: f, time: fs.statSync(file).mtimeMs };
+        })
+        .sort((a, b) => b.time - a.time);
+    } catch (_) {
+      return [];
+    }
+  }
+
+  function cremoBackupNow(tag) {
+    const data = latestStorageSnapshot || readStorageDiskSync();
+    if (!data) return { ok: false, error: 'no-data' };
+    try {
+      fs.mkdirSync(CREMO_BACKUP_DIR, { recursive: true });
+      const d = new Date();
+      const pad = (n) => String(n).padStart(2, '0');
+      const stamp = `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}${pad(d.getSeconds())}`;
+      const file = path.join(CREMO_BACKUP_DIR, `cremo-${stamp}${tag ? '-' + tag : ''}.json`);
+      fs.writeFileSync(file, JSON.stringify(data, null, 2), 'utf8');
+      cremoListBackups().slice(CREMO_BACKUP_KEEP).forEach((b) => {
+        try { fs.unlinkSync(b.file); } catch (_) {}
+      });
+      return { ok: true, file, time: Date.now() };
+    } catch (e) {
+      return { ok: false, error: e.message };
+    }
+  }
+
+  ipcMain.handle('cremo-backup-info', () => {
+    const list = cremoListBackups();
+    return { dir: CREMO_BACKUP_DIR, count: list.length, last: list[0] ? list[0].time : 0 };
+  });
+
+  ipcMain.handle('cremo-backup-now', () => cremoBackupNow());
+
+  ipcMain.handle('cremo-backup-open-folder', () => {
+    try { fs.mkdirSync(CREMO_BACKUP_DIR, { recursive: true }); } catch (_) {}
+    return shell.openPath(CREMO_BACKUP_DIR);
+  });
+
+  ipcMain.handle('cremo-backup-restore', async (event) => {
+    const win = BrowserWindow.fromWebContents(event.sender);
+    try { fs.mkdirSync(CREMO_BACKUP_DIR, { recursive: true }); } catch (_) {}
+    const pick = await dialog.showOpenDialog(win, {
+      title: 'Restaurar copia de seguridad',
+      defaultPath: CREMO_BACKUP_DIR,
+      filters: [{ name: 'Copia de Cremo', extensions: ['json'] }],
+      properties: ['openFile']
+    });
+    if (pick.canceled || !pick.filePaths || !pick.filePaths[0]) return { ok: false, canceled: true };
+
+    let data = null;
+    try { data = JSON.parse(fs.readFileSync(pick.filePaths[0], 'utf8')); } catch (_) {}
+    if (!data || typeof data !== 'object' || Array.isArray(data) || !Object.keys(data).length) {
+      return { ok: false, error: 'invalid' };
+    }
+
+    const answer = await dialog.showMessageBox(win, {
+      type: 'warning',
+      buttons: ['Restaurar y reiniciar', 'Cancelar'],
+      defaultId: 1,
+      cancelId: 1,
+      title: 'Restaurar copia',
+      message: '¿Restaurar esta copia de seguridad?',
+      detail: 'Tus playlists, Me gusta y ajustes actuales se sustituirán por los de la copia. ' +
+        'Antes se guardará una copia del estado actual. Cremo se reiniciará.'
+    });
+    if (answer.response !== 0) return { ok: false, canceled: true };
+
+    cremoBackupNow('antes-de-restaurar');
+    cremoStorageLocked = true;
+    if (storageFlushTimer) { clearTimeout(storageFlushTimer); storageFlushTimer = null; }
+    latestStorageSnapshot = data;
+    storageDirty = false;
+    writeStorageDiskSync(data);
+    app.relaunch();
+    app.exit(0);
+    return { ok: true };
   });
 
   ipcMain.handle('cache-read', async () => {

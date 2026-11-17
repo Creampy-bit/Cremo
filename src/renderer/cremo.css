@@ -1131,3 +1131,169 @@ html.cremo #setting-sidebar-home-customizer :has(> .customizer-box.cr-setting-hi
 
 /* Riff shipped its author's meme photos in the profile banner; Cremo has none */
 html.cremo #tg-easter-meme { display: none !important; }
+
+/* ===================== Cremo features ===================== */
+
+/* Segmented choice rows added by cremo.js */
+html.cremo #view-settings .cr-choice { margin-top: 10px; }
+html.cremo #view-settings .cr-row-actions { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+html.cremo #view-settings .cr-row-btn {
+  padding: 8px 14px;
+  border-radius: 999px;
+  border: 1px solid var(--cr-border);
+  background: var(--cr-tile);
+  color: var(--cr-text);
+  font: inherit;
+  font-size: 13px;
+  font-weight: 600;
+  cursor: pointer;
+}
+html.cremo #view-settings .cr-row-btn:hover { background: var(--cr-tile-hover); }
+
+/* Sleep timer button + badge */
+html.cremo #cr-btn-sleep { position: relative; }
+html.cremo #cr-btn-sleep.is-on { color: var(--cr-ink) !important; }
+html.cremo #cr-btn-sleep .cr-sleep-badge {
+  position: absolute;
+  top: -4px;
+  right: -6px;
+  min-width: 18px;
+  padding: 1px 5px;
+  border-radius: 999px;
+  background: var(--cr-accent);
+  color: #fff;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 14px;
+  pointer-events: none;
+}
+html.cremo #cr-btn-sleep:not(.is-on) .cr-sleep-badge { display: none; }
+
+/* Popover */
+html.cremo .cr-pop {
+  position: fixed;
+  z-index: 9000;
+  min-width: 230px;
+  padding: 8px;
+  border-radius: 16px;
+  border: 1px solid var(--cr-border);
+  background: var(--cr-panel-solid);
+  box-shadow: 0 18px 40px rgb(0 0 0 / 0.55);
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  opacity: 0;
+  transform: translateY(6px) scale(.98);
+  pointer-events: none;
+  transition: opacity 140ms ease, transform 160ms ease;
+}
+html.cremo .cr-pop.open { opacity: 1; transform: none; pointer-events: auto; }
+html.cremo .cr-pop-title { padding: 8px 10px 6px; font-size: 12px; font-weight: 700; letter-spacing: .06em; text-transform: uppercase; color: var(--cr-ink); }
+html.cremo .cr-pop-item {
+  text-align: left;
+  padding: 9px 10px;
+  border: 0;
+  border-radius: 10px;
+  background: transparent;
+  color: var(--cr-text);
+  font: inherit;
+  font-size: 13.5px;
+  cursor: pointer;
+}
+html.cremo .cr-pop-item:hover { background: var(--cr-tile-hover); }
+html.cremo .cr-pop-item.is-on { background: rgb(from var(--cr-accent) r g b / 0.22); color: #fff; font-weight: 700; }
+html.cremo .cr-pop-item.is-danger { color: #ff8a8a; }
+html.cremo .cr-pop-item[hidden] { display: none; }
+
+/* "Tu resumen" overlay */
+html.cremo .cr-summary {
+  position: fixed;
+  inset: 0;
+  z-index: 8000;
+  display: grid;
+  place-items: center;
+  padding: 24px;
+  background: rgb(0 0 0 / 0.55);
+  backdrop-filter: blur(6px);
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 180ms ease;
+}
+html.cremo .cr-summary.open { opacity: 1; pointer-events: auto; }
+html.cremo .cr-sum-card {
+  width: min(760px, 100%);
+  max-height: calc(100vh - 80px);
+  overflow: auto;
+  border-radius: 24px;
+  border: 1px solid var(--cr-border);
+  background:
+    linear-gradient(160deg, rgb(from var(--cr-accent) r g b / 0.28), transparent 45%),
+    var(--cr-panel-solid);
+  box-shadow: 0 30px 70px rgb(0 0 0 / 0.6);
+  padding: 26px 28px 28px;
+  transform: translateY(10px) scale(.98);
+  transition: transform 220ms cubic-bezier(.2,.8,.2,1);
+}
+html.cremo .cr-summary.open .cr-sum-card { transform: none; }
+html.cremo .cr-sum-head { display: flex; align-items: center; gap: 16px; margin-bottom: 18px; }
+html.cremo .cr-sum-head h2 { margin: 0; font-size: 32px; font-weight: 800; letter-spacing: -0.02em; color: var(--cr-text); }
+html.cremo .cr-sum-kicker { font-size: 12px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; color: var(--cr-ink); }
+html.cremo .cr-sum-tabs { margin-left: auto; display: flex; gap: 4px; padding: 4px; border-radius: 999px; background: rgb(255 255 255 / 0.06); }
+html.cremo .cr-sum-tabs button { border: 0; padding: 7px 14px; border-radius: 999px; background: transparent; color: var(--cr-muted); font: inherit; font-size: 13px; font-weight: 600; cursor: pointer; }
+html.cremo .cr-sum-tabs button.active { background: var(--cr-grad); color: #fff; }
+html.cremo .cr-sum-close { border: 0; width: 34px; height: 34px; border-radius: 50%; background: rgb(255 255 255 / 0.08); color: var(--cr-text); cursor: pointer; font-size: 14px; }
+html.cremo .cr-sum-close:hover { background: rgb(255 255 255 / 0.16); }
+html.cremo .cr-sum-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px; margin-bottom: 22px; }
+html.cremo .cr-sum-stats > div { padding: 16px; border-radius: 16px; background: rgb(255 255 255 / 0.05); border: 1px solid var(--cr-border); display: flex; flex-direction: column; gap: 2px; }
+html.cremo .cr-sum-stats b { font-size: 28px; font-weight: 800; color: var(--cr-text); }
+html.cremo .cr-sum-stats small { font-size: 12.5px; color: var(--cr-muted); }
+html.cremo .cr-sum-body h3 { margin: 18px 0 10px; font-size: 15px; font-weight: 700; color: var(--cr-text); }
+html.cremo .cr-sum-list { display: flex; flex-direction: column; gap: 4px; }
+html.cremo .cr-sum-row {
+  display: grid;
+  grid-template-columns: 22px 48px 1fr auto;
+  align-items: center;
+  gap: 12px;
+  padding: 6px 10px 6px 6px;
+  border: 0;
+  border-radius: 12px;
+  background: transparent;
+  color: var(--cr-text);
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+html.cremo .cr-sum-row:hover { background: var(--cr-tile-hover); }
+html.cremo .cr-sum-rank { font-size: 15px; font-weight: 800; color: var(--cr-ink); text-align: center; }
+html.cremo .cr-sum-row img { width: 48px; height: 48px; border-radius: 8px; object-fit: cover; background: var(--cr-tile); }
+html.cremo .cr-sum-txt { display: flex; flex-direction: column; min-width: 0; }
+html.cremo .cr-sum-txt b, html.cremo .cr-sum-txt small { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+html.cremo .cr-sum-txt b { font-size: 14px; }
+html.cremo .cr-sum-txt small, html.cremo .cr-sum-n { font-size: 12.5px; color: var(--cr-muted); }
+html.cremo .cr-sum-artists { display: grid; grid-template-columns: repeat(5, minmax(0, 1fr)); gap: 12px; }
+html.cremo .cr-sum-artist { display: flex; flex-direction: column; align-items: center; gap: 6px; padding: 10px 4px; border: 0; border-radius: 14px; background: transparent; color: var(--cr-text); font: inherit; cursor: pointer; min-width: 0; }
+html.cremo .cr-sum-artist:hover { background: var(--cr-tile-hover); }
+html.cremo .cr-sum-artist img { width: 84px; height: 84px; border-radius: 50%; object-fit: cover; background: var(--cr-tile); box-shadow: 0 0 0 2px var(--cr-border-strong); }
+html.cremo .cr-sum-artist b { font-size: 13px; max-width: 100%; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+html.cremo .cr-sum-artist small { font-size: 11.5px; color: var(--cr-muted); }
+html.cremo .cr-sum-empty { padding: 40px 10px; text-align: center; color: var(--cr-muted); }
+@media (max-width: 720px) {
+  html.cremo .cr-sum-artists { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+  html.cremo .cr-sum-stats { grid-template-columns: 1fr; }
+}
+
+/* Icon column for Cremo rows that sit among Riff's iconed rows */
+html.cremo #view-settings .setting-item.cr-has-icon .setting-item-top { display: flex; align-items: center; gap: 12px; }
+html.cremo #view-settings .cr-row-icon {
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  background: var(--md-sys-color-surface-container-high);
+  color: var(--md-sys-color-primary);
+}
+html.cremo #view-settings .setting-item.cr-has-icon .cr-choice,
+html.cremo #view-settings .setting-item.cr-has-icon .cr-row-actions { margin-left: 44px; }

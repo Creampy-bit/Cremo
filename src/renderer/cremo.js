@@ -521,13 +521,15 @@
     radio: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 10v4M8 6v12M12 3v18M16 6v12M20 10v4"/></svg>',
     shuffle: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>',
     heart: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>',
-    search: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>'
+    search: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>',
+    stats: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg>'
   };
   const click = (id) => { const b = document.getElementById(id); if (b) b.click(); };
   const ACTIONS = [
     { key: 'radio', label: 'Radio para ti', primary: true, run: () => click('btn-play-my-wave') },
     { key: 'shuffle', label: 'Mezclar Me gusta', run: () => click('btn-shuffle-favorites') },
     { key: 'heart', label: 'Me gusta', run: () => click('nav-favorites') },
+    { key: 'stats', label: 'Tu resumen', run: () => { if (window.cremoOpenSummary) window.cremoOpenSummary(); } },
     { key: 'search', label: 'Buscar', run: () => { const s = document.getElementById('search-input'); if (s) s.focus(); } }
   ];
 
@@ -800,4 +802,410 @@
   const start = () => { organize(); setTimeout(organize, 1500); };
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
   else start();
+})();
+
+/* ====================================================================
+   Cremo 1.0 features: startup screen, sleep timer shortcut, backups,
+   mini player shortcut and "Tu resumen" (listening stats).
+   ==================================================================== */
+const cremoEsc = (s) => String(s == null ? '' : s).replace(/[&<>"']/g, (c) => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]));
+const cremoLS = {
+  get(k, d) { try { const v = localStorage.getItem(k); return v == null ? d : v; } catch (_) { return d; } },
+  set(k, v) { try { localStorage.setItem(k, v); } catch (_) {} }
+};
+
+/* Small helper: a settings row with a segmented choice, styled like Riff's own. */
+function cremoChoiceRow(id, name, hint, options, current, onPick, icon) {
+  const row = document.createElement('div');
+  row.className = 'setting-item' + (icon ? ' cr-has-icon' : '');
+  row.id = id;
+  row.innerHTML =
+    '<div class="setting-item-top">' + (icon ? '<span class="cr-row-icon">' + icon + '</span>' : '') + '<div style="display:flex;flex-direction:column;gap:2px;">' +
+    '<span class="setting-name">' + cremoEsc(name) + '</span>' +
+    (hint ? '<span class="setting-hint">' + cremoEsc(hint) + '</span>' : '') +
+    '</div></div><div class="theme-mode-toggle cr-choice"></div>';
+  const box = row.querySelector('.cr-choice');
+  options.forEach(([value, label]) => {
+    const b = document.createElement('button');
+    b.type = 'button';
+    b.className = 'theme-mode-btn' + (value === current ? ' active' : '');
+    b.dataset.value = value;
+    b.textContent = label;
+    b.addEventListener('click', () => {
+      box.querySelectorAll('.theme-mode-btn').forEach((x) => x.classList.toggle('active', x === b));
+      onPick(value);
+    });
+    box.appendChild(b);
+  });
+  return row;
+}
+
+/* ---------- Pantalla al abrir ---------- */
+(function cremoStartView() {
+  'use strict';
+  const KEY = 'cremo_start_view';
+  const LAST = 'cremo_last_view';
+  const SIMPLE = ['discover', 'favorites', 'local'];
+
+  window.cremoOpenStartView = function () {
+    if (typeof window.switchView !== 'function') return;
+    let v = cremoLS.get(KEY, 'discover');
+    if (v === 'last') v = cremoLS.get(LAST, 'discover');
+    if (v.indexOf('pl:') === 0) {
+      const id = v.slice(3);
+      const st = window.state || {};
+      if (typeof window.openPlaylistDetail === 'function' && (st.playlists || []).some((p) => p.id === id)) {
+        window.openPlaylistDetail(id);
+        return;
+      }
+      v = 'discover';
+    }
+    window.switchView(SIMPLE.indexOf(v) >= 0 ? v : 'discover');
+  };
+
+  // Remember where the user is, for the "Donde lo dejé" option.
+  setInterval(() => {
+    const st = window.state;
+    if (!st) return;
+    if (SIMPLE.indexOf(st.currentView) >= 0) cremoLS.set(LAST, st.currentView);
+    else if (st.currentView === 'playlist-detail' && st.currentPlaylistId) cremoLS.set(LAST, 'pl:' + st.currentPlaylistId);
+  }, 2000);
+
+  function addSetting() {
+    if (document.getElementById('cr-setting-start-view')) return;
+    const anchor = document.getElementById('setting-ui-lang-row');
+    if (!anchor) return;
+    const row = cremoChoiceRow('cr-setting-start-view', 'Pantalla al abrir', 'Qué se muestra al iniciar Cremo',
+      [['discover', 'Explorar'], ['favorites', 'Me gusta'], ['local', 'Biblioteca'], ['last', 'Donde lo dejé']],
+      cremoLS.get(KEY, 'discover'), (v) => cremoLS.set(KEY, v));
+    anchor.parentNode.insertBefore(row, anchor.nextSibling);
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', addSetting);
+  else addSetting();
+})();
+
+/* ---------- Temporizador de apagado en la barra de reproducción ---------- */
+(function cremoSleepQuick() {
+  'use strict';
+  const OPTIONS = [['15', '15 min'], ['30', '30 min'], ['45', '45 min'], ['60', '1 hora'], ['90', '1 h 30'], ['end', 'Al terminar la canción']];
+  const MOON = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"/></svg>';
+  const MINI = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="4" width="20" height="16" rx="2"/><rect x="12" y="11" width="8" height="6" rx="1" fill="currentColor"/></svg>';
+  let btn = null;
+  let pop = null;
+
+  const pill = (v) => document.querySelector('.audio-panel[data-audio-panel="sleep"] [data-sleep-minutes="' + v + '"]');
+
+  function close() { if (pop) pop.classList.remove('open'); }
+
+  function open() {
+    if (!pop) return;
+    const st = window.state && window.state.sleepTimer;
+    pop.querySelectorAll('.cr-pop-item').forEach((b) => {
+      const v = b.dataset.v;
+      const on = !!st && ((v === 'end' && st.mode === 'end') || (st.mode === 'minutes' && String(st.minutes) === v));
+      b.classList.toggle('is-on', on);
+      if (v === 'off') b.hidden = !st;
+    });
+    const r = btn.getBoundingClientRect();
+    pop.style.right = Math.max(8, window.innerWidth - r.right - 60) + 'px';
+    pop.style.bottom = (window.innerHeight - r.top + 10) + 'px';
+    pop.classList.add('open');
+  }
+
+  function badge() {
+    if (!btn) return;
+    const st = window.state && window.state.sleepTimer;
+    const b = btn.querySelector('.cr-sleep-badge');
+    btn.classList.toggle('is-on', !!st);
+    if (!st) { b.textContent = ''; btn.title = 'Temporizador de apagado'; return; }
+    if (st.mode === 'end') { b.textContent = 'fin'; btn.title = 'Se parará al terminar la canción'; return; }
+    const left = Math.max(0, st.endsAt - Date.now());
+    const m = Math.ceil(left / 60000);
+    b.textContent = m + 'm';
+    btn.title = 'Se parará en ' + m + ' min';
+  }
+
+  function build() {
+    const anchor = document.getElementById('btn-open-settings');
+    if (!anchor || document.getElementById('cr-btn-sleep')) return;
+
+    const mini = document.createElement('button');
+    mini.className = 'btn-icon-pill';
+    mini.id = 'cr-btn-mini';
+    mini.type = 'button';
+    mini.title = 'Mini reproductor (P)';
+    mini.innerHTML = MINI;
+    mini.addEventListener('click', () => { if (typeof window.toggleMiniWindow === 'function') window.toggleMiniWindow(); });
+
+    btn = document.createElement('button');
+    btn.className = 'btn-icon-pill cr-sleep-btn';
+    btn.id = 'cr-btn-sleep';
+    btn.type = 'button';
+    btn.innerHTML = MOON + '<span class="cr-sleep-badge"></span>';
+    btn.addEventListener('click', (e) => { e.stopPropagation(); if (pop.classList.contains('open')) close(); else open(); });
+
+    anchor.parentNode.insertBefore(mini, anchor);
+    anchor.parentNode.insertBefore(btn, anchor);
+
+    pop = document.createElement('div');
+    pop.id = 'cr-sleep-pop';
+    pop.className = 'cr-pop';
+    pop.innerHTML = '<div class="cr-pop-title">Temporizador de apagado</div>';
+    OPTIONS.concat([['off', 'Desactivar']]).forEach(([v, label]) => {
+      const it = document.createElement('button');
+      it.type = 'button';
+      it.className = 'cr-pop-item' + (v === 'off' ? ' is-danger' : '');
+      it.dataset.v = v;
+      it.textContent = label;
+      it.addEventListener('click', () => {
+        const p = pill(v);
+        if (p) p.click();
+        close();
+        setTimeout(badge, 50);
+        if (window.showToast) window.showToast(v === 'off' ? 'Temporizador desactivado' : (v === 'end' ? 'Cremo se parará al terminar la canción' : 'Cremo se parará en ' + label), 'info');
+      });
+      pop.appendChild(it);
+    });
+    document.body.appendChild(pop);
+    document.addEventListener('click', (e) => { if (pop.classList.contains('open') && !pop.contains(e.target)) close(); });
+    document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+    setInterval(badge, 1000);
+    badge();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', build);
+  else build();
+})();
+
+/* ---------- Copias de seguridad automáticas ---------- */
+(function cremoBackups() {
+  'use strict';
+  const api = window.electronAPI || {};
+  if (!api.cremoBackupInfo) return;
+  const KEY = 'cremo_auto_backup'; // 'week' | 'day' | 'off'
+  const EVERY = { day: 24 * 3600e3, week: 7 * 24 * 3600e3 };
+
+  const fmt = (t) => {
+    if (!t) return 'todavía ninguna';
+    try { return new Date(t).toLocaleString('es', { day: 'numeric', month: 'long', hour: '2-digit', minute: '2-digit' }); } catch (_) { return new Date(t).toLocaleString(); }
+  };
+
+  async function refreshHint() {
+    const h = document.querySelector('#cr-setting-backup .setting-hint');
+    if (!h) return;
+    const info = await api.cremoBackupInfo();
+    h.textContent = 'Guarda tus playlists, Me gusta y ajustes en ' + info.dir + '. Última copia: ' + fmt(info.last) + '.';
+  }
+
+  async function autoBackup() {
+    const mode = cremoLS.get(KEY, 'week');
+    if (!EVERY[mode]) return;
+    const info = await api.cremoBackupInfo();
+    if (Date.now() - (info.last || 0) < EVERY[mode]) return;
+    const r = await api.cremoBackupNow();
+    if (r && r.ok) refreshHint();
+  }
+
+  function addSetting() {
+    if (document.getElementById('cr-setting-backup')) return;
+    const anchor = document.getElementById('export-all-playlists-item');
+    if (!anchor) return;
+    const row = cremoChoiceRow('cr-setting-backup', 'Copia de seguridad automática', ' ',
+      [['week', 'Cada semana'], ['day', 'Cada día'], ['off', 'Nunca']],
+      cremoLS.get(KEY, 'week'), (v) => { cremoLS.set(KEY, v); autoBackup(); },
+      '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 3-6.7L3 8"/><path d="M3 3v5h5"/><path d="M12 7v5l3 2"/></svg>');
+    const actions = document.createElement('div');
+    actions.className = 'cr-row-actions';
+    [['Hacer copia ahora', async () => {
+      const r = await api.cremoBackupNow();
+      if (window.showToast) window.showToast(r && r.ok ? 'Copia de seguridad guardada' : 'No se pudo guardar la copia', r && r.ok ? 'success' : 'error');
+      refreshHint();
+    }], ['Abrir carpeta', () => api.cremoBackupOpenFolder()], ['Restaurar una copia…', async () => {
+      const r = await api.cremoBackupRestore();
+      if (r && r.error === 'invalid' && window.showToast) window.showToast('Ese archivo no es una copia de Cremo válida', 'error');
+    }]].forEach(([label, fn]) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'btn-pill-secondary cr-row-btn';
+      b.textContent = label;
+      b.addEventListener('click', fn);
+      actions.appendChild(b);
+    });
+    row.appendChild(actions);
+    anchor.parentNode.insertBefore(row, anchor);
+    refreshHint();
+  }
+
+  const start = () => { addSetting(); setTimeout(autoBackup, 15000); };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
+  else start();
+  setInterval(autoBackup, 6 * 3600e3);
+})();
+
+/* ---------- Tu resumen: estadísticas de escucha ---------- */
+(function cremoStats() {
+  'use strict';
+  const KEY = 'cremo_stats';
+  const TICK = 5000;
+  const PLAY_AFTER_MS = 30000; // a track counts as a play after 30 s
+
+  const monthKey = (d) => d.getFullYear() + '-' + String(d.getMonth() + 1).padStart(2, '0');
+  const trackKey = (t) => ((t.artist || '') + '|' + (t.title || '')).toLowerCase().trim();
+  const slim = (t) => ({ id: t.id, title: t.title, artist: t.artist, thumbnail: t.thumbnail, url: t.url, platform: t.platform, duration: t.duration, album: t.album });
+
+  function load() {
+    // v2: history seed counts each past play as a full listen (v1 seeded no time).
+    try { const s = JSON.parse(cremoLS.get(KEY, '')); if (s && s.months && s.v === 2) return s; } catch (_) {}
+    return { v: 2, months: {} };
+  }
+  let stats = load();
+  let dirty = false;
+  const save = () => { if (dirty) { cremoLS.set(KEY, JSON.stringify(stats)); dirty = false; } };
+
+  function bucket(month) {
+    if (!stats.months[month]) stats.months[month] = { ms: 0, plays: 0, tracks: {} };
+    return stats.months[month];
+  }
+
+  function add(month, t, ms, play) {
+    const k = trackKey(t);
+    if (!k || k === '|') return;
+    const b = bucket(month);
+    const e = b.tracks[k] || (b.tracks[k] = { t: slim(t), p: 0, ms: 0 });
+    e.t = slim(t);
+    e.ms += ms;
+    b.ms += ms;
+    if (play) { e.p += 1; b.plays += 1; }
+    dirty = true;
+  }
+
+  // First run: seed with the existing history (one full listen per entry).
+  if (!Object.keys(stats.months).length) {
+    try {
+      const hist = (window.state && window.state.history) || JSON.parse(cremoLS.get('devsize_history', '[]'));
+      (hist || []).forEach((t) => { if (t && t.title) add(monthKey(new Date(t.playedAt || Date.now())), t, Math.max(0, Number(t.duration) || 0) * 1000, true); });
+      dirty = true;
+      save();
+    } catch (_) {}
+  }
+
+  let curKey = '';
+  let curMs = 0;
+  let counted = false;
+  setInterval(() => {
+    const st = window.state;
+    const t = st && st.currentTrack;
+    if (!t || !st.isPlaying) return;
+    const k = trackKey(t);
+    if (k !== curKey) { curKey = k; curMs = 0; counted = false; }
+    curMs += TICK;
+    const play = !counted && curMs >= PLAY_AFTER_MS;
+    if (play) counted = true;
+    add(monthKey(new Date()), t, TICK, play);
+  }, TICK);
+  setInterval(save, 30000);
+  window.addEventListener('beforeunload', save);
+
+  /* ----- the summary view (overlay) ----- */
+  function aggregate(period) {
+    const now = new Date();
+    const months = period === 'month' ? [monthKey(now)] : Object.keys(stats.months);
+    const tracks = {};
+    const artists = {};
+    let ms = 0;
+    let plays = 0;
+    months.forEach((m) => {
+      const b = stats.months[m];
+      if (!b) return;
+      ms += b.ms;
+      plays += b.plays;
+      Object.entries(b.tracks).forEach(([k, e]) => {
+        const x = tracks[k] || (tracks[k] = { t: e.t, p: 0, ms: 0 });
+        x.p += e.p; x.ms += e.ms; x.t = e.t;
+        String(e.t.artist || '').split(/\s*(?:,|&| feat\.? | ft\.? | x )\s*/i)[0].split('|').forEach((a) => {
+          a = a.trim();
+          if (!a) return;
+          const y = artists[a.toLowerCase()] || (artists[a.toLowerCase()] = { name: a, p: 0, ms: 0, img: e.t.thumbnail });
+          y.p += e.p; y.ms += e.ms;
+        });
+      });
+    });
+    const rank = (a, b) => (b.p - a.p) || (b.ms - a.ms);
+    return {
+      ms, plays,
+      tracks: Object.values(tracks).sort(rank).slice(0, 5),
+      artists: Object.values(artists).sort(rank).slice(0, 5),
+      uniq: Object.keys(tracks).length
+    };
+  }
+
+  const minutes = (ms) => Math.round(ms / 60000);
+  const plural = (n, one, many) => n + ' ' + (n === 1 ? one : many);
+  let overlay = null;
+  let period = 'month';
+
+  function render() {
+    const a = aggregate(period);
+    const now = new Date();
+    let monthName = '';
+    try { monthName = now.toLocaleDateString('es', { month: 'long' }); } catch (_) {}
+    const body = overlay.querySelector('.cr-sum-body');
+    if (!a.plays && !a.ms) {
+      body.innerHTML = '<div class="cr-sum-empty">Aún no hay escuchas en este periodo. Pon música y vuelve más tarde.</div>';
+      return;
+    }
+    const trackRows = a.tracks.map((x, i) =>
+      '<button type="button" class="cr-sum-row" data-i="' + i + '">' +
+      '<span class="cr-sum-rank">' + (i + 1) + '</span>' +
+      '<img src="' + cremoEsc(x.t.thumbnail || '') + '" alt="" onerror="this.style.visibility=\'hidden\'">' +
+      '<span class="cr-sum-txt"><b>' + cremoEsc(x.t.title) + '</b><small>' + cremoEsc(x.t.artist) + '</small></span>' +
+      '<span class="cr-sum-n">' + plural(x.p, 'vez', 'veces') + '</span></button>').join('');
+    const artistRows = a.artists.map((x, i) =>
+      '<button type="button" class="cr-sum-artist" data-a="' + cremoEsc(x.name) + '">' +
+      '<img src="' + cremoEsc(x.img || '') + '" alt="" onerror="this.style.visibility=\'hidden\'">' +
+      '<b>' + cremoEsc(x.name) + '</b><small>' + plural(x.p, 'escucha', 'escuchas') + '</small></button>').join('');
+    body.innerHTML =
+      '<div class="cr-sum-stats">' +
+      '<div><b>' + minutes(a.ms).toLocaleString('es') + '</b><small>minutos escuchados</small></div>' +
+      '<div><b>' + a.plays.toLocaleString('es') + '</b><small>reproducciones</small></div>' +
+      '<div><b>' + a.uniq.toLocaleString('es') + '</b><small>canciones distintas</small></div></div>' +
+      '<h3>Tus canciones ' + (period === 'month' ? 'de ' + monthName : 'más escuchadas') + '</h3>' +
+      '<div class="cr-sum-list">' + trackRows + '</div>' +
+      '<h3>Tus artistas</h3><div class="cr-sum-artists">' + artistRows + '</div>';
+    body.querySelectorAll('.cr-sum-row').forEach((r) => r.addEventListener('click', () => {
+      const list = a.tracks.map((x) => x.t);
+      const i = Number(r.dataset.i);
+      if (typeof window.playTrack === 'function') window.playTrack(list[i], list, i, 'summary');
+    }));
+    body.querySelectorAll('.cr-sum-artist').forEach((r) => r.addEventListener('click', () => {
+      if (typeof window.openArtistProfile === 'function') { close(); window.openArtistProfile(r.dataset.a); }
+    }));
+  }
+
+  function close() { if (overlay) overlay.classList.remove('open'); }
+
+  window.cremoOpenSummary = function () {
+    save();
+    if (!overlay) {
+      overlay = document.createElement('div');
+      overlay.id = 'cr-summary';
+      overlay.className = 'cr-summary';
+      overlay.innerHTML =
+        '<div class="cr-sum-card" role="dialog" aria-label="Tu resumen">' +
+        '<div class="cr-sum-head"><div><div class="cr-sum-kicker">Cremo</div><h2>Tu resumen</h2></div>' +
+        '<div class="cr-sum-tabs"><button type="button" data-p="month" class="active">Este mes</button><button type="button" data-p="all">Siempre</button></div>' +
+        '<button type="button" class="cr-sum-close" aria-label="Cerrar">✕</button></div>' +
+        '<div class="cr-sum-body"></div></div>';
+      overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+      overlay.querySelector('.cr-sum-close').addEventListener('click', close);
+      overlay.querySelectorAll('.cr-sum-tabs button').forEach((b) => b.addEventListener('click', () => {
+        period = b.dataset.p;
+        overlay.querySelectorAll('.cr-sum-tabs button').forEach((x) => x.classList.toggle('active', x === b));
+        render();
+      }));
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') close(); });
+      document.body.appendChild(overlay);
+    }
+    render();
+    requestAnimationFrame(() => overlay.classList.add('open'));
+  };
 })();

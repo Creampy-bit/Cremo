@@ -1,7 +1,8 @@
 
 const RPC = require('discord-rpc');
 
-const CLIENT_ID = '1520100510877749358';
+// Cremo: the Discord application lives in package.json ("cremo".discordClientId).
+const CLIENT_ID = String((require('../../package.json').cremo || {}).discordClientId || '');
 const RECONNECT_DELAY_MS = 15000;
 
 let rpcClient = null;

@@ -93,8 +93,14 @@ const METADATA_PATH = path.join(DATA_DIR, 'metadata.json');
 const LIBRARY_DIR = path.join(DATA_DIR, 'library');
 const LIBRARY_PATH = path.join(DATA_DIR, 'library.json');
 const BIN_DIR = path.join(DATA_DIR, 'bin');
-const TUTORIAL_MARKER = IS_WIN ? 'C:\\Riff\\.rifftutorial' : path.join(os.homedir(), '.rifftutorial');
-const TUTORIAL_MARKER_FALLBACK = path.join(DATA_DIR, '.rifftutorial');
+// Cremo: the welcome screen is shown once, ever (Riff showed it again on every
+// version). The marker lives in Cremo's data folder; Riff's old markers still
+// count so people who already went through it are not asked again.
+const TUTORIAL_MARKER = path.join(DATA_DIR, '.cremo-welcome');
+const LEGACY_TUTORIAL_MARKERS = [
+  IS_WIN ? 'C:\\Riff\\.rifftutorial' : path.join(os.homedir(), '.rifftutorial'),
+  path.join(DATA_DIR, '.rifftutorial')
+];
 const STARTUP_PATH = path.join(DATA_DIR, 'startup.json');
 function readStartupConfig() { try { return JSON.parse(fs.readFileSync(STARTUP_PATH, 'utf8')) || {}; } catch (e) { return {}; } }
 function writeStartupConfig(patch) {
@@ -106,19 +112,17 @@ function writeStartupConfig(patch) {
 }
 const APP_VERSION = (() => { try { return require('../../package.json').version || '0'; } catch (e) { return '0'; } })();
 function tutorialDone() {
-  for (const file of [TUTORIAL_MARKER, TUTORIAL_MARKER_FALLBACK]) {
-    try {
-      if (!fs.existsSync(file)) continue;
-      if (fs.readFileSync(file, 'utf8').trim() === APP_VERSION) return true;
-    } catch (e) {}
+  for (const file of [TUTORIAL_MARKER, ...LEGACY_TUTORIAL_MARKERS]) {
+    try { if (fs.existsSync(file)) return true; } catch (e) {}
   }
   return false;
 }
 function markTutorialDone() {
-  for (const file of [TUTORIAL_MARKER, TUTORIAL_MARKER_FALLBACK]) {
-    try { fs.mkdirSync(path.dirname(file), { recursive: true }); fs.writeFileSync(file, APP_VERSION); return true; } catch (e) {}
-  }
-  return false;
+  try {
+    fs.mkdirSync(path.dirname(TUTORIAL_MARKER), { recursive: true });
+    fs.writeFileSync(TUTORIAL_MARKER, APP_VERSION);
+    return true;
+  } catch (e) {}
 }
 
 async function copyDirContents(fromDir, toDir, skipNames = new Set(['config.json'])) {
