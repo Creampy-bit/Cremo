@@ -58,6 +58,8 @@
     'For you': 'Para ti',
     'Based on your taste': 'Según tus gustos',
     'Trending now': 'Tendencias',
+    'Home / Quick picks': 'Inicio',
+    'Favorite artists': 'Artistas favoritos',
     'Made for you': 'Hecho para ti',
     'Popular artists': 'Artistas populares',
     'Recently played': 'Escuchado recientemente',
@@ -510,4 +512,292 @@
   apply(valid(stored) ? stored : DEFAULT, false);
   if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', buildCard);
   else buildCard();
+})();
+
+/* ---------- Explorar: greeting hero with quick actions ---------- */
+(function cremoExploreHero() {
+  'use strict';
+  const ICONS = {
+    radio: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 10v4M8 6v12M12 3v18M16 6v12M20 10v4"/></svg>',
+    shuffle: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 3h5v5M4 20 21 3M21 16v5h-5M15 15l6 6M4 4l5 5"/></svg>',
+    heart: '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>',
+    search: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>'
+  };
+  const click = (id) => { const b = document.getElementById(id); if (b) b.click(); };
+  const ACTIONS = [
+    { key: 'radio', label: 'Radio para ti', primary: true, run: () => click('btn-play-my-wave') },
+    { key: 'shuffle', label: 'Mezclar Me gusta', run: () => click('btn-shuffle-favorites') },
+    { key: 'heart', label: 'Me gusta', run: () => click('nav-favorites') },
+    { key: 'search', label: 'Buscar', run: () => { const s = document.getElementById('search-input'); if (s) s.focus(); } }
+  ];
+
+  function greeting(h) {
+    if (h >= 5 && h < 12) return 'Buenos días';
+    if (h >= 12 && h < 20) return 'Buenas tardes';
+    return 'Buenas noches';
+  }
+
+  function refresh(hero) {
+    const now = new Date();
+    hero.querySelector('.cr-hero-title').textContent = greeting(now.getHours());
+    let date = '';
+    try { date = now.toLocaleDateString('es', { weekday: 'long', day: 'numeric', month: 'long' }); } catch (_) {}
+    hero.querySelector('.cr-hero-date').textContent = date ? date.charAt(0).toUpperCase() + date.slice(1) : '';
+  }
+
+  function build() {
+    const home = document.getElementById('sp-home');
+    if (!home || document.getElementById('cr-explore-hero')) return;
+    const hero = document.createElement('section');
+    hero.id = 'cr-explore-hero';
+    hero.className = 'cr-explore-hero';
+    hero.innerHTML =
+      '<div class="cr-hero-glow" aria-hidden="true"></div>' +
+      '<div class="cr-hero-text"><div class="cr-hero-date"></div><h1 class="cr-hero-title"></h1>' +
+      '<div class="cr-hero-sub">¿Qué te apetece escuchar hoy?</div></div>' +
+      '<div class="cr-hero-actions"></div>';
+    const bar = hero.querySelector('.cr-hero-actions');
+    ACTIONS.forEach((a) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'cr-hero-chip' + (a.primary ? ' is-primary' : '');
+      b.innerHTML = ICONS[a.key] + '<span>' + a.label + '</span>';
+      b.addEventListener('click', a.run);
+      bar.appendChild(b);
+    });
+    home.insertBefore(hero, home.firstChild);
+    refresh(hero);
+    setInterval(() => refresh(hero), 5 * 60 * 1000);
+  }
+
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', build);
+  else build();
+})();
+
+/* ---------- Explorar: fade the edge of rows that can still scroll ---------- */
+(function cremoRowFades() {
+  'use strict';
+  function upd(row) {
+    const max = row.scrollWidth - row.clientWidth;
+    row.classList.toggle('fade-left', row.scrollLeft > 4);
+    row.classList.toggle('fade-right', max > 4 && row.scrollLeft < max - 4);
+  }
+  let t = 0;
+  const all = () => { clearTimeout(t); t = setTimeout(() => document.querySelectorAll('#sp-home .sp-row').forEach(upd), 120); };
+  document.addEventListener('scroll', (e) => {
+    const r = e.target;
+    if (r && r.classList && r.classList.contains('sp-row')) upd(r);
+  }, true);
+  window.addEventListener('resize', all);
+  function start() {
+    const home = document.getElementById('sp-home');
+    if (!home) return;
+    new MutationObserver(all).observe(home, { childList: true, subtree: true });
+    all();
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
+  else start();
+})();
+
+/* ---------- Settings: Cremo's own organisation ----------
+   Moves existing setting rows (keeping their listeners) into three new
+   categories, hides Riff-only / duplicated rows and fixes labels.
+   Idempotent: runs at startup and every time a settings category opens. */
+(function cremoSettings() {
+  'use strict';
+  const ES = (localStorage.getItem('riff_ui_lang') || 'en') === 'es';
+  const t = (es, en) => (ES ? es : en);
+
+  const ICON = {
+    visualizer: '<path d="M3 12h2M7 7v10M11 4v16M15 8v8M19 10v4"/>',
+    player: '<circle cx="12" cy="12" r="9"/><polygon points="10 8 16 12 10 16 10 8" fill="currentColor"/>',
+    explore: '<circle cx="12" cy="12" r="9"/><polygon points="16 8 13.5 13.5 8 16 10.5 10.5 16 8"/>'
+  };
+
+  // [category, nav label, [[subheading, [selectors...]], ...]]
+  const CATS = [
+    ['visualizer', t('Visualizador', 'Visualizer'), [
+      [t('Barra de reproducción', 'Player bar'), ['#btn-bar-wave', '#bar-viz-pos-group', '#val-bar-viz-opacity', '#val-bar-viz-sens', '#val-bar-viz-smooth']],
+      [t('Reproduciendo ahora y karaoke', 'Now Playing & karaoke'), ['#btn-np-viz', '#viz-style-dropdown', '#val-viz-sens', '#val-viz-smooth', '#btn-tvk-visualizer-setting', '#btn-tvk-visualizer-lyrics-setting', '#val-tvk-vis-opacity-setting', '#val-tvk-bg-blur-setting']]
+    ]],
+    ['player', t('Reproductor', 'Player'), [
+      [t('Barra de reproducción', 'Player bar'), ['#btn-play-btn-bg', '#toggle-m3-cover', '#btn-wavy-progress', '#btn-progress-knob', '#btn-progress-bg', '#btn-autohide-timestamps']],
+      [t('Reproduciendo ahora', 'Now Playing'), ['#np-align-toggle', '#np-toolbar-pos-select', '#toggle-m3-hero-covers', '#top-moment-icon-selector', '[data-adv="track_credits"]', '[data-adv="credits_fallback"]']],
+      [t('Letras', 'Lyrics'), ['#btn-lyrics-fullscreen-only', '#btn-lyrics-warnings', '[data-adv="online_lyrics"]', '[data-adv="karaoke_words"]', '[data-adv="lyrics_autoscroll"]', '#lyrics-source-dropdown', '#word-source-dropdown', '#lyrics-wordstyle-dropdown', '#lyrics-ease-dropdown', '#val-lyrics-speed', '#val-lyrics-tightness', '#btn-tr-enabled', '#select-tr-lang', '#btn-tr-auto']]
+    ]],
+    ['explore', t('Explorar', 'Explore'), [
+      [t('Secciones', 'Sections'), ['[data-adv="my_wave"]', '[data-adv="jump_back"]', '[data-adv="fav_artists"]', '[data-adv="my_wave_ambient"]', '#btn-reset-sidebar-order']],
+      [t('Recomendaciones', 'Recommendations'), ['#btn-reset-recommendations']]
+    ]]
+  ];
+
+  // Rows that only made sense in Riff, or that are duplicated elsewhere.
+  const HIDE = [
+    '#account-promocode-input',                       // Riff's promo codes
+    '#btn-acc-export-rfacc', '#btn-acc-import-rfacc', // also in Almacenamiento
+    '[data-adv="classic_sidebar"]',                   // breaks Cremo's rail
+    '#btn-show-local', '#btn-show-albums',            // tabs Cremo's rail replaces
+    '[data-adv="albums"]',
+    '#btn-toggle-riff-home'                           // old Riff home layout (hides Explorar)
+  ];
+
+  // Mesh gradient rows live in Avanzado; Tema already has the mesh brightness.
+  const TO_THEME = ['[data-adv="mesh_gradient"]', '[data-adv="mesh_follow_intensity"]', '[data-adv="mesh_cover_color"]'];
+
+  const NAMES = ES ? {
+    '#btn-disable-animations': 'Desactivar animaciones',
+    '#btn-setting-riff-home-icon': 'Logo de Cremo en el botón Inicio',
+    '#btn-riff-library': 'Búsqueda combinada',
+    '#btn-riff-library-streaming': 'Reproducción híbrida (búsqueda combinada)',
+    '#select-engine-api': 'Motor de búsqueda',
+    '#settings-val-scale': 'Escala de la interfaz',
+    '#val-panel-blur': 'Desenfoque de paneles flotantes',
+    '#toggle-m3-cover': 'Portada con forma en la barra inferior',
+    '#toggle-m3-hero-covers': 'Portadas con forma en Reproduciendo ahora y karaoke',
+    '#val-track-row-height': 'Altura de las filas de canciones',
+    '#track-style-toggle': 'Estilo de las filas de canciones',
+    '#top-moment-icon-selector': 'Icono del mejor momento',
+    '#val-theme-hue': 'Tono',
+    '#val-theme-intensity': 'Intensidad',
+    '#btn-intensity-bg': 'Aplicar intensidad al fondo',
+    '#select-banner-fit': 'Ajuste del banner',
+    '#val-crossfade': 'Fundido cruzado',
+    '#download-folder-path': 'Carpeta de descargas',
+    '#val-lyrics-tightness': 'Suavidad del degradado',
+    '#btn-progress-knob': 'Indicador de la barra de progreso',
+    '#btn-fav-header-setting': 'Cabecera de playlist en Me gusta',
+    '#btn-show-fav-recs': 'Mostrar recomendaciones en Me gusta',
+    '#btn-win-media-keys': 'Captura de teclas multimedia (modo antiguo)',
+    '#btn-open-css-editor': 'Editor CSS',
+    '#btn-reset-account-avatar': 'Avatar de perfil',
+    '#val-tvk-bg-blur-setting': 'Desenfoque del fondo (karaoke)',
+    '#val-tvk-vis-opacity-setting': 'Opacidad del visualizador (karaoke)',
+    '#btn-reset-sidebar-order': 'Orden de las secciones',
+    '[data-adv="my_wave"]': 'Para ti',
+    '[data-adv="jump_back"]': 'Inicio (escuchado recientemente)',
+    '[data-adv="fav_artists"]': 'Artistas favoritos',
+    '[data-adv="my_wave_ambient"]': 'Luz ambiental',
+    '[data-adv="mesh_follow_intensity"]': 'La malla sigue la intensidad del tema',
+    '[data-adv="mesh_cover_color"]': 'Color de la malla según la portada',
+    '[data-adv="ui_alpha_auto"]': 'Menor opacidad de la interfaz con fondos'
+  } : {
+    '#btn-setting-riff-home-icon': 'Cremo logo on Home button',
+    '#btn-riff-library': 'Combined search',
+    '#btn-riff-library-streaming': 'Hybrid streaming (combined search)'
+  };
+  const HINTS = ES ? {
+    '#btn-disable-animations': 'Consume menos CPU y GPU y responde más rápido, pero sin animaciones suaves.',
+    '#btn-riff-library': 'Junta YouTube Music y SoundCloud en una sola fuente de búsqueda'
+  } : {};
+  const NAV = ES ? { banners: 'Fondos y banners', tracks: 'Canciones y audio' } : { tracks: 'Tracks & audio' };
+
+  const root = () => document.getElementById('view-settings');
+  const rowOf = (sel) => {
+    const r = root();
+    const n = r && r.querySelector(sel);
+    return n ? n.closest('.setting-item') : null;
+  };
+
+  function ensureCategory(cat, label, prevCat) {
+    const nav = document.getElementById('settings-nav');
+    const iface = document.querySelector('#view-settings .settings-section[data-cat="interface"]');
+    if (!nav || !iface) return null;
+    if (!nav.querySelector('.settings-nav-btn[data-cat="' + cat + '"]')) {
+      const b = document.createElement('button');
+      b.className = 'settings-nav-btn';
+      b.type = 'button';
+      b.dataset.cat = cat;
+      b.innerHTML = '<svg viewBox="0 0 24 24" width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">' + ICON[cat] + '</svg><span>' + label + '</span>';
+      const prevBtn = nav.querySelector('.settings-nav-btn[data-cat="' + prevCat + '"]');
+      nav.insertBefore(b, prevBtn ? prevBtn.nextSibling : null);
+    }
+    let sec = document.querySelector('#view-settings .settings-section[data-cat="' + cat + '"]');
+    if (!sec) {
+      sec = document.createElement('div');
+      sec.className = 'settings-section cr-own cat-hidden';
+      sec.dataset.cat = cat;
+      const prevSec = document.querySelector('#view-settings .settings-section[data-cat="' + prevCat + '"]') || iface;
+      prevSec.parentNode.insertBefore(sec, prevSec.nextSibling);
+    }
+    return sec;
+  }
+
+  function ensureGroup(sec, idx, title) {
+    let g = sec.querySelector('.m3-group[data-cr-group="' + idx + '"]');
+    if (!g) {
+      const h = document.createElement('div');
+      h.className = 'settings-section-title cr-set-subhead';
+      h.textContent = title;
+      g = document.createElement('div');
+      g.className = 'm3-group';
+      g.dataset.crGroup = String(idx);
+      sec.appendChild(h);
+      sec.appendChild(g);
+    }
+    return g;
+  }
+
+  function organize() {
+    if (!root()) return;
+    let prevCat = 'interface';
+    CATS.forEach(([cat, label, groups]) => {
+      const sec = ensureCategory(cat, label, prevCat);
+      prevCat = cat;
+      if (!sec) return;
+      groups.forEach(([title, sels], i) => {
+        const g = ensureGroup(sec, i, title);
+        sels.forEach((sel) => {
+          const row = rowOf(sel);
+          if (row) g.appendChild(row); // appendChild also keeps the listed order
+        });
+      });
+    });
+
+    const meshAnchor = rowOf('#btn-configure-mesh');
+    if (meshAnchor) {
+      let after = meshAnchor;
+      TO_THEME.forEach((sel) => {
+        const row = rowOf(sel);
+        if (!row) return;
+        if (after.nextSibling !== row) after.parentNode.insertBefore(row, after.nextSibling);
+        after = row;
+      });
+    }
+
+    HIDE.forEach((sel) => { const row = rowOf(sel); if (row) row.classList.add('cr-setting-hidden'); });
+
+    Object.entries(NAMES).forEach(([sel, name]) => {
+      const row = rowOf(sel);
+      const n = row && row.querySelector('.setting-name');
+      if (n && n.textContent !== name) n.textContent = name;
+    });
+    Object.entries(HINTS).forEach(([sel, hint]) => {
+      const row = rowOf(sel);
+      if (!row) return;
+      const h = row.querySelector('.setting-hint') || row.querySelector('.setting-name + span');
+      if (h && h.textContent !== hint) h.textContent = hint;
+    });
+    Object.entries(NAV).forEach(([cat, label]) => {
+      const s = document.querySelector('#settings-nav .settings-nav-btn[data-cat="' + cat + '"] span');
+      if (s && s.textContent !== label) s.textContent = label;
+    });
+
+    // The sidebar-order column lists Riff's old rail buttons (Álbumes, Cola,
+    // Historial...), which Cremo's rail replaces: keep only the Explorar column.
+    const custom = document.getElementById('setting-sidebar-home-customizer');
+    if (custom) {
+      const boxes = custom.querySelectorAll('.customizer-box');
+      if (boxes.length > 1) boxes[0].classList.add('cr-setting-hidden');
+      const hint = custom.querySelector('.setting-hint') || custom.querySelector('.setting-name + span');
+      const txt = t('Arrastra para cambiar el orden de las secciones de Explorar', 'Drag to reorder the Explore sections');
+      if (hint && hint.textContent !== txt) hint.textContent = txt;
+    }
+
+    if (typeof window.syncSettingsNavIndicator === 'function') requestAnimationFrame(window.syncSettingsNavIndicator);
+  }
+
+  window.cremoOrganizeSettings = organize;
+  const start = () => { organize(); setTimeout(organize, 1500); };
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
+  else start();
 })();

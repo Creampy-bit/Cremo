@@ -6365,7 +6365,8 @@ function bindCoverHoldZoom(wrapEl) {
     if (searchBox && nav.firstElementChild !== searchBox) {
       nav.insertBefore(searchBox, nav.firstElementChild);
     }
-    const order = ['interface', 'theme', 'banners', 'tracks', 'integrations', 'storage', 'about', 'advanced', 'custom-themes', 'plugins'];
+    // Cremo: visualizer, player and explore are Cremo's own categories (see cremo.js).
+    const order = ['interface', 'visualizer', 'player', 'explore', 'theme', 'banners', 'tracks', 'integrations', 'storage', 'about', 'advanced', 'custom-themes', 'plugins'];
     const buttons = Array.from(nav.querySelectorAll('.settings-nav-btn'));
     if (!buttons.length) return;
     const btnMap = new Map();
@@ -6409,6 +6410,7 @@ function bindCoverHoldZoom(wrapEl) {
     if (typeof ensureTopMomentIconSettingsDOM === 'function') ensureTopMomentIconSettingsDOM();
     if (typeof ensureRiffHomeIconSettingDOM === 'function') ensureRiffHomeIconSettingDOM();
     if (typeof ensureCoverBgSettingsDOM === 'function') ensureCoverBgSettingsDOM();
+    if (typeof window.cremoOrganizeSettings === 'function') window.cremoOrganizeSettings();
     if (typeof ensureAboutSupportDOM === 'function') ensureAboutSupportDOM();
     if (typeof updateAboutSupportLottieState === 'function') updateAboutSupportLottieState(cat === 'about');
     if (cat === 'about' && typeof initAboutSupportLottie === 'function') initAboutSupportLottie();
