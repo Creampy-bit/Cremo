@@ -3,6 +3,16 @@
 Cada versión nueva se apunta aquí arriba. Cremo usa `MAYOR.MENOR.PARCHE`:
 **parche** para arreglos, **menor** para funciones nuevas, **mayor** para cambios grandes.
 
+## Próxima versión
+
+### Nuevo
+
+- **Radio en vivo:** miles de emisoras de todo el mundo (Radio Browser). En Explorar salen las de tu país y hay filtros por género.
+- **Podcasts:** los más populares de tu país en Explorar; al abrir uno ves sus episodios y los escuchas en orden.
+- **Música independiente de Audius:** tendencias de la semana en Explorar.
+- **Búsqueda:** además de canciones, ahora muestra emisoras, podcasts y música de Audius.
+- La fuente de audio indica Radio en vivo, Podcast o Audius.
+
 ## 0.0.1
 
 Primera versión de Cremo.

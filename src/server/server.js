@@ -305,6 +305,7 @@ function i18nValueBroken(key, value) {
   return false;
 }
 const logger = require('../shared/logger');
+const cremoSources = require('./cremo-sources');
 const { getSystemAudioOutputInfo } = require('../shared/audio-output');
 
 let serverActiveProxy = '';
@@ -6279,7 +6280,10 @@ async function handleAudioProxy(req, res, targetUrl, redirectsLeft = 5, origUrl 
       res.writeHead(400);
       return res.end('Invalid url');
     }
-    if (redirectsLeft === 5 && gvRedirectCache.has(targetUrl)) {
+    // Cremo sources (Audius, podcasts) redirect to signed links that expire within
+    // minutes, so their redirects are not remembered.
+    const cremoNoCache = /[?&]cremo=1(&|$)/.test((req && req.url) || '');
+    if (redirectsLeft === 5 && !cremoNoCache && gvRedirectCache.has(targetUrl)) {
       targetUrl = gvRedirectCache.get(targetUrl);
       try {
         parsed = new URL(targetUrl);
@@ -6332,8 +6336,10 @@ async function handleAudioProxy(req, res, targetUrl, redirectsLeft = 5, origUrl 
       if ([301, 302, 303, 307, 308].includes(proxyRes.statusCode) && proxyRes.headers.location && redirectsLeft > 0) {
         proxyRes.resume();
         const nextUrl = new URL(proxyRes.headers.location, targetUrl).toString();
-        gvRedirectCache.set(initialUrl, nextUrl);
-        boundMap(gvRedirectCache, 100);
+        if (!cremoNoCache) {
+          gvRedirectCache.set(initialUrl, nextUrl);
+          boundMap(gvRedirectCache, 100);
+        }
         return handleAudioProxy(req, res, nextUrl, redirectsLeft - 1, initialUrl);
       }
       // Cremo: freshly issued googlevideo URLs answer 403 for the first few
@@ -7773,7 +7779,8 @@ const TOKEN_PROTECTED_ROUTES = new Set([
   '/api/yandex-import',
   '/api/tiktok-import',
   '/api/vk-import',
-  '/api/check-playlist-unavailable'
+  '/api/check-playlist-unavailable',
+  ...cremoSources.PATHS
 ]);
 
 function getServerToken() {
@@ -11109,6 +11116,9 @@ async function requestHandler(req, res) {
     return res.end(JSON.stringify({ success: false, error: 'forbidden' }));
   }
 
+  // Cremo: radio, Audius and podcasts (see cremo-sources.js).
+  if (await cremoSources.handle(parsedUrl.pathname, parsedUrl.query, res)) return;
+
   if (parsedUrl.pathname === '/api/default-settings' && req.method === 'GET') {
     let defaults = {};
     try {
@@ -11757,7 +11767,7 @@ async function requestHandler(req, res) {
     const trackUrl = parsedUrl.query.url || '';
     const trackId = parsedUrl.query.id || '';
     const platform = parsedUrl.query.platform || 'ytmusic';
-    prefetchTrack(trackUrl, trackId, platform);
+    if (!cremoSources.isCremoId(trackId)) prefetchTrack(trackUrl, trackId, platform);
     res.writeHead(200, { 'Content-Type': 'application/json' });
     return res.end(JSON.stringify({ success: true }));
   }
@@ -11801,6 +11811,7 @@ async function requestHandler(req, res) {
     const thumbnail = parsedUrl.query.thumbnail || '';
     const rawTimeout = parseInt(parsedUrl.query.timeout, 10);
     const timeoutSec = isNaN(rawTimeout) ? 20 : Math.max(5, Math.min(30, rawTimeout));
+    if (cremoSources.isCremoId(trackId)) return cremoSources.streamInfo(res, trackId, trackUrl, ACTIVE_PORT);
     return handleStreamInfo(req, res, trackUrl, trackId, platform, title, artist, duration, thumbnail, timeoutSec);
   }
 

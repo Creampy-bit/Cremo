@@ -137,6 +137,8 @@
       }
 
       const platInfo = getTrackPlatformInfo(track);
+      // Cremo: a radio station or podcast has no artists to credit or follow.
+      if (/^cr-(radio|pod):/.test(String(track.id || ''))) peopleMap.clear();
 
       let rowsHtml = '';
       let idx = 0;

@@ -1209,3 +1209,236 @@ function cremoChoiceRow(id, name, hint, options, current, onPick, icon) {
     requestAnimationFrame(() => overlay.classList.add('open'));
   };
 })();
+
+/* ---------- Más música: radio, podcasts y Audius ----------
+   Server side lives in src/server/cremo-sources.js. Tracks from there have ids
+   like "cr-radio:…", so the normal player plays them (and they can go to
+   Me gusta, playlists and history like any other song). */
+(function cremoMoreMusic() {
+  'use strict';
+  const st = () => window.state || {};
+  const api = async (path, params) => {
+    const qs = new URLSearchParams(params || {}).toString();
+    const r = await fetch(`http://127.0.0.1:${st().serverPort}${path}${qs ? '?' + qs : ''}`);
+    const d = await r.json();
+    if (!d || !d.success) throw new Error((d && d.error) || 'error');
+    return d.items;
+  };
+
+  const RADIO_ICON = 'data:image/svg+xml;utf8,' + encodeURIComponent(
+    '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 96 96"><rect width="96" height="96" rx="20" fill="#2a1416"/>' +
+    '<g fill="none" stroke="#ff6b6b" stroke-width="5" stroke-linecap="round"><path d="M30 34a25 25 0 0 0 0 28M66 34a25 25 0 0 1 0 28M22 26a37 37 0 0 0 0 44M74 26a37 37 0 0 1 0 44"/></g>' +
+    '<circle cx="48" cy="48" r="7" fill="#ff6b6b"/></svg>');
+  const fixRadio = (t) => { if (!t.thumbnail) t.thumbnail = RADIO_ICON; return t; };
+
+  const ICON = {
+    radio: '<svg class="sp-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M7.8 16.2a6 6 0 0 1 0-8.4M16.2 7.8a6 6 0 0 1 0 8.4M4.9 19.1a10 10 0 0 1 0-14.2M19.1 4.9a10 10 0 0 1 0 14.2"/><circle cx="12" cy="12" r="2" fill="currentColor"/></svg>',
+    pod: '<svg class="sp-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="9" y="2" width="6" height="12" rx="3"/><path d="M5 10a7 7 0 0 0 14 0M12 17v5M8 22h8"/></svg>',
+    indie: '<svg class="sp-ico" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>'
+  };
+
+  function play(track, list, ctx) {
+    if (typeof window.playTrack !== 'function') return;
+    const idx = Math.max(0, list.indexOf(track));
+    window.playTrack(track, list, idx, ctx || 'playlist');
+  }
+
+  /* ---- shared card ---- */
+  function card({ cover, title, sub, badge, round, contain, onClick }) {
+    const c = document.createElement('div');
+    c.className = 'sp-card cr-src-card' + (contain ? ' cr-contain' : '') + (round ? ' cr-round' : '');
+    c.innerHTML = '<div class="sp-card-cover"><img alt="" loading="lazy" draggable="false"></div>' +
+      (badge ? '<span class="cr-live">' + cremoEsc(badge) + '</span>' : '') +
+      '<div class="sp-card-title sp-fade"></div><div class="sp-card-sub sp-fade"></div>';
+    const img = c.querySelector('img');
+    img.addEventListener('error', () => { img.src = RADIO_ICON; c.classList.add('cr-contain'); }, { once: true });
+    img.src = cover || RADIO_ICON;
+    c.querySelector('.sp-card-title').textContent = title || '';
+    c.querySelector('.sp-card-sub').textContent = sub || '';
+    c.addEventListener('click', onClick);
+    return c;
+  }
+
+  function fillRow(row, items, make, emptyText) {
+    row.innerHTML = '';
+    if (!items || !items.length) {
+      row.innerHTML = '<div class="cr-src-empty">' + cremoEsc(emptyText) + '</div>';
+      return;
+    }
+    items.forEach((it) => row.appendChild(make(it, items)));
+    row.scrollLeft = 0;
+  }
+  const loadingRow = (row) => { row.innerHTML = '<div class="cr-src-empty">Cargando…</div>'; };
+
+  const radioCard = (t, list) => card({ cover: t.thumbnail, title: t.title, sub: t.artist, badge: 'EN VIVO', contain: true, onClick: () => play(fixRadio(t), [fixRadio(t)]) });
+  const trackCard = (t, list) => card({ cover: t.thumbnail, title: t.title, sub: t.artist, onClick: () => play(t, list) });
+  const podCard = (p) => card({ cover: p.cover, title: p.title, sub: p.author, onClick: () => openPodcast(p) });
+
+  /* ---- Explorar sections ---- */
+  const RADIO_TAGS = [
+    ['Cerca de ti', { country: 'local' }], ['Lo-fi', { tag: 'lofi' }], ['Pop', { tag: 'pop' }], ['Rock', { tag: 'rock' }],
+    ['Jazz', { tag: 'jazz' }], ['Electrónica', { tag: 'electronic' }], ['Clásica', { tag: 'classical' }], ['Noticias', { tag: 'news' }]
+  ];
+
+  function section(id, icon, title, extraHead) {
+    const sec = document.createElement('section');
+    sec.className = 'sp-section cr-src-sec';
+    sec.id = id;
+    sec.innerHTML = '<h2>' + icon + '<span>' + cremoEsc(title) + '</span></h2>' + (extraHead || '') + '<div class="sp-row"></div>';
+    // Riff makes every Explorar header open its own "show all" page; ours have none.
+    sec.addEventListener('click', (e) => { if (e.target.closest('.sp-sec-head, h2')) e.stopPropagation(); }, true);
+    const row = sec.querySelector('.sp-row');
+    if (typeof window.bindHorizontalWheel === 'function') window.bindHorizontalWheel(row);
+    return sec;
+  }
+
+  async function loadRadio(row, params) {
+    loadingRow(row);
+    try { fillRow(row, (await api('/api/cremo-radio', { limit: 24, ...params })).map(fixRadio), radioCard, 'No hay emisoras para esto ahora mismo.'); }
+    catch (_) { fillRow(row, [], radioCard, 'No se pudo cargar la radio. Revisa tu conexión.'); }
+  }
+
+  function buildSections() {
+    const home = document.getElementById('sp-home');
+    if (!home || document.getElementById('cr-radio-sec')) return;
+    const anchor = document.getElementById('sp-artists-sec');
+
+    const chips = '<div class="cr-src-chips">' + RADIO_TAGS.map(([label], i) =>
+      '<button type="button" class="cr-src-chip' + (i === 0 ? ' active' : '') + '" data-i="' + i + '">' + cremoEsc(label) + '</button>').join('') + '</div>';
+    const radioSec = section('cr-radio-sec', ICON.radio, 'Radio en vivo', chips);
+    const podSec = section('cr-pod-sec', ICON.pod, 'Podcasts populares');
+    const indieSec = section('cr-indie-sec', ICON.indie, 'Música independiente');
+    indieSec.querySelector('h2').insertAdjacentHTML('beforeend', '<small class="cr-src-note">de Audius</small>');
+
+    [radioSec, podSec, indieSec].forEach((s) => home.insertBefore(s, anchor && anchor.parentNode === home ? anchor : null));
+
+    const radioRow = radioSec.querySelector('.sp-row');
+    radioSec.querySelectorAll('.cr-src-chip').forEach((b) => b.addEventListener('click', () => {
+      radioSec.querySelectorAll('.cr-src-chip').forEach((x) => x.classList.toggle('active', x === b));
+      loadRadio(radioRow, RADIO_TAGS[Number(b.dataset.i)][1]);
+    }));
+    loadRadio(radioRow, RADIO_TAGS[0][1]);
+
+    const podRow = podSec.querySelector('.sp-row');
+    loadingRow(podRow);
+    api('/api/cremo-podcasts', { limit: 24 })
+      .then((items) => fillRow(podRow, items, podCard, 'No hay podcasts ahora mismo.'))
+      .catch(() => fillRow(podRow, [], podCard, 'No se pudieron cargar los podcasts.'));
+
+    const indieRow = indieSec.querySelector('.sp-row');
+    loadingRow(indieRow);
+    api('/api/cremo-audius', { limit: 24 })
+      .then((items) => fillRow(indieRow, items, trackCard, 'No hay canciones ahora mismo.'))
+      .catch(() => fillRow(indieRow, [], trackCard, 'No se pudo cargar Audius.'));
+  }
+
+  /* ---- Podcast sheet ---- */
+  let sheet = null;
+  const fmtDate = (ms) => (ms ? new Date(ms).toLocaleDateString('es', { day: 'numeric', month: 'short', year: 'numeric' }) : '');
+  const fmtDur = (s) => { s = Math.round(s || 0); if (!s) return ''; const h = Math.floor(s / 3600), m = Math.round((s % 3600) / 60); return h ? h + ' h ' + m + ' min' : m + ' min'; };
+
+  function closeSheet() { if (sheet) sheet.classList.remove('open'); }
+  async function openPodcast(p) {
+    if (!sheet) {
+      sheet = document.createElement('div');
+      sheet.className = 'cr-summary cr-pod-sheet';
+      sheet.id = 'cr-podcast';
+      sheet.addEventListener('click', (e) => { if (e.target === sheet) closeSheet(); });
+      document.addEventListener('keydown', (e) => { if (e.key === 'Escape') closeSheet(); });
+      document.body.appendChild(sheet);
+    }
+    sheet.innerHTML = '<div class="cr-sum-card"><div class="cr-pod-head"><img class="cr-pod-cover" alt=""><div class="cr-pod-meta">' +
+      '<span class="cr-sum-kicker">Podcast</span><h2></h2><span class="cr-pod-author"></span><p class="cr-pod-desc"></p>' +
+      '<div class="cr-pod-actions"><button type="button" class="cr-pod-play" disabled>Reproducir el último</button></div></div>' +
+      '<button type="button" class="cr-sum-close" aria-label="Cerrar">✕</button></div><div class="cr-pod-list"><div class="cr-sum-empty">Cargando episodios…</div></div></div>';
+    sheet.querySelector('.cr-sum-close').addEventListener('click', closeSheet);
+    const cover = sheet.querySelector('.cr-pod-cover');
+    cover.src = p.cover || RADIO_ICON;
+    sheet.querySelector('h2').textContent = p.title || '';
+    sheet.querySelector('.cr-pod-author').textContent = p.author || '';
+    requestAnimationFrame(() => sheet.classList.add('open'));
+
+    const list = sheet.querySelector('.cr-pod-list');
+    let data;
+    try { data = await api('/api/cremo-podcast-episodes', { id: p.id || '', feed: p.feed || '' }); }
+    catch (_) { list.innerHTML = '<div class="cr-sum-empty">No se pudieron cargar los episodios de este podcast.</div>'; return; }
+    const eps = data.episodes || [];
+    if (data.show) {
+      if (!p.cover && data.show.cover) cover.src = data.show.cover;
+      sheet.querySelector('.cr-pod-desc').textContent = data.show.description || '';
+    }
+    if (!eps.length) { list.innerHTML = '<div class="cr-sum-empty">Este podcast no tiene episodios de audio.</div>'; return; }
+    list.innerHTML = '';
+    eps.forEach((ep) => {
+      const row = document.createElement('button');
+      row.type = 'button';
+      row.className = 'cr-pod-ep';
+      row.innerHTML = '<span class="cr-pod-ep-play"><svg viewBox="0 0 24 24" width="14" height="14" fill="currentColor"><path d="M7 4v16l13-8z"/></svg></span>' +
+        '<span class="cr-pod-ep-txt"><b></b><small></small><em></em></span>';
+      row.querySelector('b').textContent = ep.title;
+      row.querySelector('small').textContent = [fmtDate(ep.publishedAt), fmtDur(ep.duration)].filter(Boolean).join(' · ');
+      row.querySelector('em').textContent = ep.description || '';
+      row.addEventListener('click', () => { play(ep, eps); closeSheet(); });
+      list.appendChild(row);
+    });
+    const playBtn = sheet.querySelector('.cr-pod-play');
+    playBtn.disabled = false;
+    playBtn.addEventListener('click', () => { play(eps[0], eps); closeSheet(); });
+  }
+  window.cremoOpenPodcast = openPodcast;
+
+  /* ---- Search: extra sections under Riff's results ---- */
+  function searchSection(title, note, items, render) {
+    const sec = document.createElement('div');
+    sec.className = 'search-albums-section cr-src-search';
+    sec.innerHTML = '<div class="section-sub-header"><h3></h3>' + (note ? '<small class="cr-src-note"></small>' : '') + '</div><div class="search-albums-row sp-row"></div>';
+    sec.querySelector('h3').textContent = title;
+    if (note) sec.querySelector('.cr-src-note').textContent = note;
+    const row = sec.querySelector('.search-albums-row');
+    items.forEach((it) => row.appendChild(render(it, items)));
+    if (typeof window.bindHorizontalWheel === 'function') window.bindHorizontalWheel(row);
+    return sec;
+  }
+
+  let lastToken = 0;
+  async function onSearch() {
+    const s = st();
+    const token = s.searchToken || 0;
+    if (!token || token === lastToken) return;
+    lastToken = token;
+    const q = String(s.searchQuery || '').trim();
+    let box = document.getElementById('cr-search-extra');
+    const tracks = document.getElementById('search-tracks-list');
+    if (!box && tracks) {
+      box = document.createElement('div');
+      box.id = 'cr-search-extra';
+      tracks.parentNode.insertBefore(box, tracks);
+    }
+    if (!box) return;
+    box.innerHTML = '';
+    if (q.length < 2) return;
+    const [radio, pods, indie] = await Promise.all([
+      api('/api/cremo-radio', { q, limit: 16 }).catch(() => []),
+      api('/api/cremo-podcasts', { q, limit: 16 }).catch(() => []),
+      api('/api/cremo-audius', { q, limit: 16 }).catch(() => [])
+    ]);
+    if (lastToken !== token) return;
+    if (radio.length) box.appendChild(searchSection('Emisoras de radio', '', radio.map(fixRadio), radioCard));
+    if (pods.length) box.appendChild(searchSection('Podcasts', '', pods, podCard));
+    if (indie.length) box.appendChild(searchSection('Música independiente', 'de Audius', indie, trackCard));
+  }
+
+  function start() {
+    buildSections();
+    // Riff may rebuild parts of Explorar; put the sections back if they go missing.
+    setInterval(() => { if (st().currentView === 'discover') buildSections(); onSearch(); }, 500);
+    const chips = document.getElementById('search-filter-chips');
+    if (chips) chips.addEventListener('click', (e) => {
+      const b = e.target.closest('.search-chip');
+      const box = document.getElementById('cr-search-extra');
+      if (b && box) box.hidden = (b.dataset.filter || 'all') !== 'all';
+    });
+  }
+  if (document.readyState === 'loading') document.addEventListener('DOMContentLoaded', start);
+  else start();
+})();
