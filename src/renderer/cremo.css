@@ -1128,3 +1128,6 @@ html.cremo #view-settings .settings-section.cr-own > .cr-set-subhead:first-child
 
 /* Explorar customizer: only the sections column is left, let it use the full width */
 html.cremo #setting-sidebar-home-customizer :has(> .customizer-box.cr-setting-hidden) { grid-template-columns: 1fr !important; }
+
+/* Riff shipped its author's meme photos in the profile banner; Cremo has none */
+html.cremo #tg-easter-meme { display: none !important; }
