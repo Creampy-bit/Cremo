@@ -1,0 +1,23 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 64 64">
+  <defs>
+    <linearGradient id="ring" x1="10" y1="8" x2="52" y2="58" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#f2505f"/>
+      <stop offset="0.45" stop-color="#b81d38"/>
+      <stop offset="1" stop-color="#5c0919"/>
+    </linearGradient>
+    <linearGradient id="shine" x1="14" y1="10" x2="40" y2="30" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#ffd0d6" stop-opacity="0.85"/>
+      <stop offset="1" stop-color="#ffd0d6" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="play" x1="26" y1="22" x2="42" y2="42" gradientUnits="userSpaceOnUse">
+      <stop offset="0" stop-color="#e8435a"/>
+      <stop offset="1" stop-color="#8f1229"/>
+    </linearGradient>
+  </defs>
+  <!-- C ring: open on the right -->
+  <path d="M47.6 17.4 A21 21 0 1 0 47.6 46.6" fill="none" stroke="url(#ring)" stroke-width="11" stroke-linecap="round"/>
+  <!-- soft highlight on the top-left of the ring -->
+  <path d="M41 13.6 A21 21 0 0 0 13.2 26" fill="none" stroke="url(#shine)" stroke-width="3.2" stroke-linecap="round"/>
+  <!-- play triangle -->
+  <path d="M28 23.6 Q28 21.4 30 22.5 L41.2 30.2 Q43 31.6 41.2 33 L30 40.7 Q28 41.8 28 39.6 Z" fill="url(#play)"/>
+</svg>

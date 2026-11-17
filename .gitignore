@@ -1,0 +1,20 @@
+node_modules/
+dist/
+dist-*/
+out/
+.env
+storage.json
+*/storage.json
+src/storage.json
+*.rfacc
+*.enc
+*.tmp
+yt-cookies.txt
+.yt-logged-out
+*.log
+.DS_Store
+
+# Cremo: datos personales y builds locales
+src/storage.json
+dist/
+*.backup.*

@@ -1,0 +1,1018 @@
+/* Cremo's desktop theme: crimson on near-black, rounded-square controls.
+   Scoped to html.cremo so imported themes stay editable. Selectors are kept
+   more specific than styles.css (which uses !important everywhere). */
+html.cremo {
+  color-scheme: dark;
+  --cr-accent: #e2475d;
+  --cr-bg: color-mix(in srgb, var(--cr-accent) 0.2%, #08080a);
+  --cr-panel: rgb(from color-mix(in srgb, var(--cr-accent) 4.9%, #08080a) r g b / 0.86);
+  --cr-panel-solid: color-mix(in srgb, var(--cr-accent) 4.6%, #08080a);
+  --cr-tile: color-mix(in srgb, var(--cr-accent) 7%, #08080a);
+  --cr-tile-hover: color-mix(in srgb, var(--cr-accent) 13%, #08080a);
+  --cr-border: color-mix(in srgb, var(--cr-accent) 14%, transparent);
+  --cr-border-strong: color-mix(in srgb, var(--cr-accent) 38%, transparent);
+  --cr-red: var(--cr-accent);
+  --cr-red-bright: color-mix(in srgb, var(--cr-accent) 78%, #ffffff);
+  --cr-red-deep: color-mix(in srgb, var(--cr-accent) 55%, #000000);
+  --cr-grad: linear-gradient(145deg, color-mix(in srgb, var(--cr-accent) 90%, #ffffff) 0%, color-mix(in srgb, var(--cr-accent) 72%, #000000) 55%, color-mix(in srgb, var(--cr-accent) 48%, #000000) 100%);
+  --cr-text: color-mix(in srgb, var(--cr-accent) 4%, #f4f4f4);
+  --cr-muted: color-mix(in srgb, var(--cr-accent) 12%, #9c9c9c);
+  --cr-icon: color-mix(in srgb, var(--cr-accent) 78%, #9a9a9a);
+
+  --sidebar-w: 244px !important;
+  --font-scale: 1 !important;
+  --font-family: 'Inter', 'Segoe UI', sans-serif !important;
+  --md-sys-color-background: color-mix(in srgb, var(--cr-accent) 0.2%, #08080a) !important;
+  --md-sys-color-background-solid: color-mix(in srgb, var(--cr-accent) 0.2%, #08080a) !important;
+  --md-sys-color-surface: color-mix(in srgb, var(--cr-accent) 4.4%, #08080a) !important;
+  --md-sys-color-surface-container: color-mix(in srgb, var(--cr-accent) 7.7%, #08080a) !important;
+  --md-sys-color-surface-container-low: color-mix(in srgb, var(--cr-accent) 5.4%, #08080a) !important;
+  --md-sys-color-surface-container-high: color-mix(in srgb, var(--cr-accent) 13.1%, #08080a) !important;
+  --md-sys-color-surface-container-highest: color-mix(in srgb, var(--cr-accent) 19.4%, #08080a) !important;
+  --md-sys-color-primary: var(--cr-accent) !important;
+  --md-sys-color-on-primary: #ffffff !important;
+  --md-sys-color-primary-container: color-mix(in srgb, var(--cr-accent) 24.2%, #08080a) !important;
+  --md-sys-color-on-primary-container: color-mix(in srgb, var(--cr-accent) 18%, #ffffff) !important;
+  --md-sys-color-secondary: var(--cr-accent) !important;
+  --md-sys-color-on-surface: color-mix(in srgb, var(--cr-accent) 4%, #f4f4f4) !important;
+  --md-sys-color-on-surface-variant: color-mix(in srgb, var(--cr-accent) 12%, #9c9c9c) !important;
+  --md-sys-color-outline: color-mix(in srgb, var(--cr-accent) 18%, #7c7c7c) !important;
+  --md-sys-color-outline-variant: color-mix(in srgb, var(--cr-accent) 19.9%, #08080a) !important;
+}
+
+/* ---------- Background: black with soft crimson glows, as in the reference ---------- */
+.cremo body {
+  background:
+    radial-gradient(900px 600px at -10% 110%, rgb(from color-mix(in srgb, var(--cr-accent) 62%, #000000) r g b / 0.42), transparent 60%),
+    radial-gradient(700px 520px at 108% -12%, rgb(from color-mix(in srgb, var(--cr-accent) 62%, #000000) r g b / 0.36), transparent 60%),
+    radial-gradient(500px 400px at 55% 50%, rgb(from color-mix(in srgb, var(--cr-accent) 38%, #000000) r g b / 0.18), transparent 70%),
+    color-mix(in srgb, var(--cr-accent) 0.2%, #08080a) !important;
+}
+.cremo .app-layout { background: transparent !important; }
+.cremo .titlebar {
+  background: transparent !important;
+  border-bottom: 1px solid color-mix(in srgb, var(--cr-accent) 8%, transparent);
+}
+/* The brand lives in the sidebar now; keep the titlebar clean. */
+.cremo .titlebar .app-logo { display: none !important; }
+
+/* ---------- Panels ---------- */
+.cremo .sidebar,
+.cremo .main-content,
+.cremo .right-panel {
+  background: var(--cr-panel) !important;
+  border: 1px solid var(--cr-border) !important;
+  border-radius: 18px !important;
+  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.35) !important;
+}
+.cremo .top-nav { background: transparent !important; }
+.cremo .content-view { padding: 24px !important; }
+
+/* ---------- Brand: logo only, click = home ---------- */
+.cremo-sidebar-brand {
+  display: flex;
+  align-items: center;
+  align-self: flex-start;
+  margin: 14px 0 12px 16px;
+  padding: 6px;
+  border-radius: 14px;
+  flex-shrink: 0;
+  user-select: none;
+  cursor: pointer;
+  outline: none;
+  transition: background-color 140ms ease, transform 140ms ease;
+}
+.cremo-sidebar-brand:hover { background: color-mix(in srgb, var(--cr-accent) 10%, transparent); }
+.cremo-sidebar-brand:active { transform: scale(0.94); }
+.cremo-sidebar-brand:focus-visible { box-shadow: 0 0 0 2px var(--cr-red); }
+.cremo-logo {
+  width: 40px;
+  height: 40px;
+  flex: 0 0 40px;
+  pointer-events: none;
+  filter: drop-shadow(0 4px 12px color-mix(in srgb, var(--cr-accent) 35%, transparent));
+  transition: filter 140ms ease;
+}
+.cremo-sidebar-brand:hover .cremo-logo { filter: drop-shadow(0 4px 16px color-mix(in srgb, var(--cr-accent) 60%, transparent)); }
+
+/* ---------- Home button next to search (like the reference) ---------- */
+html.cremo body.home-next-to-search .top-search-home-btn {
+  width: 46px !important;
+  height: 46px !important;
+  min-width: 46px !important;
+  background: var(--cr-tile) !important;
+  border: 1px solid var(--cr-border) !important;
+  color: var(--cr-icon) !important;
+}
+html.cremo body.home-next-to-search .top-search-home-btn:hover {
+  border-color: var(--cr-border-strong) !important;
+  color: var(--cr-red-bright) !important;
+}
+html.cremo body.home-next-to-search .top-search-home-btn.active {
+  background: var(--cr-grad) !important;
+  border-color: transparent !important;
+  color: #ffffff !important;
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--cr-accent) 35%, transparent) !important;
+}
+
+/* ---------- "Your Library" header: one line, compact create button ---------- */
+html.cremo #sidebar:not(#cr-boost) .sb-your-lib-header {
+  flex-wrap: nowrap !important;
+  gap: 8px !important;
+}
+html.cremo #sidebar:not(#cr-boost) .sb-your-lib-header :is(.sb-collapse-btn, #btn-sb-collapse) {
+  white-space: nowrap !important;
+  min-width: 0 !important;
+  overflow: hidden !important;
+  text-overflow: ellipsis !important;
+}
+html.cremo #sidebar:not(#cr-boost) .sb-create-pill-btn {
+  white-space: nowrap !important;
+  flex-shrink: 0 !important;
+  background: var(--cr-tile) !important;
+  border: 1px solid var(--cr-border) !important;
+  color: var(--cr-text) !important;
+  border-radius: 12px !important;
+}
+html.cremo #sidebar:not(#cr-boost) .sb-create-pill-btn:hover {
+  border-color: var(--cr-border-strong) !important;
+  background: var(--cr-tile-hover) !important;
+}
+
+/* ---------- Sidebar: expanded ---------- */
+.cremo .sidebar-nav { padding: 0 10px 12px !important; gap: 4px !important; }
+html.cremo body.sidebar-expanded #sidebar:not(#cr-boost) .sidebar-nav .nav-item {
+  min-height: 42px !important;
+  height: 42px !important;
+  padding: 0 12px !important;
+  border-radius: 12px !important;
+  color: var(--cr-muted) !important;
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  font-size: 13px !important;
+  font-weight: 500 !important;
+}
+html.cremo body.sidebar-expanded #sidebar:not(#cr-boost) .sidebar-nav .nav-item:hover {
+  background: var(--cr-tile-hover) !important;
+  color: var(--cr-text) !important;
+}
+html.cremo body.sidebar-expanded #sidebar:not(#cr-boost) .sidebar-nav .nav-item.active {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--cr-accent) 22%, transparent), color-mix(in srgb, var(--cr-accent) 6%, transparent)) !important;
+  border-color: var(--cr-border-strong) !important;
+  color: color-mix(in srgb, var(--cr-accent) 18%, #ffffff) !important;
+}
+html.cremo body.sidebar-expanded #sidebar:not(#cr-boost) .sidebar-nav .nav-item .nav-indicator {
+  background: transparent !important;
+  color: inherit !important;
+}
+.cremo .nav-active-indicator { display: none !important; }
+
+/* "Explorar": drop the image banner, use a plain compass icon like the rest. */
+.cremo #nav-discover .sb-home-banner-fx,
+.cremo #nav-discover .sb-split-radio-btn,
+html.cremo #sidebar:not(#cr-boost) #nav-discover .nav-indicator > .nav-home-app-icon { display: none !important; }
+.cremo #nav-discover .sb-home-banner-title {
+  font: inherit !important;
+  letter-spacing: 0 !important;
+}
+.cremo #nav-discover .sb-home-banner-content { margin: 0 !important; padding: 0 !important; }
+html.cremo #sidebar:not(#cr-boost) #nav-discover .nav-indicator::after,
+html.cremo #sidebar:not(#cr-boost) #btn-toggle-playlists-drawer::after {
+  content: '' !important;
+  display: block !important;
+  position: static !important;
+  inset: auto !important;
+  margin: 0 !important;
+  width: 21px !important;
+  height: 21px !important;
+  flex: 0 0 21px;
+  opacity: 1 !important;
+  background: currentColor !important;
+  -webkit-mask: var(--cr-mask) center / contain no-repeat;
+  mask: var(--cr-mask) center / contain no-repeat;
+}
+.cremo #nav-discover .nav-indicator {
+  --cr-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Ccircle cx='12' cy='12' r='9.5'/%3E%3Cpath d='M15.8 8.2l-2 5.6-5.6 2 2-5.6z'/%3E%3C/svg%3E");
+}
+/* The playlists drawer icon looked like the queue icon; give it a library icon. */
+.cremo #btn-toggle-playlists-drawer {
+  --cr-mask: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='black' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Crect x='3.5' y='4' width='4' height='16' rx='1'/%3E%3Crect x='9.5' y='4' width='4' height='16' rx='1'/%3E%3Cpath d='M16 5.2l3.6-1 2.9 15.4-3.7 1z'/%3E%3C/svg%3E");
+}
+html.cremo #sidebar:not(#cr-boost) #btn-toggle-playlists-drawer > svg,
+html.cremo #sidebar:not(#cr-boost) #btn-toggle-playlists-drawer > .ms-injected-icon,
+html.cremo #sidebar:not(#cr-boost) #btn-toggle-playlists-drawer > [class*="material-symbols-"] { display: none !important; }
+
+/* ---------- Sidebar: collapsed rail (84px) ---------- */
+html.cremo body:not(.sidebar-expanded):not(.mini) #sidebar:not(#cr-boost) {
+  width: 80px !important;
+  padding: 12px 0 14px !important;
+}
+html.cremo body:not(.sidebar-expanded) #sidebar:not(#cr-boost) .cremo-sidebar-brand {
+  align-self: center;
+  justify-content: center;
+  padding: 3px;
+  margin: 2px auto 12px;
+}
+html.cremo body:not(.sidebar-expanded) #sidebar:not(#cr-boost) .cremo-logo { width: 40px; height: 40px; flex-basis: 40px; }
+
+html.cremo body:not(.sidebar-expanded):not(.mini) #sidebar:not(#cr-boost) .sidebar-nav {
+  gap: 9px !important;
+  padding: 0 !important;
+  align-items: center !important;
+}
+/* Every rail button: same 46px rounded-square tile with a red outline icon. */
+html.cremo body:not(.sidebar-expanded) #sidebar:not(#cr-boost) .sidebar-nav .nav-item,
+html.cremo body:not(.sidebar-expanded):not(.mini) #sidebar:not(#cr-boost) .sidebar-nav #nav-discover {
+  width: 46px !important;
+  height: 46px !important;
+  min-height: 46px !important;
+  border-radius: 14px !important;
+  margin: 0 auto !important;
+  padding: 0 !important;
+  background: var(--cr-tile) !important;
+  border: 1px solid var(--cr-border) !important;
+  color: var(--cr-icon) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03) !important;
+  transition: background-color 140ms ease, border-color 140ms ease, color 140ms ease, transform 140ms ease !important;
+}
+html.cremo body:not(.sidebar-expanded) #sidebar:not(#cr-boost) .sidebar-nav .nav-item .nav-indicator {
+  width: 44px !important;
+  height: 44px !important;
+  border-radius: 13px !important;
+  background: transparent !important;
+  color: inherit !important;
+}
+html.cremo body:not(.sidebar-expanded) #sidebar:not(#cr-boost) .sidebar-nav .nav-item .nav-indicator > :is(svg, .ms-injected-icon, [class*="material-symbols-"]) {
+  color: inherit !important;
+  stroke: currentColor;
+}
+html.cremo body:not(.sidebar-expanded) #sidebar:not(#cr-boost) .sidebar-nav .nav-item:hover {
+  background: var(--cr-tile-hover) !important;
+  border-color: var(--cr-border-strong) !important;
+  color: var(--cr-red-bright) !important;
+}
+html.cremo body:not(.sidebar-expanded) #sidebar:not(#cr-boost) .sidebar-nav .nav-item.active {
+  background: var(--cr-grad) !important;
+  border-color: transparent !important;
+  color: #ffffff !important;
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--cr-accent) 35%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.18) !important;
+}
+html.cremo body:not(.sidebar-expanded) #sidebar:not(#cr-boost) .sidebar-nav .nav-item.active .nav-indicator > :is(svg, .ms-injected-icon, [class*="material-symbols-"]) {
+  color: #ffffff !important;
+}
+/* Counters on rail icons are noise at this size. */
+html.cremo body:not(.sidebar-expanded) #sidebar:not(#cr-boost) .nav-badge { display: none !important; }
+
+/* Tool buttons (expand library, presets, playlists): smaller, quieter tiles. */
+html.cremo body:not(.sidebar-expanded) #sidebar:not(#cr-boost) .rail-divider {
+  width: 28px !important;
+  height: 1px !important;
+  margin: 6px auto !important;
+  background: var(--cr-border) !important;
+}
+html.cremo body:not(.sidebar-expanded) #sidebar:not(#cr-boost) .rail-action-group {
+  flex-direction: column !important;
+  align-items: center !important;
+  gap: 8px !important;
+}
+html.cremo body:not(.sidebar-expanded) #sidebar:not(#cr-boost) .rail-icon-btn {
+  width: 40px !important;
+  height: 40px !important;
+  border-radius: 12px !important;
+  display: inline-flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  background: transparent !important;
+  border: 1px solid transparent !important;
+  color: var(--cr-muted) !important;
+}
+html.cremo body:not(.sidebar-expanded) #sidebar:not(#cr-boost) .rail-icon-btn:hover,
+html.cremo body:not(.sidebar-expanded) #sidebar:not(#cr-boost) .rail-icon-btn.active {
+  background: var(--cr-tile-hover) !important;
+  border-color: var(--cr-border) !important;
+  color: var(--cr-red-bright) !important;
+}
+/* Settings sits at the bottom, quieter than the main sections. */
+html.cremo body:not(.sidebar-expanded) #sidebar:not(#cr-boost) .sidebar-nav #nav-settings:not(.active) {
+  background: transparent !important;
+  border-color: transparent !important;
+  color: var(--cr-muted) !important;
+}
+
+/* ---------- Search ---------- */
+.cremo .search-box {
+  background: rgb(from color-mix(in srgb, var(--cr-accent) 7%, #08080a) r g b / 0.9) !important;
+  border: 1px solid var(--cr-border) !important;
+  border-radius: 14px !important;
+  box-shadow: none !important;
+}
+.cremo .search-box:focus-within { border-color: var(--cr-border-strong) !important; }
+
+/* ---------- Library header ---------- */
+.cremo #local-playlist-header {
+  min-height: 176px !important;
+  padding: 28px !important;
+  margin-bottom: 24px !important;
+  border: 1px solid var(--cr-border-strong);
+  border-radius: 18px !important;
+  background:
+    radial-gradient(400px 200px at 0% 0%, color-mix(in srgb, var(--cr-accent) 28%, transparent), transparent 70%),
+    linear-gradient(115deg, color-mix(in srgb, var(--cr-accent) 15.4%, #08080a), color-mix(in srgb, var(--cr-accent) 5.6%, #08080a)) !important;
+  gap: 24px !important;
+}
+.cremo #local-hero-fx { display: none !important; }
+html.cremo .local-hero-header .local-cloud-cover {
+  width: 104px !important;
+  height: 104px !important;
+  min-height: 104px !important;
+  max-height: 104px !important;
+  align-self: center !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+  min-width: 104px !important;
+  flex: 0 0 104px !important;
+  border-radius: 22px !important;
+  background: var(--cr-tile) !important;
+  border: 1px solid var(--cr-border-strong);
+  color: var(--cr-red) !important;
+  box-shadow: 0 8px 26px color-mix(in srgb, var(--cr-accent) 20%, transparent) !important;
+}
+html.cremo .local-hero-header .local-cloud-cover svg { width: 48px !important; height: 48px !important; stroke: var(--cr-red) !important; }
+.cremo #local-hero-title {
+  font-size: clamp(28px, 3.5vw, 46px) !important;
+  font-weight: 700 !important;
+  letter-spacing: -1.7px !important;
+  margin: 8px 0 10px !important;
+}
+.cremo .favorites-playlist-label { font-size: 10px !important; letter-spacing: 2px; color: color-mix(in srgb, var(--cr-accent) 45%, #e0e0e0); }
+.cremo #local-subtitle { font-size: 13px !important; color: var(--cr-muted) !important; }
+
+/* ---------- Buttons ---------- */
+.cremo .btn-pill-primary,
+.cremo #btn-add-local {
+  background: var(--cr-grad) !important;
+  color: #ffffff !important;
+  border: 0 !important;
+  border-radius: 12px !important;
+  font-weight: 600 !important;
+  box-shadow: 0 6px 18px color-mix(in srgb, var(--cr-accent) 28%, transparent) !important;
+}
+.cremo .btn-pill-primary:hover,
+.cremo #btn-add-local:hover { filter: brightness(1.1); }
+.cremo .btn-outline-pill {
+  border: 1px solid var(--cr-border-strong) !important;
+  border-radius: 12px !important;
+  background: var(--cr-tile) !important;
+  color: var(--cr-text) !important;
+}
+.cremo .btn-outline-pill:hover { background: var(--cr-tile-hover) !important; }
+.cremo #local-tracks-list > .empty-hint {
+  min-height: 225px;
+  justify-content: center;
+  border: 1px dashed var(--cr-border-strong);
+  border-radius: 18px;
+  background: rgb(from color-mix(in srgb, var(--cr-accent) 7%, #08080a) r g b / 0.6);
+}
+.cremo #local-tracks-list > .empty-hint > span { font-size: 17px; color: color-mix(in srgb, var(--cr-accent) 8%, #e2e2e2); margin-bottom: 10px; }
+
+/* ---------- Track rows ---------- */
+.cremo .track-row { border-radius: 12px !important; }
+.cremo .track-row:hover { background: color-mix(in srgb, var(--cr-accent) 7%, transparent) !important; }
+.cremo .track-row.playing {
+  background: linear-gradient(90deg, color-mix(in srgb, var(--cr-accent) 20%, transparent), color-mix(in srgb, var(--cr-accent) 5%, transparent)) !important;
+  box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--cr-accent) 22%, transparent) !important;
+}
+.cremo .track-row.playing .track-row-title { color: var(--cr-red-bright) !important; }
+
+/* ---------- Player bar ---------- */
+.cremo .playbar {
+  background: rgb(from color-mix(in srgb, var(--cr-accent) 1.1%, #08080a) r g b / 0.92) !important;
+  border-top: 1px solid var(--cr-border) !important;
+}
+.cremo .playbar-center :is(#btn-prev, #btn-next, #btn-shuffle, #btn-repeat) {
+  color: var(--cr-icon) !important;
+  border-radius: 12px !important;
+}
+.cremo .playbar-center :is(#btn-prev, #btn-next, #btn-shuffle, #btn-repeat):hover {
+  color: var(--cr-red-bright) !important;
+  background: var(--cr-tile-hover) !important;
+}
+.cremo .playbar-center :is(#btn-shuffle, #btn-repeat).active { color: var(--cr-red-bright) !important; }
+html.cremo .playbar #btn-play-pause {
+  width: 48px !important;
+  height: 48px !important;
+  border-radius: 50% !important;
+  background: var(--cr-grad) !important;
+  color: #ffffff !important;
+  border: 0 !important;
+  box-shadow: 0 6px 20px color-mix(in srgb, var(--cr-accent) 40%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.2) !important;
+}
+html.cremo .playbar #btn-play-pause:hover { filter: brightness(1.1); }
+/* Progress bar always visible under the controls, with both times. */
+html.cremo .playbar .playbar-center {
+  display: flex !important;
+  flex-direction: column !important;
+  justify-content: center !important;
+  gap: 4px !important;
+}
+html.cremo .playbar .playbar-center > .playback-controls { order: 1; }
+html.cremo .playbar .playbar-center > .scrubber-bar-wrapper {
+  order: 2;
+  position: static !important;
+  transform: none !important;
+  inset: auto !important;
+  width: 100% !important;
+  opacity: 1 !important;
+  visibility: visible !important;
+  pointer-events: auto !important;
+}
+/* Static rail behind the canvas so the bar is visible even while paused
+   (Riff only redraws the canvas while playing and focused). */
+html.cremo .playbar .scrubber-track-container { position: relative !important; }
+html.cremo .playbar .scrubber-track-container::before {
+  content: '';
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 50%;
+  height: 4px;
+  transform: translateY(-50%);
+  border-radius: 4px;
+  background: rgba(255, 255, 255, 0.14);
+  pointer-events: none;
+}
+html.cremo .playbar .scrubber-track-container > canvas { position: relative; z-index: 1; }
+html.cremo .playbar .time-label {
+  opacity: 1 !important;
+  pointer-events: auto !important;
+  font-size: 11.5px !important;
+  color: var(--cr-muted) !important;
+}
+.cremo input[type="range"] { accent-color: var(--cr-red); }
+
+/* ---------- Misc ---------- */
+.cremo button:focus-visible,
+.cremo input:focus-visible { outline: 2px solid var(--cr-red) !important; outline-offset: 3px; }
+.cremo button:disabled { opacity: .45; cursor: default; }
+.cremo ::selection { background: color-mix(in srgb, var(--cr-accent) 45%, transparent); }
+.cremo ::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--cr-accent) 22%, transparent) !important; border-radius: 8px; }
+.cremo ::-webkit-scrollbar-thumb:hover { background: color-mix(in srgb, var(--cr-accent) 40%, transparent) !important; }
+.cremo .riff-hero-logo-main {
+  mask: none !important;
+  -webkit-mask: none !important;
+  background: url("../../assets/cremo-logo.svg") center / contain no-repeat !important;
+}
+
+/* ---------- Welcome screen ---------- */
+.cremo-welcome {
+  --bg: color-mix(in srgb, var(--cr-accent) 0.2%, #08080a);
+  --panel-brand: color-mix(in srgb, var(--cr-accent) 6.7%, #08080a);
+  --panel: color-mix(in srgb, var(--cr-accent) 4.4%, #08080a);
+  --accent: var(--cr-accent);
+  --on-accent: #ffffff;
+}
+.cremo-welcome-mark {
+  width: 120px;
+  height: 120px;
+  margin: auto;
+  background: url("../../assets/cremo-logo.svg") center / contain no-repeat;
+  filter: drop-shadow(0 10px 30px color-mix(in srgb, var(--cr-accent) 40%, transparent));
+  font-size: 0;
+}
+
+@media (max-width: 1100px) {
+  .cremo { --sidebar-w: 210px !important; }
+  .cremo .content-view { padding: 16px !important; }
+  .cremo #local-playlist-header { padding: 20px !important; gap: 18px !important; }
+  .cremo #view-local .favorites-actions-toolbar { flex-wrap: wrap; }
+}
+
+/* ===================== Rail v3: fewer buttons, livelier ===================== */
+/* Removed from the rail: History and the "expand Your Library" panel. The rail
+   always stays compact; Playlists/presets open as floating menus instead. */
+html.cremo #sidebar:not(#cr-boost) #nav-history,
+html.cremo #sidebar:not(#cr-boost) #btn-rail-expand-lib,
+html.cremo #sidebar:not(#cr-boost) #sidebar-resize-edge { display: none !important; }
+
+/* Tool buttons get the same tile as the section buttons. */
+html.cremo body:not(.sidebar-expanded) #sidebar:not(#cr-boost) .rail-icon-btn {
+  width: 46px !important;
+  height: 46px !important;
+  border-radius: 14px !important;
+  background: var(--cr-tile) !important;
+  border: 1px solid var(--cr-border) !important;
+  color: var(--cr-icon) !important;
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.03) !important;
+}
+html.cremo body:not(.sidebar-expanded) #sidebar:not(#cr-boost) .rail-action-group { gap: 9px !important; }
+
+/* Shared motion for every rail tile. */
+html.cremo body:not(.sidebar-expanded) #sidebar:not(#cr-boost) :is(.sidebar-nav .nav-item, .rail-icon-btn) {
+  position: relative;
+  transition: transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1), background-color 160ms ease,
+    border-color 160ms ease, color 160ms ease, box-shadow 220ms ease !important;
+}
+html.cremo body:not(.sidebar-expanded) #sidebar:not(#cr-boost) :is(.sidebar-nav .nav-item, .rail-icon-btn):hover {
+  transform: translateY(-2px) scale(1.04);
+  background: var(--cr-tile-hover) !important;
+  border-color: var(--cr-border-strong) !important;
+  color: var(--cr-red-bright) !important;
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.45), 0 0 0 3px color-mix(in srgb, var(--cr-accent) 8%, transparent) !important;
+}
+html.cremo body:not(.sidebar-expanded) #sidebar:not(#cr-boost) :is(.sidebar-nav .nav-item, .rail-icon-btn):active {
+  transform: scale(0.92);
+  transition-duration: 90ms !important;
+}
+html.cremo body:not(.sidebar-expanded) #sidebar:not(#cr-boost) :is(.sidebar-nav .nav-item, .rail-icon-btn) svg {
+  transition: transform 260ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+html.cremo body:not(.sidebar-expanded) #sidebar:not(#cr-boost) :is(.sidebar-nav .nav-item, .rail-icon-btn):hover svg { transform: scale(1.12); }
+
+/* Selected: dark tile with a glowing crimson ring (same look for every button). */
+html.cremo body:not(.sidebar-expanded) #sidebar:not(#cr-boost) .sidebar-nav .nav-item.active,
+html.cremo body:not(.sidebar-expanded) #sidebar:not(#cr-boost) .rail-icon-btn.active,
+html.cremo body:not(.sidebar-expanded) #sidebar:not(#cr-boost) .sidebar-nav #nav-settings.active {
+  background: linear-gradient(160deg, color-mix(in srgb, var(--cr-accent) 22%, transparent), rgb(from color-mix(in srgb, var(--cr-accent) 52%, #000000) r g b / 0.18)) !important;
+  border: 1.5px solid var(--cr-red) !important;
+  color: var(--cr-red-bright) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--cr-accent) 12%, transparent), 0 6px 20px color-mix(in srgb, var(--cr-accent) 28%, transparent),
+    inset 0 1px 0 rgba(255, 255, 255, 0.08) !important;
+}
+html.cremo body:not(.sidebar-expanded) #sidebar:not(#cr-boost) .sidebar-nav .nav-item.active .nav-indicator > :is(svg, .ms-injected-icon, [class*="material-symbols-"]) {
+  color: var(--cr-red-bright) !important;
+}
+
+/* Click "pop" (class added by cremo.js). */
+@keyframes cr-pop {
+  0% { transform: scale(0.9); }
+  55% { transform: scale(1.1); }
+  100% { transform: scale(1); }
+}
+html.cremo #sidebar:not(#cr-boost) .cr-pop { animation: cr-pop 320ms cubic-bezier(0.34, 1.56, 0.64, 1); }
+
+/* Sliding pill on the left edge that follows the selected button. */
+.cr-rail-pill {
+  position: absolute;
+  left: 0;
+  width: 4px;
+  height: 22px;
+  border-radius: 0 4px 4px 0;
+  background: var(--cr-grad);
+  box-shadow: 0 0 12px color-mix(in srgb, var(--cr-accent) 70%, transparent);
+  pointer-events: none;
+  opacity: 0;
+  z-index: 5;
+  transition: top 320ms cubic-bezier(0.34, 1.3, 0.64, 1), height 220ms ease, opacity 180ms ease;
+}
+.cr-rail-pill.show { opacity: 1; }
+body.sidebar-expanded .cr-rail-pill { display: none; }
+
+/* Custom tooltip that slides out of the rail. */
+.cr-tip {
+  position: fixed;
+  z-index: 100000;
+  pointer-events: none;
+  padding: 7px 12px;
+  border-radius: 10px;
+  background: color-mix(in srgb, var(--cr-accent) 10.1%, #08080a);
+  border: 1px solid var(--cr-border-strong);
+  color: var(--cr-text);
+  font: 600 12.5px/1.2 'Nunito', 'Inter', 'Segoe UI', sans-serif;
+  letter-spacing: 0.01em;
+  white-space: nowrap;
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.55), 0 0 0 1px rgba(0, 0, 0, 0.3);
+  opacity: 0;
+  transform: translate(-8px, -50%) scale(0.96);
+  transform-origin: left center;
+  transition: opacity 140ms ease, transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+.cr-tip::before {
+  content: '';
+  position: absolute;
+  left: -5px;
+  top: 50%;
+  width: 8px;
+  height: 8px;
+  background: inherit;
+  border-left: 1px solid var(--cr-border-strong);
+  border-bottom: 1px solid var(--cr-border-strong);
+  transform: translateY(-50%) rotate(45deg);
+}
+.cr-tip.show { opacity: 1; transform: translate(0, -50%) scale(1); }
+
+/* ---------- Floating Playlists / presets menu ---------- */
+html.cremo #sidebar:not(#cr-boost) #rail-drawer {
+  left: 88px !important;
+  top: 10px !important;
+  bottom: 10px !important;
+  border-radius: 18px !important;
+  background: linear-gradient(180deg, rgb(from color-mix(in srgb, var(--cr-accent) 12.3%, #08080a) r g b / 0.97), rgb(from color-mix(in srgb, var(--cr-accent) 3.3%, #08080a) r g b / 0.98)) !important;
+  border: 1px solid var(--cr-border-strong) !important;
+  box-shadow: 0 24px 60px rgba(0, 0, 0, 0.6), 0 0 0 1px rgba(0, 0, 0, 0.4),
+    0 0 40px color-mix(in srgb, var(--cr-accent) 8%, transparent) !important;
+  backdrop-filter: blur(28px) saturate(1.2);
+  transform-origin: left center !important;
+  transform: translateX(-14px) scale(0.97) !important;
+  opacity: 0 !important;
+  transition: opacity 170ms ease, transform 280ms cubic-bezier(0.34, 1.4, 0.64, 1) !important;
+}
+html.cremo #sidebar:not(#cr-boost) #rail-drawer.open {
+  transform: translateX(0) scale(1) !important;
+  opacity: 1 !important;
+}
+html.cremo #sidebar:not(#cr-boost).has-drawer-open {
+  border-top-right-radius: inherit !important;
+  border-bottom-right-radius: inherit !important;
+}
+html.cremo #rail-drawer .rail-drawer-header { padding: 2px 4px 6px !important; }
+html.cremo #rail-drawer .rail-drawer-title {
+  font-family: 'Nunito', 'Inter', sans-serif !important;
+  font-weight: 800 !important;
+  font-size: 18px !important;
+  color: var(--cr-text) !important;
+}
+html.cremo #rail-drawer .rail-drawer-header-actions button {
+  border-radius: 10px !important;
+  color: var(--cr-muted) !important;
+  transition: background-color 140ms ease, color 140ms ease, transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+html.cremo #rail-drawer .rail-drawer-header-actions button:hover {
+  background: var(--cr-tile-hover) !important;
+  color: var(--cr-red-bright) !important;
+  transform: rotate(90deg);
+}
+
+/* Rows slide in one after another. */
+@keyframes cr-row-in {
+  from { opacity: 0; transform: translateX(-10px); }
+  to { opacity: 1; transform: none; }
+}
+html.cremo #rail-drawer.open #playlists-list > * {
+  animation: cr-row-in 300ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+}
+html.cremo #rail-drawer.open #playlists-list > :nth-child(2) { animation-delay: 40ms; }
+html.cremo #rail-drawer.open #playlists-list > :nth-child(3) { animation-delay: 80ms; }
+html.cremo #rail-drawer.open #playlists-list > :nth-child(4) { animation-delay: 120ms; }
+html.cremo #rail-drawer.open #playlists-list > :nth-child(5) { animation-delay: 160ms; }
+html.cremo #rail-drawer.open #playlists-list > :nth-child(n+6) { animation-delay: 200ms; }
+
+html.cremo #rail-drawer #playlists-list .playlist-item {
+  border-radius: 12px !important;
+  padding: 7px 8px !important;
+  gap: 12px !important;
+  border: 1px solid transparent !important;
+  cursor: pointer;
+  transition: background-color 140ms ease, border-color 140ms ease, transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1) !important;
+}
+html.cremo #rail-drawer #playlists-list .playlist-item:hover {
+  background: var(--cr-tile-hover) !important;
+  border-color: var(--cr-border) !important;
+  transform: translateX(3px);
+}
+html.cremo #rail-drawer #playlists-list .playlist-item.active {
+  background: color-mix(in srgb, var(--cr-accent) 14%, transparent) !important;
+  border-color: var(--cr-border-strong) !important;
+}
+
+/* "Me gusta" shortcut pinned at the top of the menu. */
+html.cremo #rail-drawer .cr-liked-item .cr-liked-thumb {
+  width: 44px;
+  height: 44px;
+  flex: 0 0 44px;
+  border-radius: 10px;
+  display: grid;
+  place-items: center;
+  background: var(--cr-grad);
+  color: #fff;
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--cr-accent) 30%, transparent);
+}
+html.cremo #rail-drawer .cr-liked-item .playlist-item-name { font-weight: 700; }
+
+/* Empty state */
+html.cremo #rail-drawer .cr-empty-card {
+  margin: 8px 4px;
+  padding: 22px 16px !important;
+  border-radius: 16px;
+  border: 1px dashed var(--cr-border-strong);
+  background: color-mix(in srgb, var(--cr-accent) 5%, transparent);
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+}
+html.cremo #rail-drawer .cr-empty-icon {
+  width: 52px;
+  height: 52px;
+  border-radius: 16px;
+  display: grid;
+  place-items: center;
+  margin-bottom: 4px;
+  color: var(--cr-red-bright);
+  background: var(--cr-tile-hover);
+  border: 1px solid var(--cr-border-strong);
+  animation: cr-float 3.2s ease-in-out infinite;
+}
+@keyframes cr-float { 50% { transform: translateY(-4px); } }
+html.cremo #rail-drawer .cr-empty-title { font: 800 14.5px 'Nunito', 'Inter', sans-serif; color: var(--cr-text); }
+html.cremo #rail-drawer .cr-empty-sub { font-size: 12.5px; color: var(--cr-muted); line-height: 1.35; }
+html.cremo #rail-drawer .cr-empty-btn {
+  margin-top: 8px;
+  padding: 8px 16px;
+  border-radius: 999px;
+  border: none;
+  background: var(--cr-grad);
+  color: #fff;
+  font: 700 12.5px 'Nunito', 'Inter', sans-serif;
+  cursor: pointer;
+  box-shadow: 0 6px 16px color-mix(in srgb, var(--cr-accent) 30%, transparent);
+  transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1), filter 140ms ease;
+}
+html.cremo #rail-drawer .cr-empty-btn:hover { transform: translateY(-1px) scale(1.04); filter: brightness(1.08); }
+html.cremo #rail-drawer .cr-empty-btn:active { transform: scale(0.95); }
+
+@media (prefers-reduced-motion: reduce) {
+  html.cremo #sidebar *, .cr-tip, .cr-rail-pill { animation: none !important; transition-duration: 1ms !important; }
+}
+
+/* Liked shortcut lives above #playlists-list (not inside it, so Riff's
+   drag-reorder indexes stay correct). */
+html.cremo #rail-drawer .cr-liked-item {
+  display: flex; align-items: center; gap: 12px;
+  height: 58px; min-height: 58px; padding: 7px 8px; box-sizing: border-box;
+  border-radius: 12px; border: 1px solid var(--cr-border);
+  background: linear-gradient(90deg, color-mix(in srgb, var(--cr-accent) 12%, transparent), color-mix(in srgb, var(--cr-accent) 2%, transparent));
+  cursor: pointer; flex: 0 0 auto;
+  transition: background-color 140ms ease, border-color 140ms ease, transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+html.cremo #rail-drawer.open .cr-liked-item { animation: cr-row-in 300ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+html.cremo #rail-drawer .cr-liked-item:hover { border-color: var(--cr-border-strong); transform: translateX(3px); }
+html.cremo #rail-drawer .cr-liked-item:active { transform: scale(0.98); }
+html.cremo #rail-drawer .cr-liked-item:hover .cr-liked-thumb svg { animation: cr-beat 700ms ease; }
+@keyframes cr-beat { 30% { transform: scale(1.25); } 60% { transform: scale(0.95); } }
+html.cremo #rail-drawer .cr-liked-info { display: flex; flex-direction: column; gap: 2px; min-width: 0; }
+html.cremo #rail-drawer .cr-liked-name { font-weight: 700; font-size: 14px; color: var(--cr-text); }
+html.cremo #rail-drawer .cr-liked-count { font-size: 12px; color: var(--cr-muted); }
+
+/* ===================== v4: rail = Explorar · Me gusta · Playlists ===================== */
+html.cremo #sidebar:not(#cr-boost) :is(#nav-albums, #nav-queue, #nav-local) { display: none !important; }
+html.cremo #sidebar:not(#cr-boost) .sidebar-nav > #nav-discover { order: 1 !important; }
+html.cremo #sidebar:not(#cr-boost) .sidebar-nav > #nav-favorites { order: 2 !important; }
+html.cremo #sidebar:not(#cr-boost) .sidebar-nav > #btn-toggle-playlists-drawer { order: 3 !important; }
+html.cremo #sidebar:not(#cr-boost) .sidebar-nav > :not(#nav-discover, #nav-favorites, #btn-toggle-playlists-drawer) { order: 4; }
+html.cremo body:not(.sidebar-expanded) #sidebar:not(#cr-boost) .sidebar-nav > #btn-toggle-playlists-drawer {
+  margin: 0 auto !important;
+  flex: 0 0 auto !important;
+}
+/* Playlists button lights up while you're in the library or a playlist. */
+html.cremo body:not(.sidebar-expanded) #sidebar:not(#cr-boost) .rail-icon-btn.cr-current {
+  background: linear-gradient(160deg, color-mix(in srgb, var(--cr-accent) 22%, transparent), color-mix(in srgb, var(--cr-accent) 10%, transparent)) !important;
+  border: 1.5px solid var(--cr-red) !important;
+  color: var(--cr-red-bright) !important;
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--cr-accent) 12%, transparent), 0 6px 20px color-mix(in srgb, var(--cr-accent) 28%, transparent) !important;
+}
+
+/* Logo follows the theme color. */
+html.cremo .cremo-logo {
+  filter: hue-rotate(var(--cr-logo-hue, 0deg)) saturate(var(--cr-logo-sat, 1));
+  transition: filter 300ms ease;
+}
+
+/* Everything that uses the accent eases into a new theme. */
+html.cremo body, html.cremo .sidebar, html.cremo .main-content, html.cremo .right-panel, html.cremo .playbar {
+  transition: background-color 300ms ease, border-color 300ms ease;
+}
+
+/* ---------- Playlists menu: Biblioteca row + section label ---------- */
+html.cremo #rail-drawer .cr-lib-item { margin-bottom: 2px; }
+html.cremo #rail-drawer .cr-row-chevron {
+  margin-left: auto;
+  color: var(--cr-muted);
+  transition: transform 200ms cubic-bezier(0.34, 1.56, 0.64, 1), color 140ms ease;
+}
+html.cremo #rail-drawer .cr-liked-item:hover .cr-row-chevron { transform: translateX(3px); color: var(--cr-red-bright); }
+html.cremo #rail-drawer .cr-liked-item:hover .cr-liked-thumb svg { animation: cr-beat 600ms ease; }
+html.cremo #rail-drawer .cr-drawer-label {
+  margin: 6px 6px -4px;
+  font: 800 11px 'Nunito', 'Inter', sans-serif;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--cr-muted);
+  flex: 0 0 auto;
+}
+html.cremo #rail-drawer.open .cr-drawer-label { animation: cr-row-in 300ms 40ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
+
+/* ---------- Ajustes > Tema: Cremo picker replaces Riff's own color controls ---------- */
+html.cremo .settings-section[data-cat="theme"] .setting-item:has(.theme-mode-toggle),
+html.cremo .settings-section[data-cat="theme"] #setting-palette-style,
+html.cremo .settings-section[data-cat="theme"] .theme-palette-setting,
+html.cremo .settings-section[data-cat="theme"] .setting-item:has(#hue-seg),
+html.cremo .settings-section[data-cat="theme"] .setting-item:has(#slider-theme-intensity) { display: none !important; }
+
+html.cremo .cr-theme-card {
+  display: flex !important;
+  flex-direction: column !important;
+  gap: 16px !important;
+  padding: 18px !important;
+  border-radius: 18px !important;
+  background:
+    radial-gradient(420px 160px at 0% 0%, color-mix(in srgb, var(--cr-accent) 18%, transparent), transparent 70%),
+    var(--cr-tile) !important;
+  border: 1px solid var(--cr-border-strong) !important;
+}
+html.cremo .cr-theme-head { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; }
+html.cremo .cr-theme-title { font: 800 17px 'Nunito', 'Inter', sans-serif; color: var(--cr-text); }
+html.cremo .cr-theme-sub { margin-top: 3px; font-size: 13px; color: var(--cr-muted); }
+html.cremo .cr-theme-current {
+  flex: 0 0 auto;
+  padding: 5px 12px;
+  border-radius: 999px;
+  font: 700 12px 'Nunito', 'Inter', sans-serif;
+  color: #fff;
+  background: var(--cr-grad);
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--cr-accent) 35%, transparent);
+}
+html.cremo .cr-theme-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(92px, 1fr));
+  gap: 10px;
+}
+html.cremo .cr-theme-swatch {
+  position: relative;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 12px 6px 10px;
+  border-radius: 14px;
+  border: 1px solid rgba(255, 255, 255, 0.06);
+  background: rgba(255, 255, 255, 0.025);
+  color: var(--cr-muted);
+  font: 700 12px 'Nunito', 'Inter', sans-serif;
+  cursor: pointer;
+  transition: transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1), border-color 150ms ease, background-color 150ms ease, color 150ms ease;
+}
+html.cremo .cr-theme-swatch:hover { transform: translateY(-2px); color: var(--cr-text); border-color: rgba(255, 255, 255, 0.14); }
+html.cremo .cr-theme-swatch:active { transform: scale(0.95); }
+html.cremo .cr-theme-dot {
+  width: 34px;
+  height: 34px;
+  border-radius: 50%;
+  background: linear-gradient(145deg, color-mix(in srgb, var(--sw) 85%, #fff), var(--sw) 45%, color-mix(in srgb, var(--sw) 55%, #000));
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--sw) 45%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+  transition: transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+html.cremo .cr-theme-swatch:hover .cr-theme-dot { transform: scale(1.08); }
+html.cremo .cr-theme-swatch.active {
+  color: var(--cr-text);
+  border-color: var(--cr-accent);
+  background: color-mix(in srgb, var(--cr-accent) 12%, transparent);
+  box-shadow: 0 0 0 3px color-mix(in srgb, var(--cr-accent) 14%, transparent);
+}
+html.cremo .cr-theme-swatch.active::after {
+  content: '';
+  position: absolute;
+  top: 7px;
+  right: 7px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: var(--cr-accent) url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 24 24' fill='none' stroke='white' stroke-width='3.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='5 12.5 10 17 19 7'/%3E%3C/svg%3E") center / 11px no-repeat;
+  animation: cr-pop 300ms cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+html.cremo .cr-theme-dot-custom {
+  position: relative;
+  overflow: hidden;
+  background: conic-gradient(#f43f5e, #f59e0b, #84cc16, #10b981, #06b6d4, #3b82f6, #8b5cf6, #ec4899, #f43f5e);
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.4), inset 0 1px 0 rgba(255, 255, 255, 0.35);
+}
+html.cremo .cr-theme-dot-custom input {
+  position: absolute;
+  inset: -8px;
+  width: calc(100% + 16px);
+  height: calc(100% + 16px);
+  opacity: 0;
+  cursor: pointer;
+}
+html.cremo .cr-theme-preview {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-radius: 14px;
+  background: rgba(0, 0, 0, 0.25);
+  border: 1px solid var(--cr-border);
+}
+html.cremo .cr-pv-play {
+  width: 34px;
+  height: 34px;
+  flex: 0 0 34px;
+  border-radius: 50%;
+  display: grid;
+  place-items: center;
+  color: #fff;
+  background: var(--cr-grad);
+  box-shadow: 0 4px 14px color-mix(in srgb, var(--cr-accent) 40%, transparent);
+}
+html.cremo .cr-pv-bar { flex: 1; height: 5px; border-radius: 99px; background: rgba(255, 255, 255, 0.1); overflow: hidden; }
+html.cremo .cr-pv-bar span { display: block; width: 62%; height: 100%; border-radius: inherit; background: var(--cr-grad); }
+html.cremo .cr-pv-chip {
+  padding: 5px 11px;
+  border-radius: 999px;
+  font: 700 11.5px 'Nunito', 'Inter', sans-serif;
+  color: var(--cr-red-bright);
+  border: 1px solid var(--cr-border-strong);
+  background: color-mix(in srgb, var(--cr-accent) 10%, transparent);
+}
+
+/* ---------- Me gusta view in the theme colors ---------- */
+html.cremo #view-favorites #favorites-playlist-header {
+  margin: -24px -24px 8px !important;
+  padding: 36px 32px 26px !important;
+  border-radius: 18px 18px 0 0 !important;
+  overflow: hidden !important;
+  background:
+    radial-gradient(520px 300px at 12% 0%, color-mix(in srgb, var(--cr-accent) 40%, transparent), transparent 72%),
+    linear-gradient(180deg, color-mix(in srgb, var(--cr-accent) 26%, transparent), transparent 100%) !important;
+}
+html.cremo #view-favorites #favorites-hero-fx {
+  --playlist-accent-color: var(--cr-accent) !important;
+  opacity: 0.55 !important;
+}
+html.cremo .favorites-heart-cover,
+html.cremo .sb-lib-cover.liked-grad,
+html.cremo .sp-tile .sp-heart {
+  background: var(--cr-grad) !important;
+  display: flex !important;
+  align-items: center !important;
+  justify-content: center !important;
+}
+html.cremo .favorites-heart-cover {
+  border-radius: 16px !important;
+  box-shadow: 0 18px 44px color-mix(in srgb, var(--cr-accent) 38%, transparent), inset 0 1px 0 rgba(255, 255, 255, 0.25) !important;
+}
+html.cremo .favorites-heart-cover svg,
+html.cremo .sb-lib-cover.liked-grad svg,
+html.cremo .sp-tile .sp-heart svg {
+  display: block !important;
+  fill: #fff !important;
+  filter: drop-shadow(0 6px 14px rgba(0, 0, 0, 0.3));
+}
+html.cremo .favorites-heart-cover svg { width: 42% !important; height: 42% !important; }
+html.cremo #view-favorites .favorites-playlist-label {
+  display: inline-block !important;
+  margin: 0 0 6px !important;
+  padding: 0 !important;
+  font: 800 12px 'Nunito', 'Inter', sans-serif !important;
+  letter-spacing: 0.08em !important;
+  text-transform: uppercase !important;
+  color: color-mix(in srgb, var(--cr-accent) 35%, #ffffff) !important;
+}
+html.cremo #view-favorites #favorites-hero-title {
+  font-family: 'Nunito', 'Inter', sans-serif !important;
+  font-weight: 900 !important;
+  color: #fff !important;
+  text-shadow: 0 4px 24px color-mix(in srgb, var(--cr-accent) 35%, transparent);
+}
+html.cremo #view-favorites #favorites-subtitle { color: color-mix(in srgb, var(--cr-accent) 25%, #d8d8d8) !important; }
+/* Big themed play button like the reference. */
+html.cremo #view-favorites #btn-play-favorites {
+  width: 52px !important;
+  height: 52px !important;
+  min-width: 52px !important;
+  border-radius: 50% !important;
+  background: var(--cr-grad) !important;
+  color: #fff !important;
+  box-shadow: 0 8px 22px color-mix(in srgb, var(--cr-accent) 40%, transparent) !important;
+  transition: transform 220ms cubic-bezier(0.34, 1.56, 0.64, 1), filter 150ms ease !important;
+}
+html.cremo #view-favorites #btn-play-favorites:hover { transform: scale(1.07); filter: brightness(1.08); }
+html.cremo #view-favorites #btn-play-favorites:active { transform: scale(0.94); }
+html.cremo #view-favorites :is(#btn-shuffle-favorites, #btn-favorites-more) { color: var(--cr-muted) !important; }
+html.cremo #view-favorites :is(#btn-shuffle-favorites, #btn-favorites-more):hover { color: var(--cr-red-bright) !important; }
+html.cremo #view-favorites .favorites-actions-toolbar { align-items: center !important; gap: 14px !important; }
+
+/* ---------- Ajustes > Acerca de: Cremo branding ---------- */
+html.cremo .riff-hero-banner {
+  background:
+    radial-gradient(420px 200px at 15% 0%, rgba(255, 255, 255, 0.18), transparent 70%),
+    var(--cr-grad) !important;
+}
+html.cremo .riff-hero-floats .riff-float-logo {
+  background: url("../../assets/cremo-logo.svg") center / contain no-repeat !important;
+  -webkit-mask: none !important;
+  mask: none !important;
+  filter: brightness(0) invert(1) opacity(0.35);
+}
+html.cremo .riff-hero-cookie { background: rgba(255, 255, 255, 0.92) !important; }
+html.cremo .riff-hero-logo-main {
+  filter: hue-rotate(var(--cr-logo-hue, 0deg)) saturate(var(--cr-logo-sat, 1));
+}
+html.cremo .settings-credits-text { color: var(--cr-muted) !important; }
+html.cremo .settings-credits-text a {
+  color: var(--cr-red-bright) !important;
+  font-weight: 700;
+  text-decoration: none;
+}
+html.cremo .settings-credits-text a:hover { text-decoration: underline; }
