@@ -3,9 +3,11 @@
 Cada versión nueva se apunta aquí arriba. Cremo usa `MAYOR.MENOR.PARCHE`:
 **parche** para arreglos, **menor** para funciones nuevas, **mayor** para cambios grandes.
 
-## Próxima versión
+## 0.0.2
 
 ### Nuevo
+
+- **Actualizaciones automáticas:** Cremo ya está en GitHub. Cuando sale una versión nueva, la app te avisa y se actualiza sola, sin reinstalar.
 
 - **Radio en vivo:** miles de emisoras de todo el mundo (Radio Browser). En Explorar salen las de tu país y hay filtros por género.
 - **Podcasts:** los más populares de tu país en Explorar; al abrir uno ves sus episodios y los escuchas en orden.
