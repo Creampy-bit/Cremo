@@ -29,10 +29,9 @@
     }
 
     const isLocal = track.platform === 'local' || String(track.id || '').startsWith('local_') || Boolean(track.isLocal);
-    const isTikTok = isStaticTikTokTrack(track) || (track && track.platform === 'tiktok');
 
     const hasInlineLyrics = !isLyricsFullscreenOnly() && ((state.syncedLyrics && state.syncedLyrics.length > 0) || !panel.classList.contains('lyrics-empty'));
-    if (!isLocal && !isTikTok && hasInlineLyrics) {
+    if (!isLocal && hasInlineLyrics) {
       card.classList.add('hidden');
       card.innerHTML = '';
       if (panel.classList.contains('has-credits')) {
@@ -56,7 +55,7 @@
       let producers = [];
       let performers = track.artist ? [track.artist] : [];
 
-      if (!isLocal && !isTikTok) {
+      if (!isLocal) {
         const serverBase = state.serverPort ? `http://127.0.0.1:${state.serverPort}` : '';
         const res = await fetch(`${serverBase}/api/track-credits?title=${encodeURIComponent(track.title || '')}&artist=${encodeURIComponent(track.artist || '')}`);
         const data = await res.json();
@@ -92,7 +91,7 @@
       }
 
     const hasRealCredits = (composers.length > 0 || writers.length > 0 || producers.length > 0);
-    const useFallback = isLocal || isTikTok || (!hasRealCredits && getAdv('credits_fallback', true));
+    const useFallback = isLocal || (!hasRealCredits && getAdv('credits_fallback', true));
     if (!hasRealCredits && !useFallback) {
       card.classList.add('hidden');
       card.innerHTML = '';
@@ -242,7 +241,7 @@
     }
     banner.style.display = '';
     const bannerImg = banner.querySelector('.banner-image') || banner;
-    const globalMedia = localStorage.getItem('riff_banner_media');
+    const globalMedia = localStorage.getItem('cremo_banner_media');
     const mediaToUse = globalMedia || thumbUrl;
 
     if (!mediaToUse) {
@@ -478,7 +477,6 @@
         }
       }
       updateQueueBadge();
-      if (state.currentView === 'queue') renderQueueView();
 
       if (skippedCount > 0) {
         showToast(`${skippedCount} tracks not found`, 'warning');
@@ -494,7 +492,7 @@
 
   function getSavedAlbums() {
     try {
-      const raw = localStorage.getItem('riff_saved_albums');
+      const raw = localStorage.getItem('cremo_saved_albums');
       const parsed = raw ? JSON.parse(raw) : [];
       return Array.isArray(parsed) ? parsed : [];
     } catch (_) {
@@ -504,10 +502,9 @@
 
   function setSavedAlbums(list) {
     try {
-      localStorage.setItem('riff_saved_albums', JSON.stringify(list));
+      localStorage.setItem('cremo_saved_albums', JSON.stringify(list));
     } catch (_) {}
     updateAlbumsCount();
-    if (typeof renderSidebarLibraryFeed === 'function') renderSidebarLibraryFeed();
   }
 
   window.updateAlbumsCount = updateAlbumsCount;
@@ -515,74 +512,6 @@
     setNavCount(document.getElementById('albums-count'), getSavedAlbums().length);
   }
 
-  function renderSavedAlbums() {
-    const container = document.getElementById('saved-albums-grid');
-    if (!container) return;
-    const saved = typeof getSavedAlbums === 'function' ? [...getSavedAlbums()] : [];
-    const showLocal = localStorage.getItem('riff_show_local') !== 'false';
-    const localCnt = (state.localTracks && state.localTracks.length) || 0;
-
-    if (!showLocal && saved.length === 0) {
-      container.innerHTML = '<div class="empty-hint" style="padding: 48px 0; text-align: center; width: 100%;">No saved albums yet. Save albums from the album view.</div>';
-      return;
-    }
-
-    let html = '';
-    if (showLocal) {
-      html += `
-        <div class="search-album-card local-album-card" id="card-saved-local" role="button" tabindex="0">
-          <div class="search-album-cover local-grad" style="display:flex;align-items:center;justify-content:center;background:linear-gradient(135deg, #1e293b, #0f172a);">
-            <svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-          </div>
-          <div class="search-album-info">
-            <span class="search-album-title">${escapeHtml(t('My files'))}</span>
-            <span class="search-album-sub">${localCnt} ${localCnt === 1 ? 'file' : 'files'}</span>
-          </div>
-        </div>
-      `;
-    }
-
-    html += saved.map((album, idx) => {
-      const sub = [album.type || 'Album', album.artist || ''].filter(Boolean).join(' · ');
-      return `
-        <div class="search-album-card" data-album-idx="${idx}" role="button" tabindex="0">
-          ${album.cover ? `<img class="search-album-cover" src="${escapeHtml(album.cover)}" alt="${escapeHtml(album.title || '')}" loading="lazy" onerror="this.style.display='none'" />` : '<div class="search-album-cover" style="display:flex;align-items:center;justify-content:center;background:var(--md-sys-color-surface-container-high);"><svg width="32" height="32" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color:var(--md-sys-color-outline);"><path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle></svg></div>'}
-          <div class="search-album-info">
-            <span class="search-album-title" title="${escapeHtml(album.title || '')}">${escapeHtml(album.title || '')}</span>
-            <span class="search-album-sub" title="${escapeHtml(sub)}">${escapeHtml(sub)}</span>
-          </div>
-        </div>
-      `;
-    }).join('');
-
-    container.innerHTML = html;
-
-    const localCard = container.querySelector('#card-saved-local');
-    if (localCard) {
-      localCard.addEventListener('click', () => switchView('local'));
-      localCard.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          switchView('local');
-        }
-      });
-    }
-
-    const cards = container.querySelectorAll('.search-album-card[data-album-idx]');
-    cards.forEach(card => {
-      const idx = parseInt(card.dataset.albumIdx, 10);
-      const alb = saved[idx];
-      if (!alb) return;
-      card.addEventListener('click', () => openAlbum(alb));
-      card.addEventListener('keydown', (e) => {
-        if (e.key === 'Enter') {
-          e.preventDefault();
-          openAlbum(alb);
-        }
-      });
-    });
-  }
-  window.renderSavedAlbums = renderSavedAlbums;
 
   var currentAlbumRunId = 0;
 
@@ -655,7 +584,7 @@
               year: album.year || '',
               trackCount: album.trackCount || (album._tracks ? album._tracks.length : 0)
             });
-            if (localStorage.getItem('riff_like_album_tracks') === 'true' && album._tracks && Array.isArray(album._tracks)) {
+            if (localStorage.getItem('cremo_like_album_tracks') === 'true' && album._tracks && Array.isArray(album._tracks)) {
               let favAdded = false;
               album._tracks.forEach(tr => {
                 if (tr && !state.favorites.some(f => isSameTrack(f, tr))) {
@@ -673,9 +602,6 @@
           }
           setSavedAlbums(list);
           updateBtnState();
-          if (state.currentView === 'albums') {
-            renderSavedAlbums();
-          }
         };
       }
     } else {
@@ -703,7 +629,7 @@
         state.queueHistory = [];
         if (state.isShuffle) {
           state.isShuffle = false;
-          localStorage.setItem('riff_shuffle', '0');
+          localStorage.setItem('cremo_shuffle', '0');
           if (el.btnShuffle) el.btnShuffle.classList.remove('active');
         }
         playTrack(list[0], list, 0, 'album');
@@ -725,7 +651,7 @@
         state.queueHistory = [];
         if (!state.isShuffle) {
           state.isShuffle = true;
-          localStorage.setItem('riff_shuffle', '1');
+          localStorage.setItem('cremo_shuffle', '1');
           if (el.btnShuffle) el.btnShuffle.classList.add('active');
         }
         playTrack(shuffled[0], shuffled, 0, 'album');
@@ -901,7 +827,7 @@
       renderAlbumTracks(initialTracks, albumArtist, albumYear, true);
     } else if (listEl) {
       listEl.innerHTML = `<div class="m3-loader-container" style="display: flex; justify-content: center; align-items: center; padding: 64px 0; width: 100%;">
-        <span class="riff-dots-loader lg" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="cremo-dots-loader lg" aria-hidden="true"><i></i><i></i><i></i></span>
       </div>`;
     }
 
@@ -947,7 +873,7 @@
 
   function getTopMomentsMap() {
     try {
-      return JSON.parse(localStorage.getItem('riff_top_moments') || '{}');
+      return JSON.parse(localStorage.getItem('cremo_top_moments') || '{}');
     } catch (_) {
       return {};
     }
@@ -977,7 +903,7 @@
     if (track.id) map[track.id] = val;
     const norm = (track.artist && track.title) ? `${track.artist.trim().toLowerCase()} - ${track.title.trim().toLowerCase()}` : '';
     if (norm) map[norm] = val;
-    localStorage.setItem('riff_top_moments', JSON.stringify(map));
+    localStorage.setItem('cremo_top_moments', JSON.stringify(map));
     updateTopMomentPin();
   }
 
@@ -989,12 +915,12 @@
     if (track.id) delete map[track.id];
     const norm = (track.artist && track.title) ? `${track.artist.trim().toLowerCase()} - ${track.title.trim().toLowerCase()}` : '';
     if (norm) delete map[norm];
-    localStorage.setItem('riff_top_moments', JSON.stringify(map));
+    localStorage.setItem('cremo_top_moments', JSON.stringify(map));
     updateTopMomentPin();
   }
 
   function getTopMomentIconHtml() {
-    const iconType = localStorage.getItem('riff_top_moment_icon') || 'heart';
+    const iconType = localStorage.getItem('cremo_top_moment_icon') || 'heart';
     if (iconType === 'minecraft') {
       const mcSvg = '<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 9 9" shape-rendering="crispEdges" width="18" height="18" style="display:block;image-rendering:pixelated;"><rect x="2" y="0" width="1" height="1" fill="#000000"/><rect x="3" y="0" width="1" height="1" fill="#000000"/><rect x="5" y="0" width="1" height="1" fill="#000000"/><rect x="6" y="0" width="1" height="1" fill="#000000"/><rect x="1" y="1" width="1" height="1" fill="#000000"/><rect x="2" y="1" width="1" height="1" fill="#ff1313"/><rect x="3" y="1" width="1" height="1" fill="#ff1313"/><rect x="4" y="1" width="1" height="1" fill="#000000"/><rect x="5" y="1" width="1" height="1" fill="#ff1313"/><rect x="6" y="1" width="1" height="1" fill="#ff1313"/><rect x="7" y="1" width="1" height="1" fill="#000000"/><rect x="0" y="2" width="1" height="1" fill="#000000"/><rect x="1" y="2" width="1" height="1" fill="#ff1313"/><rect x="2" y="2" width="1" height="1" fill="#ffc8c8"/><rect x="3" y="2" width="1" height="1" fill="#ff1313"/><rect x="4" y="2" width="1" height="1" fill="#ff1313"/><rect x="5" y="2" width="1" height="1" fill="#ff1313"/><rect x="6" y="2" width="1" height="1" fill="#ff1313"/><rect x="7" y="2" width="1" height="1" fill="#ff1313"/><rect x="8" y="2" width="1" height="1" fill="#000000"/><rect x="0" y="3" width="1" height="1" fill="#000000"/><rect x="1" y="3" width="1" height="1" fill="#ff1313"/><rect x="2" y="3" width="1" height="1" fill="#ff1313"/><rect x="3" y="3" width="1" height="1" fill="#ff1313"/><rect x="4" y="3" width="1" height="1" fill="#ff1313"/><rect x="5" y="3" width="1" height="1" fill="#ff1313"/><rect x="6" y="3" width="1" height="1" fill="#ff1313"/><rect x="7" y="3" width="1" height="1" fill="#ff1313"/><rect x="8" y="3" width="1" height="1" fill="#000000"/><rect x="0" y="4" width="1" height="1" fill="#000000"/><rect x="1" y="4" width="1" height="1" fill="#bb1313"/><rect x="2" y="4" width="1" height="1" fill="#ff1313"/><rect x="3" y="4" width="1" height="1" fill="#ff1313"/><rect x="4" y="4" width="1" height="1" fill="#ff1313"/><rect x="5" y="4" width="1" height="1" fill="#ff1313"/><rect x="6" y="4" width="1" height="1" fill="#ff1313"/><rect x="7" y="4" width="1" height="1" fill="#bb1313"/><rect x="8" y="4" width="1" height="1" fill="#000000"/><rect x="1" y="5" width="1" height="1" fill="#000000"/><rect x="2" y="5" width="1" height="1" fill="#bb1313"/><rect x="3" y="5" width="1" height="1" fill="#ff1313"/><rect x="4" y="5" width="1" height="1" fill="#ff1313"/><rect x="5" y="5" width="1" height="1" fill="#ff1313"/><rect x="6" y="5" width="1" height="1" fill="#bb1313"/><rect x="7" y="5" width="1" height="1" fill="#000000"/><rect x="2" y="6" width="1" height="1" fill="#000000"/><rect x="3" y="6" width="1" height="1" fill="#bb1313"/><rect x="4" y="6" width="1" height="1" fill="#ff1313"/><rect x="5" y="6" width="1" height="1" fill="#bb1313"/><rect x="6" y="6" width="1" height="1" fill="#000000"/><rect x="3" y="7" width="1" height="1" fill="#000000"/><rect x="4" y="7" width="1" height="1" fill="#bb1313"/><rect x="5" y="7" width="1" height="1" fill="#000000"/><rect x="4" y="8" width="1" height="1" fill="#000000"/></svg>';
       return `<div class="top-moment-inner top-moment-mc" style="width:18px;height:18px;position:relative;background:none !important;border-radius:0 !important;mask:none !important;-webkit-mask:none !important;filter:drop-shadow(0 1px 2px rgba(0,0,0,0.5));">
@@ -1040,7 +966,7 @@
         container.appendChild(pin);
       }
 
-      const currentIconType = localStorage.getItem('riff_top_moment_icon') || 'heart';
+      const currentIconType = localStorage.getItem('cremo_top_moment_icon') || 'heart';
       if (!pin.firstElementChild || pin.dataset.iconType !== currentIconType) {
         pin.innerHTML = getTopMomentIconHtml();
         pin.dataset.iconType = currentIconType;
@@ -1089,7 +1015,7 @@
 
   function formatCount(num) {
     if (!num || isNaN(num) || num <= 0) return '';
-    const lang = localStorage.getItem('riff_ui_lang') || 'en';
+    const lang = localStorage.getItem('cremo_ui_lang') || 'en';
     try {
       return new Intl.NumberFormat(lang, { notation: 'compact', maximumFractionDigits: 1 }).format(num);
     } catch (e) {
@@ -1176,17 +1102,17 @@ function renderClickableArtists(container, rawArtist, hintTrack = null) {
   function isArtistFollowed(artistName) {
     if (!artistName) return false;
     const lower = artistName.trim().toLowerCase();
-    const favs = safeArray('riff_favorite_artists');
+    const favs = safeArray('cremo_favorite_artists');
     return favs.some(x => (typeof x === 'string' ? x : x.name || '').toLowerCase().trim() === lower);
   }
 
   function getFavoriteArtistsList() {
-    const favsRaw = safeArray('riff_favorite_artists');
+    const favsRaw = safeArray('cremo_favorite_artists');
     if (!favsRaw || favsRaw.length === 0) return [];
 
-    const unfollowedList = safeArray('riff_unfollowed_artists');
+    const unfollowedList = safeArray('cremo_unfollowed_artists');
     const unfollowed = new Set(unfollowedList.map(a => (typeof a === 'string' ? a : a.name || '').toLowerCase().trim()));
-    const metaCache = safeJson('riff_artist_meta_cache', {});
+    const metaCache = safeJson('cremo_artist_meta_cache', {});
 
     const result = [];
     const seen = new Set();
@@ -1216,9 +1142,9 @@ function renderClickableArtists(container, rawArtist, hintTrack = null) {
     const cleanName = artistName.trim();
     const lower = cleanName.toLowerCase();
 
-    let favs = safeArray('riff_favorite_artists');
-    let unfollowed = safeArray('riff_unfollowed_artists');
-    const metaCache = safeJson('riff_artist_meta_cache', {});
+    let favs = safeArray('cremo_favorite_artists');
+    let unfollowed = safeArray('cremo_unfollowed_artists');
+    const metaCache = safeJson('cremo_artist_meta_cache', {});
 
     const isFav = favs.some(x => (typeof x === 'string' ? x : x.name || '').toLowerCase().trim() === lower);
 
@@ -1242,11 +1168,11 @@ function renderClickableArtists(container, rawArtist, hintTrack = null) {
 
     if (meta && (meta.avatar || meta.fans)) {
       metaCache[lower] = { ...(metaCache[lower] || {}), ...meta };
-      localStorage.setItem('riff_artist_meta_cache', JSON.stringify(metaCache));
+      localStorage.setItem('cremo_artist_meta_cache', JSON.stringify(metaCache));
     }
 
-    localStorage.setItem('riff_favorite_artists', JSON.stringify(favs));
-    localStorage.setItem('riff_unfollowed_artists', JSON.stringify(unfollowed));
+    localStorage.setItem('cremo_favorite_artists', JSON.stringify(favs));
+    localStorage.setItem('cremo_unfollowed_artists', JSON.stringify(unfollowed));
 
     const followed = !isFav;
     const btnFollow = document.getElementById('btn-artist-follow');
@@ -1262,7 +1188,6 @@ function renderClickableArtists(container, rawArtist, hintTrack = null) {
     }
 
     if (typeof renderSpotifyHome === 'function') renderSpotifyHome();
-    if (homeMode === 'artists' && typeof renderHomeCarousel === 'function') renderHomeCarousel('artists');
 
     return followed;
   }
@@ -1292,13 +1217,13 @@ function renderClickableArtists(container, rawArtist, hintTrack = null) {
               }
             }
           }
-          const cache = safeJson('riff_artist_meta_cache', {});
+          const cache = safeJson('cremo_artist_meta_cache', {});
           cache[lower] = {
             avatar: artistObj.avatar || '',
             fans: artistObj.fans || 0,
             plays: artistObj.plays || 0
           };
-          localStorage.setItem('riff_artist_meta_cache', JSON.stringify(cache));
+          localStorage.setItem('cremo_artist_meta_cache', JSON.stringify(cache));
         }
       })
       .catch(() => {});
@@ -1306,14 +1231,9 @@ function renderClickableArtists(container, rawArtist, hintTrack = null) {
 
   function buildFavArtistCircleCard(artistObj, forCarousel = false, idx = 0, autoFetch = true) {
     const card = document.createElement('div');
-    if (forCarousel) {
-      card.className = 'my-wave-track-card fav-artist-carousel-card';
-      if (typeof idx === 'number') card.dataset.index = String(idx);
-    } else {
-      card.className = 'fav-artist-card';
-    }
+    card.className = 'fav-artist-card';
 
-    const metaCache = safeJson('riff_artist_meta_cache', {});
+    const metaCache = safeJson('cremo_artist_meta_cache', {});
     const lower = (artistObj.name || '').toLowerCase();
     const cached = metaCache[lower];
 
@@ -1342,14 +1262,10 @@ function renderClickableArtists(container, rawArtist, hintTrack = null) {
       </div>
     `;
 
-    if (forCarousel) {
-      card.innerHTML = circleHtml;
-    } else {
-      card.innerHTML = `
-        ${circleHtml}
-        <div class="fav-artist-name" title="${escapeHtml(artistObj.name)}">${escapeHtml(artistObj.name)}</div>
-      `;
-    }
+    card.innerHTML = `
+      ${circleHtml}
+      <div class="fav-artist-name" title="${escapeHtml(artistObj.name)}">${escapeHtml(artistObj.name)}</div>
+    `;
 
     if (autoFetch && (!avatar || !fans)) {
       fetchFavArtistMeta(artistObj, card);
@@ -1382,23 +1298,10 @@ function renderClickableArtists(container, rawArtist, hintTrack = null) {
       });
     }
 
-    if (forCarousel) {
-      card.addEventListener('click', (e) => {
-        if (e.target.closest('.fav-artist-hover')) return;
-        const row = document.getElementById('home-vibe-grid');
-        const focusedIndex = (row && typeof row._focusedIndex === 'number') ? row._focusedIndex : 0;
-        if (idx === focusedIndex) {
-          openArtistProfile(artistObj.name);
-        } else if (row) {
-          scrollCarouselTo(row, idx);
-        }
-      });
-    } else {
-      card.addEventListener('click', (e) => {
-        if (e.target.closest('.fav-artist-hover')) return;
-        openArtistProfile(artistObj.name);
-      });
-    }
+    card.addEventListener('click', (e) => {
+      if (e.target.closest('.fav-artist-hover')) return;
+      openArtistProfile(artistObj.name);
+    });
 
     return card;
   }
@@ -1407,7 +1310,7 @@ function renderClickableArtists(container, rawArtist, hintTrack = null) {
     if (!container) return;
     container.innerHTML = `
       <div class="m3-loader-container" style="display:flex;justify-content:center;align-items:center;padding:48px 0;width:100%;">
-        <span class="riff-dots-loader lg" aria-hidden="true"><i></i><i></i><i></i></span>
+        <span class="cremo-dots-loader lg" aria-hidden="true"><i></i><i></i><i></i></span>
       </div>
     `;
   }
@@ -1494,7 +1397,7 @@ function renderClickableArtists(container, rawArtist, hintTrack = null) {
     catDetail.classList.remove('hidden');
 
     const cleanName = data.name || state.currentArtist || 'Artist';
-    const lang = localStorage.getItem('riff_ui_lang') || 'en';
+    const lang = localStorage.getItem('cremo_ui_lang') || 'en';
 
     if (type === 'albums') {
       if (catTitle) catTitle.textContent = lang === 'ru' ? 'Альбомы' : (t('Albums') || 'Albums');
@@ -1778,7 +1681,7 @@ function renderClickableArtists(container, rawArtist, hintTrack = null) {
     if (!numListeners) numListeners = Number(fans || 0);
     if (el.artistFansLine) {
       if (numListeners > 0) {
-        const lang = localStorage.getItem('riff_ui_lang') || 'en';
+        const lang = localStorage.getItem('cremo_ui_lang') || 'en';
         const formattedCount = formatCount(numListeners);
         const isMonthly = Boolean(artistData.monthlyListeners);
         const suffix = lang === 'ru'
@@ -1937,13 +1840,13 @@ function renderClickableArtists(container, rawArtist, hintTrack = null) {
 
      
     const lower = cleanName.toLowerCase();
-    const metaCache = safeJson('riff_artist_meta_cache', {});
+    const metaCache = safeJson('cremo_artist_meta_cache', {});
     metaCache[lower] = {
       avatar: artistData.avatar || artistData.banner || (metaCache[lower] && metaCache[lower].avatar) || '',
       fans: artistData.fans || artistData.nb_fan || (metaCache[lower] && metaCache[lower].fans) || 0,
       plays: (metaCache[lower] && metaCache[lower].plays) || 0
     };
-    localStorage.setItem('riff_artist_meta_cache', JSON.stringify(metaCache));
+    localStorage.setItem('cremo_artist_meta_cache', JSON.stringify(metaCache));
 
     const allTracks = (artistData.tracks || []).map(tr => {
       if (tr && tr.title && typeof stripBracketTranslation === 'function') {
@@ -2009,7 +1912,7 @@ function renderClickableArtists(container, rawArtist, hintTrack = null) {
     const countBadge = document.getElementById('artist-tracks-count-badge');
 
     if (countBadge) {
-      const lang = localStorage.getItem('riff_ui_lang') || 'en';
+      const lang = localStorage.getItem('cremo_ui_lang') || 'en';
       const trkWord = lang === 'ru' ? 'треков' : 'tracks';
       countBadge.textContent = allTracks.length ? `${allTracks.length} ${trkWord}` : '';
     }
@@ -2264,7 +2167,7 @@ function renderClickableArtists(container, rawArtist, hintTrack = null) {
     const refItem = document.getElementById('setting-track-row-height') || document.getElementById('setting-interface-font');
     if (!refItem || !refItem.parentNode) return;
 
-    const curIcon = localStorage.getItem('riff_top_moment_icon') || 'heart';
+    const curIcon = localStorage.getItem('cremo_top_moment_icon') || 'heart';
     const item = document.createElement('div');
     item.className = 'setting-item';
     item.id = 'setting-top-moment-icon';
@@ -2288,7 +2191,7 @@ function renderClickableArtists(container, rawArtist, hintTrack = null) {
       selector.querySelectorAll('.theme-mode-btn').forEach(btn => {
         btn.onclick = () => {
           const icon = btn.dataset.icon || 'heart';
-          localStorage.setItem('riff_top_moment_icon', icon);
+          localStorage.setItem('cremo_top_moment_icon', icon);
           selector.querySelectorAll('.theme-mode-btn').forEach(b => b.classList.toggle('active', b === btn));
           updateTopMomentPin();
           if (typeof syncAllThemeToggleIndicators === 'function') requestAnimationFrame(syncAllThemeToggleIndicators);
@@ -2298,7 +2201,7 @@ function renderClickableArtists(container, rawArtist, hintTrack = null) {
   }
   ensureTopMomentIconSettingsDOM();
 
-  var RIFF_FLAME_SVG = `<svg width="20" height="20" viewBox="0 0 578 555" fill="currentColor"><path d="M332.338 31.9017C334.813 39.2389 337.301 46.5688 339.804 53.8913C346.65 74.7 370.849 90.8234 396.492 87.0252C397.785 86.8495 399.062 86.6326 400.348 86.3669C407.957 85.0247 415.561 83.6672 423.159 82.2944C446.596 79.1556 458.061 105.307 448.77 115.743C445.608 122.77 442.461 129.801 439.329 136.837C425.596 169.679 439.612 213.232 473.471 232.344C479.933 236.517 486.403 240.676 492.88 244.821C493.981 246.285 493.745 247.328 493.407 248.135C493.042 248.937 492.491 249.732 491.79 250.256C491.097 250.786 490.251 250.806 489.832 250.206C489.368 249.625 489.511 248.678 489.049 248.256C481.978 251.246 474.914 254.251 467.857 257.27C427.262 275.506 403.732 326.149 417.443 370.677C419.338 378.109 421.248 385.536 423.174 392.958C418.802 386.635 425.155 374.669 436.447 376.689C429.244 374.079 422.036 371.485 414.823 368.906C368.003 352.219 310.867 374.802 288.051 419.957C284.394 426.685 280.751 433.42 277.123 440.163C282.498 427.757 301.968 426.996 308.336 439.757C308.336 439.757 308.336 439.757 308.336 439.757C304.83 432.951 301.309 426.153 297.775 419.362C275.052 373.492 217.164 349.9 169.104 366.585C161.85 369.032 154.599 371.495 147.354 373.973C160.424 370.504 170.82 384.361 165.902 394.368C167.959 386.988 170 379.603 172.026 372.213C186.877 325.566 162.701 271.68 119.642 251.779C112.648 248.638 105.647 245.511 98.6387 242.398C99.2388 243.192 100.509 244.921 100.85 246.556C101.243 248.208 100.902 249.457 100.357 250.256C99.8042 251.06 99.0443 251.698 98.0336 252.245C97.0607 252.787 95.7172 252.948 95.6208 252.256C102.161 248.234 108.693 244.197 115.219 240.147C152.971 219.557 169.652 171.256 154.784 133.816C151.783 126.738 148.768 119.664 145.737 112.596C139.892 109.4 143.532 93.2263 157.822 93.8212C165.379 95.3252 172.941 96.8139 180.508 98.2873C212.832 106.511 246.635 87.7132 257.002 60.1443C259.628 52.8848 262.239 45.618 264.836 38.3439C265.907 34.755 267.541 31.3478 269.8 28.2566C281.165 10.8288 315.802 7.71853 332.338 31.9017C324.701 4.06166 282.506 -11.8981 253.405 10.8113C248.12 14.7998 243.498 19.8304 239.828 25.4595C235.412 31.7968 231.011 38.1413 226.624 44.4932C218.162 55.1648 203.715 56.3531 195.686 50.8503C188.669 47.6576 181.647 44.4803 174.621 41.3182C123.684 17.2019 54.695 73.6585 73.5607 135.689C75.1959 143.204 76.8463 150.714 78.512 158.219C77.37 161.133 74.0651 161.082 73.5772 159.321C66.491 162.283 59.4122 165.259 52.3408 168.25C-14.0469 195.146 -19.7011 303.849 49.3229 338.12C55.9259 342.02 62.5362 345.905 69.1539 349.776C64.3356 348.704 60.1451 343.068 61.2695 336.775C58.6296 343.969 56.005 351.167 53.3956 358.37C23.7661 433.604 106.793 520.091 185.089 491.911C192.427 489.723 199.761 487.52 207.089 485.301C199.383 488.26 189.745 484.654 185.852 477.024C189.329 483.845 192.821 490.658 196.328 497.463C196.328 497.463 196.328 497.463 196.328 497.463C231.344 573.82 353.53 573.059 387.554 497.057C390.937 490.188 394.307 483.312 397.662 476.429C393.676 483.344 384.79 485.94 378.324 482.979C385.694 485.067 393.069 487.139 400.45 489.195C476.968 515.926 555.951 431.33 526.869 359.78C524.128 352.619 521.372 345.462 518.601 338.311C518.586 342.485 515.041 344.878 512.687 344.286C519.242 340.292 525.789 336.284 532.329 332.262C596.434 299.449 589.257 199.138 528.498 175.685C521.364 172.817 514.222 169.963 507.073 167.124C502.691 167.407 496.722 162.71 496.715 155.198C498.249 147.651 499.769 140.099 501.273 132.542C516.692 77.7514 455.527 31.2727 413.737 52.845C406.753 56.1383 399.773 59.4468 392.798 62.7706C392.128 63.1309 391.451 63.4673 390.753 63.7835C377.264 70.2884 357.02 66.2197 345.909 50.7461C341.4 44.4573 336.876 38.1758 332.338 31.9017ZM332.338 31.9017" fill="currentColor"/></svg>`;
+  var CREMO_FLAME_SVG = `<svg width="20" height="20" viewBox="0 0 578 555" fill="currentColor"><path d="M332.338 31.9017C334.813 39.2389 337.301 46.5688 339.804 53.8913C346.65 74.7 370.849 90.8234 396.492 87.0252C397.785 86.8495 399.062 86.6326 400.348 86.3669C407.957 85.0247 415.561 83.6672 423.159 82.2944C446.596 79.1556 458.061 105.307 448.77 115.743C445.608 122.77 442.461 129.801 439.329 136.837C425.596 169.679 439.612 213.232 473.471 232.344C479.933 236.517 486.403 240.676 492.88 244.821C493.981 246.285 493.745 247.328 493.407 248.135C493.042 248.937 492.491 249.732 491.79 250.256C491.097 250.786 490.251 250.806 489.832 250.206C489.368 249.625 489.511 248.678 489.049 248.256C481.978 251.246 474.914 254.251 467.857 257.27C427.262 275.506 403.732 326.149 417.443 370.677C419.338 378.109 421.248 385.536 423.174 392.958C418.802 386.635 425.155 374.669 436.447 376.689C429.244 374.079 422.036 371.485 414.823 368.906C368.003 352.219 310.867 374.802 288.051 419.957C284.394 426.685 280.751 433.42 277.123 440.163C282.498 427.757 301.968 426.996 308.336 439.757C308.336 439.757 308.336 439.757 308.336 439.757C304.83 432.951 301.309 426.153 297.775 419.362C275.052 373.492 217.164 349.9 169.104 366.585C161.85 369.032 154.599 371.495 147.354 373.973C160.424 370.504 170.82 384.361 165.902 394.368C167.959 386.988 170 379.603 172.026 372.213C186.877 325.566 162.701 271.68 119.642 251.779C112.648 248.638 105.647 245.511 98.6387 242.398C99.2388 243.192 100.509 244.921 100.85 246.556C101.243 248.208 100.902 249.457 100.357 250.256C99.8042 251.06 99.0443 251.698 98.0336 252.245C97.0607 252.787 95.7172 252.948 95.6208 252.256C102.161 248.234 108.693 244.197 115.219 240.147C152.971 219.557 169.652 171.256 154.784 133.816C151.783 126.738 148.768 119.664 145.737 112.596C139.892 109.4 143.532 93.2263 157.822 93.8212C165.379 95.3252 172.941 96.8139 180.508 98.2873C212.832 106.511 246.635 87.7132 257.002 60.1443C259.628 52.8848 262.239 45.618 264.836 38.3439C265.907 34.755 267.541 31.3478 269.8 28.2566C281.165 10.8288 315.802 7.71853 332.338 31.9017C324.701 4.06166 282.506 -11.8981 253.405 10.8113C248.12 14.7998 243.498 19.8304 239.828 25.4595C235.412 31.7968 231.011 38.1413 226.624 44.4932C218.162 55.1648 203.715 56.3531 195.686 50.8503C188.669 47.6576 181.647 44.4803 174.621 41.3182C123.684 17.2019 54.695 73.6585 73.5607 135.689C75.1959 143.204 76.8463 150.714 78.512 158.219C77.37 161.133 74.0651 161.082 73.5772 159.321C66.491 162.283 59.4122 165.259 52.3408 168.25C-14.0469 195.146 -19.7011 303.849 49.3229 338.12C55.9259 342.02 62.5362 345.905 69.1539 349.776C64.3356 348.704 60.1451 343.068 61.2695 336.775C58.6296 343.969 56.005 351.167 53.3956 358.37C23.7661 433.604 106.793 520.091 185.089 491.911C192.427 489.723 199.761 487.52 207.089 485.301C199.383 488.26 189.745 484.654 185.852 477.024C189.329 483.845 192.821 490.658 196.328 497.463C196.328 497.463 196.328 497.463 196.328 497.463C231.344 573.82 353.53 573.059 387.554 497.057C390.937 490.188 394.307 483.312 397.662 476.429C393.676 483.344 384.79 485.94 378.324 482.979C385.694 485.067 393.069 487.139 400.45 489.195C476.968 515.926 555.951 431.33 526.869 359.78C524.128 352.619 521.372 345.462 518.601 338.311C518.586 342.485 515.041 344.878 512.687 344.286C519.242 340.292 525.789 336.284 532.329 332.262C596.434 299.449 589.257 199.138 528.498 175.685C521.364 172.817 514.222 169.963 507.073 167.124C502.691 167.407 496.722 162.71 496.715 155.198C498.249 147.651 499.769 140.099 501.273 132.542C516.692 77.7514 455.527 31.2727 413.737 52.845C406.753 56.1383 399.773 59.4468 392.798 62.7706C392.128 63.1309 391.451 63.4673 390.753 63.7835C377.264 70.2884 357.02 66.2197 345.909 50.7461C341.4 44.4573 336.876 38.1758 332.338 31.9017ZM332.338 31.9017" fill="currentColor"/></svg>`;
   var DEFAULT_HOME_SVG = `<svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor"><path d="M4,19V10Q4,9.52 4.21,9.1Q4.43,8.67 4.8,8.4l6-4.5Q11.33,3.5 12,3.5t1.2,0.4l6,4.5q0.38,0.28 0.59,0.7Q20,9.52 20,10v9q0,0.82-0.59,1.41T18,21H15q-0.42,0-0.71-0.29Q14,20.43 14,20V15q0-0.43-0.29-0.71T13,14H11q-0.42,0-0.71,0.29T10,15v5q0,0.43-0.29,0.71T9,21H6q-0.82,0-1.41-0.59T4,19Z"/></svg>`;
 
 
@@ -2391,7 +2294,7 @@ function renderClickableArtists(container, rawArtist, hintTrack = null) {
     const bannerVid = document.getElementById('track-art-banner-vid');
     const bannerPh = document.getElementById('track-art-banner-placeholder');
     const bannerStatus = document.getElementById('track-art-banner-status');
-    const activeBanner = art.banner || localStorage.getItem('riff_banner_media') || activeCover;
+    const activeBanner = art.banner || localStorage.getItem('cremo_banner_media') || activeCover;
     const isVideo = activeBanner && /\.(mp4|webm)($|\?)/i.test(activeBanner);
 
     if (activeBanner) {
@@ -2414,7 +2317,7 @@ function renderClickableArtists(container, rawArtist, hintTrack = null) {
       if (bannerVid) bannerVid.style.display = 'none';
       if (bannerPh) bannerPh.style.display = 'block';
     }
-    if (bannerStatus) bannerStatus.textContent = art.banner ? 'Custom banner' : (localStorage.getItem('riff_banner_media') ? 'Global banner' : 'Default art');
+    if (bannerStatus) bannerStatus.textContent = art.banner ? 'Custom banner' : (localStorage.getItem('cremo_banner_media') ? 'Global banner' : 'Default art');
 
     const btnCustomFx = document.getElementById('btn-track-banner-custom-fx');
     const fxControls = document.getElementById('track-banner-fx-controls');

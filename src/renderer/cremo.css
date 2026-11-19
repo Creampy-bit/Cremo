@@ -118,55 +118,9 @@ html.cremo body.home-next-to-search .top-search-home-btn.active {
 }
 
 /* ---------- "Your Library" header: one line, compact create button ---------- */
-html.cremo #sidebar:not(#cr-boost) .sb-your-lib-header {
-  flex-wrap: nowrap !important;
-  gap: 8px !important;
-}
-html.cremo #sidebar:not(#cr-boost) .sb-your-lib-header :is(.sb-collapse-btn, #btn-sb-collapse) {
-  white-space: nowrap !important;
-  min-width: 0 !important;
-  overflow: hidden !important;
-  text-overflow: ellipsis !important;
-}
-html.cremo #sidebar:not(#cr-boost) .sb-create-pill-btn {
-  white-space: nowrap !important;
-  flex-shrink: 0 !important;
-  background: var(--cr-tile) !important;
-  border: 1px solid var(--cr-border) !important;
-  color: var(--cr-text) !important;
-  border-radius: 12px !important;
-}
-html.cremo #sidebar:not(#cr-boost) .sb-create-pill-btn:hover {
-  border-color: var(--cr-border-strong) !important;
-  background: var(--cr-tile-hover) !important;
-}
 
 /* ---------- Sidebar: expanded ---------- */
 .cremo .sidebar-nav { padding: 0 10px 12px !important; gap: 4px !important; }
-html.cremo body.sidebar-expanded #sidebar:not(#cr-boost) .sidebar-nav .nav-item {
-  min-height: 42px !important;
-  height: 42px !important;
-  padding: 0 12px !important;
-  border-radius: 12px !important;
-  color: var(--cr-muted) !important;
-  background: transparent !important;
-  border: 1px solid transparent !important;
-  font-size: 13px !important;
-  font-weight: 500 !important;
-}
-html.cremo body.sidebar-expanded #sidebar:not(#cr-boost) .sidebar-nav .nav-item:hover {
-  background: var(--cr-tile-hover) !important;
-  color: var(--cr-text) !important;
-}
-html.cremo body.sidebar-expanded #sidebar:not(#cr-boost) .sidebar-nav .nav-item.active {
-  background: linear-gradient(90deg, color-mix(in srgb, var(--cr-accent) 22%, transparent), color-mix(in srgb, var(--cr-accent) 6%, transparent)) !important;
-  border-color: var(--cr-border-strong) !important;
-  color: color-mix(in srgb, var(--cr-accent) 18%, #ffffff) !important;
-}
-html.cremo body.sidebar-expanded #sidebar:not(#cr-boost) .sidebar-nav .nav-item .nav-indicator {
-  background: transparent !important;
-  color: inherit !important;
-}
 .cremo .nav-active-indicator { display: none !important; }
 
 /* "Explorar": drop the image banner, use a plain compass icon like the rest. */
@@ -430,7 +384,7 @@ html.cremo .playbar .playbar-center > .scrubber-bar-wrapper {
   pointer-events: auto !important;
 }
 /* Static rail behind the canvas so the bar is visible even while paused
-   (Riff only redraws the canvas while playing and focused). */
+   (upstream only redraws the canvas while playing and focused). */
 html.cremo .playbar .scrubber-track-container { position: relative !important; }
 html.cremo .playbar .scrubber-track-container::before {
   content: '';
@@ -460,7 +414,7 @@ html.cremo .playbar .time-label {
 .cremo ::selection { background: color-mix(in srgb, var(--cr-accent) 45%, transparent); }
 .cremo ::-webkit-scrollbar-thumb { background: color-mix(in srgb, var(--cr-accent) 22%, transparent) !important; border-radius: 8px; }
 .cremo ::-webkit-scrollbar-thumb:hover { background: color-mix(in srgb, var(--cr-accent) 40%, transparent) !important; }
-.cremo .riff-hero-logo-main {
+.cremo .cremo-hero-logo-main {
   mask: none !important;
   -webkit-mask: none !important;
   background: url("../../assets/cremo-logo.svg") center / contain no-repeat !important;
@@ -494,8 +448,7 @@ html.cremo .playbar .time-label {
 /* Removed from the rail: History and the "expand Your Library" panel. The rail
    always stays compact; Playlists/presets open as floating menus instead. */
 html.cremo #sidebar:not(#cr-boost) #nav-history,
-html.cremo #sidebar:not(#cr-boost) #btn-rail-expand-lib,
-html.cremo #sidebar:not(#cr-boost) #sidebar-resize-edge { display: none !important; }
+html.cremo #sidebar:not(#cr-boost) #btn-rail-expand-lib { display: none !important; }
 
 /* Tool buttons get the same tile as the section buttons. */
 html.cremo body:not(.sidebar-expanded) #sidebar:not(#cr-boost) .rail-icon-btn {
@@ -568,7 +521,6 @@ html.cremo #sidebar:not(#cr-boost) .cr-pop { animation: cr-pop 320ms cubic-bezie
   transition: top 320ms cubic-bezier(0.34, 1.3, 0.64, 1), height 220ms ease, opacity 180ms ease;
 }
 .cr-rail-pill.show { opacity: 1; }
-body.sidebar-expanded .cr-rail-pill { display: none; }
 
 /* Custom tooltip that slides out of the rail. */
 .cr-tip {
@@ -738,7 +690,7 @@ html.cremo #rail-drawer .cr-empty-btn:active { transform: scale(0.95); }
   html.cremo #sidebar *, .cr-tip, .cr-rail-pill { animation: none !important; transition-duration: 1ms !important; }
 }
 
-/* Liked shortcut lives above #playlists-list (not inside it, so Riff's
+/* Liked shortcut lives above #playlists-list (not inside it, so upstream's
    drag-reorder indexes stay correct). */
 html.cremo #rail-drawer .cr-liked-item {
   display: flex; align-items: center; gap: 12px;
@@ -805,7 +757,7 @@ html.cremo #rail-drawer .cr-drawer-label {
 }
 html.cremo #rail-drawer.open .cr-drawer-label { animation: cr-row-in 300ms 40ms cubic-bezier(0.2, 0.8, 0.2, 1) both; }
 
-/* ---------- Ajustes > Tema: Cremo picker replaces Riff's own color controls ---------- */
+/* ---------- Ajustes > Tema: Cremo picker replaces upstream's own color controls ---------- */
 html.cremo .settings-section[data-cat="theme"] .setting-item:has(.theme-mode-toggle),
 html.cremo .settings-section[data-cat="theme"] #setting-palette-style,
 html.cremo .settings-section[data-cat="theme"] .theme-palette-setting,
@@ -996,19 +948,19 @@ html.cremo #view-favorites :is(#btn-shuffle-favorites, #btn-favorites-more):hove
 html.cremo #view-favorites .favorites-actions-toolbar { align-items: center !important; gap: 14px !important; }
 
 /* ---------- Ajustes > Acerca de: Cremo branding ---------- */
-html.cremo .riff-hero-banner {
+html.cremo .cremo-hero-banner {
   background:
     radial-gradient(420px 200px at 15% 0%, rgba(255, 255, 255, 0.18), transparent 70%),
     var(--cr-grad) !important;
 }
-html.cremo .riff-hero-floats .riff-float-logo {
+html.cremo .cremo-hero-floats .cremo-float-logo {
   background: url("../../assets/cremo-logo.svg") center / contain no-repeat !important;
   -webkit-mask: none !important;
   mask: none !important;
   filter: brightness(0) invert(1) opacity(0.35);
 }
-html.cremo .riff-hero-cookie { background: rgba(255, 255, 255, 0.92) !important; }
-html.cremo .riff-hero-logo-main {
+html.cremo .cremo-hero-cookie { background: rgba(255, 255, 255, 0.92) !important; }
+html.cremo .cremo-hero-logo-main {
   filter: hue-rotate(var(--cr-logo-hue, 0deg)) saturate(var(--cr-logo-sat, 1));
 }
 html.cremo .settings-credits-text { color: var(--cr-muted) !important; }
@@ -1129,7 +1081,7 @@ html.cremo #view-settings .settings-section.cr-own > .cr-set-subhead:first-child
 /* Explorar customizer: only the sections column is left, let it use the full width */
 html.cremo #setting-sidebar-home-customizer :has(> .customizer-box.cr-setting-hidden) { grid-template-columns: 1fr !important; }
 
-/* Riff shipped its author's meme photos in the profile banner; Cremo has none */
+/* Upstream shipped its author's meme photos in the profile banner; Cremo has none */
 html.cremo #tg-easter-meme { display: none !important; }
 
 /* ===================== Cremo features ===================== */
@@ -1282,7 +1234,7 @@ html.cremo .cr-sum-empty { padding: 40px 10px; text-align: center; color: var(--
   html.cremo .cr-sum-stats { grid-template-columns: 1fr; }
 }
 
-/* Icon column for Cremo rows that sit among Riff's iconed rows */
+/* Icon column for Cremo rows that sit among upstream's iconed rows */
 html.cremo #view-settings .setting-item.cr-has-icon .setting-item-top { display: flex; align-items: center; gap: 12px; }
 html.cremo #view-settings .cr-row-icon {
   flex: none;
@@ -1372,12 +1324,12 @@ html.cremo .cr-pod-ep-txt { display: flex; flex-direction: column; gap: 2px; min
 html.cremo .cr-pod-ep-txt b { font-size: 14px; font-weight: 700; }
 html.cremo .cr-pod-ep-txt small { font-size: 12px; color: var(--cr-ink); font-weight: 600; }
 html.cremo .cr-pod-ep-txt em { font-style: normal; font-size: 12.5px; color: var(--cr-muted); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
-/* Riff's "show all" arrow only knows its own sections */
+/* Upstream's "show all" arrow only knows its own sections */
 html.cremo .cr-src-sec .sp-sec-open-btn { display: none !important; }
 html.cremo .cr-src-sec .sp-sec-head { cursor: default; }
 html.cremo .cr-summary.cr-pod-sheet { padding-bottom: 110px; }
 html.cremo .cr-pod-sheet .cr-sum-card { max-height: calc(100vh - 150px); }
-/* Cards in search results (Riff only sizes .sp-card inside Explorar) */
+/* Cards in search results (upstream only sizes .sp-card inside Explorar) */
 html.cremo #cr-search-extra .sp-card { width: 160px !important; flex: 0 0 160px !important; min-width: 0; cursor: pointer; }
 html.cremo #cr-search-extra .sp-card-cover { position: relative; width: 100% !important; height: auto !important; aspect-ratio: 1 / 1; border-radius: 12px; overflow: hidden; background: var(--cr-tile); }
 html.cremo #cr-search-extra .sp-card-cover img { width: 100% !important; height: 100% !important; object-fit: cover; display: block; }
@@ -1385,3 +1337,95 @@ html.cremo #cr-search-extra .sp-card-title,
 html.cremo #cr-search-extra .sp-card-sub { white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 html.cremo #cr-search-extra .sp-card-title { margin-top: 8px; font-size: 14px; font-weight: 700; color: var(--cr-text); }
 html.cremo #cr-search-extra .sp-card-sub { margin-top: 2px; font-size: 12.5px; color: var(--cr-muted); }
+
+/* ---------- Ajustes > Acerca de: tarjeta de Ko-fi ---------- */
+html.cremo .cr-kofi-card { display: flex; flex-direction: row; align-items: center; gap: 14px; padding: 16px 18px; text-align: left; }
+html.cremo .cr-kofi-icon {
+  flex: 0 0 auto; width: 46px; height: 46px; border-radius: 14px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--cr-accent); background: color-mix(in srgb, var(--cr-accent) 16%, transparent);
+}
+html.cremo .cr-kofi-text { flex: 1 1 auto; min-width: 0; display: flex; flex-direction: column; gap: 3px; }
+html.cremo .cr-kofi-btn { flex: 0 0 auto; text-decoration: none !important; white-space: nowrap; padding: 8px 16px; }
+
+/* The account chip is sticky at the bottom of the settings menu. Upstream leaves it
+   transparent, so the last menu items show through it when the menu scrolls. */
+html.cremo #view-settings #settings-nav-account.settings-account-nav-btn:not(.active):not(:hover) {
+  background-color: color-mix(in srgb, var(--cr-accent) 3%, #0a0a0b) !important;
+}
+/* The sliding highlight is placed with offsetTop inside the menu, so the menu has to be its
+   containing block. Upstream's "#view-settings .settings-nav { position: static !important }"
+   outranked "#settings-nav { position: relative }", and the highlight stayed put on scroll. */
+html.cremo #view-settings #settings-nav { position: relative !important; }
+
+/* ---------- Ajustes: menú lateral compacto y agrupado ----------
+   Filas de 34px en vez de 48px, iconos más chicos y etiquetas de grupo
+   (General, Apariencia, Música y datos, Sistema) que pone reorderSettingsNav(). */
+html.cremo #view-settings #settings-nav {
+  flex: 0 0 224px !important;
+  /* Upstream's "min-height: calc(100vh - 210px)" made the menu taller than the
+     settings window, which cut off the account chip at the bottom. */
+  min-height: 0 !important;
+  padding: 12px 10px 10px !important;
+  gap: 2px !important;
+}
+html.cremo #view-settings #settings-nav .settings-search-box {
+  height: 34px !important;
+  margin: 0 2px 4px !important;
+  padding: 0 12px !important;
+}
+html.cremo #view-settings #settings-nav .settings-search-icon {
+  width: 15px !important;
+  height: 15px !important;
+  margin-right: 8px !important;
+}
+html.cremo #view-settings #settings-search-input {
+  font-size: calc(13px * var(--font-scale, 1)) !important;
+}
+html.cremo #view-settings #settings-nav .settings-nav-group {
+  flex-shrink: 0;
+  padding: 12px 12px 4px;
+  font-size: calc(10.5px * var(--font-scale, 1));
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--md-sys-color-on-surface-variant);
+  opacity: 0.6;
+  user-select: none;
+  pointer-events: none;
+}
+html.cremo #view-settings #settings-nav .settings-search-box + .settings-nav-group { padding-top: 6px; }
+html.cremo #view-settings #settings-nav .settings-nav-btn:not(#settings-nav-account) {
+  height: 34px !important;
+  min-height: 34px !important;
+  padding: 0 12px !important;
+  gap: 11px !important;
+  font-size: calc(13.5px * var(--font-scale, 1)) !important;
+  border-radius: 10px !important;
+}
+html.cremo #view-settings #settings-nav .settings-nav-btn:not(#settings-nav-account) svg {
+  width: 17px !important;
+  height: 17px !important;
+}
+html.cremo #view-settings #settings-nav .settings-nav-active-pill { border-radius: 10px !important; }
+html.cremo #view-settings #settings-nav .settings-nav-spacer,
+html.cremo #view-settings #settings-nav > div[style*="flex"] { min-height: 8px !important; }
+html.cremo #view-settings #settings-nav #settings-nav-account.settings-account-nav-btn {
+  height: 44px !important;
+  min-height: 44px !important;
+  max-height: 44px !important;
+  padding: 0 10px !important;
+  gap: 9px !important;
+  border-radius: 10px !important;
+}
+html.cremo #view-settings #settings-nav #settings-nav-avatar.settings-nav-avatar {
+  width: 26px !important;
+  height: 26px !important;
+  min-width: 26px !important;
+  max-width: 26px !important;
+  min-height: 26px !important;
+  max-height: 26px !important;
+  flex-basis: 26px !important;
+}
+html.cremo #view-settings #settings-nav .settings-nav-account-name { font-size: calc(13px * var(--font-scale, 1)) !important; }
+html.cremo #view-settings #settings-nav .settings-nav-account-sub { font-size: calc(10.5px * var(--font-scale, 1)) !important; }

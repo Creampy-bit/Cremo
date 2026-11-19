@@ -1,7 +1,7 @@
 
 'use strict';
 
-var audioEngine = window.audioEngine || (window.RiffAudioEngine ? new window.RiffAudioEngine() : null);
+var audioEngine = window.audioEngine || (window.CremoAudioEngine ? new window.CremoAudioEngine() : null);
 window.audioEngine = audioEngine;
 var getReliableTrackDuration = window.getReliableTrackDuration || function() { return 0; };
 window.getReliableTrackDuration = getReliableTrackDuration;
@@ -33,8 +33,8 @@ window.scrubProgress = scrubProgress;
   var barBgSmoothedHeights = null;
   var vizPrev = null;
   function vizSettings() {
-    const smooth = Math.min(0.95, Math.max(0, (parseInt(localStorage.getItem('riff_viz_smooth') || '55', 10)) / 100));
-    const sens = Math.min(3, Math.max(0, (parseInt(localStorage.getItem('riff_viz_sens') || '100', 10)) / 100));
+    const smooth = Math.min(0.95, Math.max(0, (parseInt(localStorage.getItem('cremo_viz_smooth') || '55', 10)) / 100));
+    const sens = Math.min(3, Math.max(0, (parseInt(localStorage.getItem('cremo_viz_sens') || '100', 10)) / 100));
     return { smooth, sens };
   }
 
@@ -245,29 +245,29 @@ window.scrubProgress = scrubProgress;
     }
   }
 
-  var cachedVizStyle = localStorage.getItem('riff_viz_style') || (localStorage.getItem('riff_viz_connected') === '1' ? 'wave' : 'bars');
+  var cachedVizStyle = localStorage.getItem('cremo_viz_style') || (localStorage.getItem('cremo_viz_connected') === '1' ? 'wave' : 'bars');
   var cachedVizConnected = cachedVizStyle === 'wave';
-  var cachedBarWaveEnabled = localStorage.getItem('riff_bar_wave') === '1';
-  var cachedNpVizEnabled = localStorage.getItem('riff_np_viz') !== '0';
-  var cachedProgressBgEnabled = localStorage.getItem('riff_progress_bg') !== 'false';
-  var cachedBarVizBehind = (localStorage.getItem('riff_bar_viz_pos') || 'behind') === 'behind';
+  var cachedBarWaveEnabled = localStorage.getItem('cremo_bar_wave') === '1';
+  var cachedNpVizEnabled = localStorage.getItem('cremo_np_viz') !== '0';
+  var cachedProgressBgEnabled = localStorage.getItem('cremo_progress_bg') !== 'false';
+  var cachedBarVizBehind = (localStorage.getItem('cremo_bar_viz_pos') || 'behind') === 'behind';
 
   function syncVizSettingsCache() {
-    cachedVizStyle = localStorage.getItem('riff_viz_style') || (localStorage.getItem('riff_viz_connected') === '1' ? 'wave' : 'bars');
+    cachedVizStyle = localStorage.getItem('cremo_viz_style') || (localStorage.getItem('cremo_viz_connected') === '1' ? 'wave' : 'bars');
     cachedVizConnected = cachedVizStyle === 'wave';
-    cachedBarWaveEnabled = localStorage.getItem('riff_bar_wave') === '1';
-    cachedNpVizEnabled = localStorage.getItem('riff_np_viz') !== '0';
-    cachedProgressBgEnabled = localStorage.getItem('riff_progress_bg') !== 'false';
-    cachedBarVizBehind = document.body ? document.body.classList.contains('bar-viz-behind') : ((localStorage.getItem('riff_bar_viz_pos') || 'behind') === 'behind');
+    cachedBarWaveEnabled = localStorage.getItem('cremo_bar_wave') === '1';
+    cachedNpVizEnabled = localStorage.getItem('cremo_np_viz') !== '0';
+    cachedProgressBgEnabled = localStorage.getItem('cremo_progress_bg') !== 'false';
+    cachedBarVizBehind = document.body ? document.body.classList.contains('bar-viz-behind') : ((localStorage.getItem('cremo_bar_viz_pos') || 'behind') === 'behind');
   }
 
   function isAnyVisualizerNeeded(overrideBarWave) {
-    const barWave = typeof overrideBarWave === 'boolean' ? overrideBarWave : (localStorage.getItem('riff_bar_wave') === '1');
+    const barWave = typeof overrideBarWave === 'boolean' ? overrideBarWave : (localStorage.getItem('cremo_bar_wave') === '1');
     const bassPulse = Boolean(state.vfx && state.vfx.bassPulse);
-    const tvkVis = localStorage.getItem('riff_tvk_visualizer') === 'true' || localStorage.getItem('riff_tvk_visualizer_lyrics') === 'true';
+    const tvkVis = localStorage.getItem('cremo_tvk_visualizer') === 'true' || localStorage.getItem('cremo_tvk_visualizer_lyrics') === 'true';
     const isTvkOpen = state.currentView === 'lyrics' || Boolean(document.getElementById('tvk-view') && !document.getElementById('tvk-view').classList.contains('hidden'));
     const tvkActive = tvkVis && isTvkOpen;
-    const npVis = localStorage.getItem('riff_np_viz') !== '0';
+    const npVis = localStorage.getItem('cremo_np_viz') !== '0';
     const isNpOpen = Boolean(state.isRightPanelOpen && el.rightPanel && !el.rightPanel.classList.contains('hidden'));
     const npActive = npVis && isNpOpen;
     return barWave || bassPulse || tvkActive || npActive;
@@ -1095,7 +1095,7 @@ window.scrubProgress = scrubProgress;
             sCtx.lineJoin = 'round';
             sCtx.strokeStyle = '#ffffff';
 
-            const isWavy = !document.body.classList.contains('no-wavy') && localStorage.getItem('riff_wavy_progress') === 'true';
+            const isWavy = !document.body.classList.contains('no-wavy') && localStorage.getItem('cremo_wavy_progress') === 'true';
             if (!isWavy) {
               sCtx.moveTo(waveStart, centerY);
               sCtx.lineTo(waveEnd, centerY);
@@ -1141,7 +1141,7 @@ window.scrubProgress = scrubProgress;
           }
 
           
-          const isKnobExplicit = !noKnob && localStorage.getItem('riff_progress_knob') === 'true';
+          const isKnobExplicit = !noKnob && localStorage.getItem('cremo_progress_knob') === 'true';
           const showKnob = isKnobExplicit && (isDraggingScrubber || isHoveringScrubber);
           if (showKnob) {
             sCtx.beginPath();
@@ -1231,7 +1231,7 @@ window.scrubProgress = scrubProgress;
               tCtx.lineJoin = 'round';
               tCtx.strokeStyle = '#ffffff';
 
-              const isTvkWavy = !document.body.classList.contains('no-wavy') && localStorage.getItem('riff_wavy_progress') === 'true';
+              const isTvkWavy = !document.body.classList.contains('no-wavy') && localStorage.getItem('cremo_wavy_progress') === 'true';
               if (!isTvkWavy) {
                 tCtx.moveTo(waveStart, centerY);
                 tCtx.lineTo(waveEnd, centerY);
@@ -1284,7 +1284,7 @@ window.scrubProgress = scrubProgress;
             }
 
             
-            const isTvkKnobExplicit = !noKnob && localStorage.getItem('riff_progress_knob') === 'true';
+            const isTvkKnobExplicit = !noKnob && localStorage.getItem('cremo_progress_knob') === 'true';
             const showTvkKnob = isTvkKnobExplicit && (isDraggingScrubber || isHoveringTvkScrubber);
             if (showTvkKnob) {
               tCtx.beginPath();
@@ -1557,8 +1557,8 @@ window.scrubProgress = scrubProgress;
 
 
   function updateWavyProgressUI() {
-    const isWavy = localStorage.getItem('riff_wavy_progress') === 'true';
-    const isPerf = localStorage.getItem('riff_perf_mode') === '1' || localStorage.getItem('riff_perf_mode') === 'true';
+    const isWavy = localStorage.getItem('cremo_wavy_progress') === 'true';
+    const isPerf = localStorage.getItem('cremo_perf_mode') === '1' || localStorage.getItem('cremo_perf_mode') === 'true';
     document.body.classList.toggle('no-wavy', isPerf ? true : !isWavy);
     if (btnWavyProgress) {
       btnWavyProgress.classList.toggle('active', isWavy);
@@ -1567,7 +1567,7 @@ window.scrubProgress = scrubProgress;
 
   var btnProgressKnob = document.getElementById('btn-progress-knob');
   function updateProgressKnobUI() {
-    const isEnabled = localStorage.getItem('riff_progress_knob') === 'true';
+    const isEnabled = localStorage.getItem('cremo_progress_knob') === 'true';
     document.body.classList.toggle('no-knob', !isEnabled);
     if (btnProgressKnob) {
       btnProgressKnob.classList.toggle('active', isEnabled);
@@ -1576,7 +1576,7 @@ window.scrubProgress = scrubProgress;
 
   var btnProgressBg = document.getElementById('btn-progress-bg');
   function updateProgressBgUI() {
-    const isEnabled = localStorage.getItem('riff_progress_bg') !== 'false';
+    const isEnabled = localStorage.getItem('cremo_progress_bg') !== 'false';
     document.body.classList.toggle('no-progress-bg', !isEnabled);
     if (btnProgressBg) {
       btnProgressBg.classList.toggle('active', isEnabled);
@@ -1626,8 +1626,8 @@ window.scrubProgress = scrubProgress;
   }
 
   function m3cEnabled() {
-    const barOn = localStorage.getItem('riff_m3_cover') !== '0';
-    const heroOn = localStorage.getItem('riff_m3_hero_covers') === '1';
+    const barOn = localStorage.getItem('cremo_m3_cover') !== '0';
+    const heroOn = localStorage.getItem('cremo_m3_hero_covers') === '1';
     return (barOn || heroOn) && !document.body.classList.contains('perf');
   }
   function m3cInit() {
@@ -1665,7 +1665,7 @@ window.scrubProgress = scrubProgress;
     if (url) m3c.img.src = url;
   }
   function m3cShapeRadii(now) {
-    const S = window.RiffShapes;
+    const S = window.CremoShapes;
     if (!S || !S.ready()) return null;
     if (!m3c.start) { m3c.start = now; m3c.from = 0; m3c.to = 0; }
     if (now - m3c.start >= S.HOLD_MS) { m3c.from = m3c.to; m3c.to = S.next(m3c.from); m3c.start = now; }
@@ -1674,7 +1674,7 @@ window.scrubProgress = scrubProgress;
   }
   function m3cDraw(now) {
     const ctx = m3c.ctx;
-    const S = window.RiffShapes;
+    const S = window.CremoShapes;
     if (!ctx || !S) return;
     const sh = m3cShapeRadii(now);
     if (!sh) return;
@@ -1836,13 +1836,13 @@ window.scrubProgress = scrubProgress;
 
   function applyPerfMode(on) {
     document.body.classList.toggle('perf', !!on);
-    const isWavy = localStorage.getItem('riff_wavy_progress') !== 'false';
+    const isWavy = localStorage.getItem('cremo_wavy_progress') !== 'false';
     document.body.classList.toggle('no-wavy', on ? true : !isWavy);
     syncBgVideoPlayback();
     applyM3Cover();
   }
   var btnBarWave = document.getElementById('btn-bar-wave');
-  var barWaveOn = localStorage.getItem('riff_bar_wave') === '1';
+  var barWaveOn = localStorage.getItem('cremo_bar_wave') === '1';
 
   function applyBarWave(on) {
     const vc = document.getElementById('visualizer-container');
@@ -1878,7 +1878,7 @@ window.scrubProgress = scrubProgress;
     btnBarWave.addEventListener('click', () => {
       const next = !btnBarWave.classList.contains('active');
       btnBarWave.classList.toggle('active', next);
-      localStorage.setItem('riff_bar_wave', next ? '1' : '0');
+      localStorage.setItem('cremo_bar_wave', next ? '1' : '0');
       syncVizSettingsCache();
       applyBarWave(next);
       if (typeof resizeCanvases === 'function') resizeCanvases();
@@ -1892,7 +1892,7 @@ window.scrubProgress = scrubProgress;
   }
 
   var btnNpViz = document.getElementById('btn-np-viz');
-  var npVizOn = localStorage.getItem('riff_np_viz') !== '0';
+  var npVizOn = localStorage.getItem('cremo_np_viz') !== '0';
   document.body.classList.toggle('np-viz-on', npVizOn);
   if (el.rightPanel && !el.rightPanel._hasNpVizScroll) {
     el.rightPanel._hasNpVizScroll = true;
@@ -1906,7 +1906,7 @@ window.scrubProgress = scrubProgress;
     btnNpViz.addEventListener('click', () => {
       const next = !btnNpViz.classList.contains('active');
       btnNpViz.classList.toggle('active', next);
-      localStorage.setItem('riff_np_viz', next ? '1' : '0');
+      localStorage.setItem('cremo_np_viz', next ? '1' : '0');
       document.body.classList.toggle('np-viz-on', next);
       if (!next) {
         const c = document.getElementById('np-visualizer-canvas');
@@ -1927,7 +1927,7 @@ window.scrubProgress = scrubProgress;
   }
 
   var barVizPosGroup = document.getElementById('bar-viz-pos-group');
-  var initialBarVizPos = localStorage.getItem('riff_bar_viz_pos') || 'behind';
+  var initialBarVizPos = localStorage.getItem('cremo_bar_viz_pos') || 'behind';
   function applyBarVizPos(pos) {
     document.body.classList.toggle('bar-viz-behind', pos === 'behind');
     if (barVizPosGroup) {
@@ -1949,7 +1949,7 @@ window.scrubProgress = scrubProgress;
     barVizPosGroup.querySelectorAll('.theme-mode-btn').forEach(btn => {
       btn.addEventListener('click', () => {
         const pos = btn.getAttribute('data-bar-viz-pos') || 'behind';
-        localStorage.setItem('riff_bar_viz_pos', pos);
+        localStorage.setItem('cremo_bar_viz_pos', pos);
         applyBarVizPos(pos);
       });
     });
@@ -1957,7 +1957,7 @@ window.scrubProgress = scrubProgress;
 
   var sliderBarVizOpacity = document.getElementById('slider-bar-viz-opacity');
   var valBarVizOpacity = document.getElementById('val-bar-viz-opacity');
-  var initialBarVizOpacity = localStorage.getItem('riff_bar_viz_opacity') || '22';
+  var initialBarVizOpacity = localStorage.getItem('cremo_bar_viz_opacity') || '22';
   function applyBarVizOpacity(v) {
     const num = parseInt(v, 10);
     document.documentElement.style.setProperty('--bar-viz-opacity', (num / 100).toString());
@@ -1968,7 +1968,7 @@ window.scrubProgress = scrubProgress;
   if (sliderBarVizOpacity) {
     const onOpInput = (e) => {
       const v = e.target.value;
-      localStorage.setItem('riff_bar_viz_opacity', v);
+      localStorage.setItem('cremo_bar_viz_opacity', v);
       applyBarVizOpacity(v);
     };
     sliderBarVizOpacity.addEventListener('input', onOpInput);
@@ -2023,8 +2023,8 @@ window.scrubProgress = scrubProgress;
   }
   function onVizStyleChange(e) {
     const nextStyle = e.target.value;
-    localStorage.setItem('riff_viz_style', nextStyle);
-    localStorage.setItem('riff_viz_connected', nextStyle === 'wave' ? '1' : '0');
+    localStorage.setItem('cremo_viz_style', nextStyle);
+    localStorage.setItem('cremo_viz_connected', nextStyle === 'wave' ? '1' : '0');
     syncVizSettingsCache();
     syncVizStyleUI();
     if (audioEngine && audioEngine.setAnalyserEnabled) {
@@ -2042,20 +2042,20 @@ window.scrubProgress = scrubProgress;
 
   var toggleM3Cover = document.getElementById('toggle-m3-cover');
   if (toggleM3Cover) {
-    const saved = localStorage.getItem('riff_m3_cover');
+    const saved = localStorage.getItem('cremo_m3_cover');
     const isM3On = saved !== '0';
     toggleM3Cover.classList.toggle('active', isM3On);
     toggleM3Cover.addEventListener('click', () => {
       const next = !toggleM3Cover.classList.contains('active');
       toggleM3Cover.classList.toggle('active', next);
-      localStorage.setItem('riff_m3_cover', next ? '1' : '0');
+      localStorage.setItem('cremo_m3_cover', next ? '1' : '0');
       applyM3Cover();
     });
   }
 
   var toggleM3Hero = document.getElementById('toggle-m3-hero-covers');
   if (toggleM3Hero) {
-    const isHeroOn = localStorage.getItem('riff_m3_hero_covers') === '1';
+    const isHeroOn = localStorage.getItem('cremo_m3_hero_covers') === '1';
     toggleM3Hero.classList.toggle('active', isHeroOn);
     document.body.classList.toggle('m3-hero-covers-on', isHeroOn);
     toggleM3Hero.onclick = (e) => {
@@ -2064,29 +2064,29 @@ window.scrubProgress = scrubProgress;
       const next = !toggleM3Hero.classList.contains('active');
       toggleM3Hero.classList.toggle('active', next);
       document.body.classList.toggle('m3-hero-covers-on', next);
-      localStorage.setItem('riff_m3_hero_covers', next ? '1' : '0');
+      localStorage.setItem('cremo_m3_hero_covers', next ? '1' : '0');
       if (typeof m3cStart === 'function') m3cStart();
     };
   }
 
   var toggleExplicitTag = document.getElementById('toggle-explicit-tag');
-  var isExplicitOn = localStorage.getItem('riff_show_explicit') !== '0';
+  var isExplicitOn = localStorage.getItem('cremo_show_explicit') !== '0';
   document.body.classList.toggle('hide-explicit-badges', !isExplicitOn);
   if (toggleExplicitTag) {
     toggleExplicitTag.classList.toggle('active', isExplicitOn);
     toggleExplicitTag.addEventListener('click', () => {
       const next = !toggleExplicitTag.classList.contains('active');
       toggleExplicitTag.classList.toggle('active', next);
-      localStorage.setItem('riff_show_explicit', next ? '1' : '0');
+      localStorage.setItem('cremo_show_explicit', next ? '1' : '0');
       document.body.classList.toggle('hide-explicit-badges', !next);
     });
   }
 
-  if (typeof updateTvkVisualizerSetting === 'function') updateTvkVisualizerSetting(localStorage.getItem('riff_tvk_visualizer') !== 'false');
-  if (typeof updateTvkVisualizerLyricsSetting === 'function') updateTvkVisualizerLyricsSetting(localStorage.getItem('riff_tvk_visualizer_lyrics') !== 'false');
-  if (typeof updateTvkVisualizerOpacity === 'function') updateTvkVisualizerOpacity(parseInt(localStorage.getItem('riff_tvk_visualizer_opacity') || '85', 10));
+  if (typeof updateTvkVisualizerSetting === 'function') updateTvkVisualizerSetting(localStorage.getItem('cremo_tvk_visualizer') !== 'false');
+  if (typeof updateTvkVisualizerLyricsSetting === 'function') updateTvkVisualizerLyricsSetting(localStorage.getItem('cremo_tvk_visualizer_lyrics') !== 'false');
+  if (typeof updateTvkVisualizerOpacity === 'function') updateTvkVisualizerOpacity(parseInt(localStorage.getItem('cremo_tvk_visualizer_opacity') || '85', 10));
 
-  var isDisableAnimations = localStorage.getItem('riff_disable_animations') === '1' || localStorage.getItem('riff_perf_mode') === '1';
+  var isDisableAnimations = localStorage.getItem('cremo_disable_animations') === '1' || localStorage.getItem('cremo_perf_mode') === '1';
 
 
 

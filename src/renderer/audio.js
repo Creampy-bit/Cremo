@@ -2,7 +2,7 @@
 (function (global) {
   'use strict';
 
-  class RiffAudioEngine {
+  class CremoAudioEngine {
     constructor() {
       this.ctx = null;
       this.mediaSource = null;
@@ -806,7 +806,7 @@
         }
       };
 
-      writeString(0, 'RIFF');
+      writeString(0, 'CREMO');
       view.setUint32(4, totalSize - 8, true);
       writeString(8, 'WAVE');
 
@@ -835,6 +835,6 @@
     }
   }
 
-  global.RiffAudioEngine = RiffAudioEngine;
+  global.CremoAudioEngine = CremoAudioEngine;
 
 })(typeof window !== 'undefined' ? window : globalThis);

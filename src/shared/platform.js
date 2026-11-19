@@ -35,7 +35,7 @@ function readConfig() {
 }
 
 function resolveDataDir() {
-  const override = process.env.RIFF_DATA_DIR;
+  const override = process.env.CREMO_DATA_DIR;
   if (override && override.trim()) {
     try { return path.resolve(override.trim()); } catch (e) {}
   }
@@ -93,14 +93,8 @@ const METADATA_PATH = path.join(DATA_DIR, 'metadata.json');
 const LIBRARY_DIR = path.join(DATA_DIR, 'library');
 const LIBRARY_PATH = path.join(DATA_DIR, 'library.json');
 const BIN_DIR = path.join(DATA_DIR, 'bin');
-// Cremo: the welcome screen is shown once, ever (Riff showed it again on every
-// version). The marker lives in Cremo's data folder; Riff's old markers still
-// count so people who already went through it are not asked again.
+// Cremo: the welcome screen is shown once, ever. The marker lives in Cremo's data folder.
 const TUTORIAL_MARKER = path.join(DATA_DIR, '.cremo-welcome');
-const LEGACY_TUTORIAL_MARKERS = [
-  IS_WIN ? 'C:\\Riff\\.rifftutorial' : path.join(os.homedir(), '.rifftutorial'),
-  path.join(DATA_DIR, '.rifftutorial')
-];
 const STARTUP_PATH = path.join(DATA_DIR, 'startup.json');
 function readStartupConfig() { try { return JSON.parse(fs.readFileSync(STARTUP_PATH, 'utf8')) || {}; } catch (e) { return {}; } }
 function writeStartupConfig(patch) {
@@ -112,10 +106,7 @@ function writeStartupConfig(patch) {
 }
 const APP_VERSION = (() => { try { return require('../../package.json').version || '0'; } catch (e) { return '0'; } })();
 function tutorialDone() {
-  for (const file of [TUTORIAL_MARKER, ...LEGACY_TUTORIAL_MARKERS]) {
-    try { if (fs.existsSync(file)) return true; } catch (e) {}
-  }
-  return false;
+  try { return fs.existsSync(TUTORIAL_MARKER); } catch (e) { return false; }
 }
 function markTutorialDone() {
   try {
@@ -151,15 +142,15 @@ async function removeDirContents(dir, skipNames = new Set(['config.json'])) {
   }
 }
 
-const RIFF_DATA_ENTRIES = [
+const CREMO_DATA_ENTRIES = [
   'tracks', 'custom-lyrics', 'lyrics', 'thumbnails', 'library', 'bin', 'plugins', 'themes', 'logs', 'i18n',
   'metadata.json', 'library.json', 'startup.json', 'yt-cookies.txt', 'google-oauth.enc', 'spotify-auth.enc',
-  '.yt-logged-out', '.rifftutorial'
+  '.yt-logged-out', '.cremo-welcome'
 ];
 
 async function copyDataEntries(fromDir, toDir) {
   await fs.promises.mkdir(toDir, { recursive: true });
-  for (const name of RIFF_DATA_ENTRIES) {
+  for (const name of CREMO_DATA_ENTRIES) {
     const src = path.join(fromDir, name);
     let st;
     try { st = await fs.promises.stat(src); } catch (e) { continue; }
@@ -170,7 +161,7 @@ async function copyDataEntries(fromDir, toDir) {
 }
 
 async function removeDataEntries(dir) {
-  for (const name of RIFF_DATA_ENTRIES) {
+  for (const name of CREMO_DATA_ENTRIES) {
     try { await fs.promises.rm(path.join(dir, name), { recursive: true, force: true }); } catch (e) {}
   }
 }
@@ -238,7 +229,7 @@ function resolveBinary(name) {
     delete binaryCache[name];
   }
   const exe = IS_WIN ? `${name}.exe` : name;
-  const envKey = `RIFF_${name.replace(/[^a-z0-9]/gi, '').toUpperCase()}`;
+  const envKey = `CREMO_${name.replace(/[^a-z0-9]/gi, '').toUpperCase()}`;
   const candidates = [
     process.env[envKey],
     path.join(BIN_DIR, exe),
@@ -314,5 +305,5 @@ module.exports = {
   tutorialDone, markTutorialDone,
   readStartupConfig, writeStartupConfig,
   readConfig, resolveDataDir, setDataDir, resolveDownloadDir, defaultDownloadDir, setDownloadDir, copyDirContents, removeDirContents,
-  RIFF_DATA_ENTRIES, copyDataEntries, removeDataEntries
+  CREMO_DATA_ENTRIES, copyDataEntries, removeDataEntries
 };

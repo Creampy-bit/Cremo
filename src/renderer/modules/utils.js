@@ -12,9 +12,9 @@ window.addEventListener('error', (e) => {
   img.removeAttribute('src');
   img.style.display = 'none';
   const parent = img.parentElement;
-  if (parent && (parent.classList.contains('sp-card-cover') || parent.classList.contains('sb-lib-cover') || parent.classList.contains('search-album-cover-box') || parent.classList.contains('np-queue-art')) && !parent.querySelector('.riff-img-fallback')) {
+  if (parent && (parent.classList.contains('sp-card-cover') || parent.classList.contains('sb-lib-cover') || parent.classList.contains('search-album-cover-box') || parent.classList.contains('np-queue-art')) && !parent.querySelector('.cremo-img-fallback')) {
     const fb = document.createElement('span');
-    fb.className = 'riff-img-fallback';
+    fb.className = 'cremo-img-fallback';
     fb.innerHTML = '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="12" cy="12" r="9"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>';
     parent.appendChild(fb);
   }
@@ -30,7 +30,7 @@ try {
         if (val && val !== 'null' && val !== 'undefined') {
           this.classList.remove('img-broken');
           if (this.style.display === 'none') this.style.display = '';
-          const fb = this.parentElement?.querySelector?.('.riff-img-fallback');
+          const fb = this.parentElement?.querySelector?.('.cremo-img-fallback');
           if (fb) fb.remove();
         }
         return origImgSrc.set.call(this, val);
@@ -49,20 +49,20 @@ var flushSync = window.flushSync || function() {};
 
 (() => {
   try {
-    if (typeof window === 'undefined' || window.__riffFetchPatched) return;
+    if (typeof window === 'undefined' || window.__cremoFetchPatched) return;
     const api = window.electronAPI;
     const token = api && api.serverToken;
     if (!token) return;
     const origFetch = window.fetch ? window.fetch.bind(window) : null;
     if (!origFetch) return;
-    window.__riffFetchPatched = true;
+    window.__cremoFetchPatched = true;
     window.fetch = function (input, init) {
       try {
         const raw = typeof input === 'string' ? input : (input && input.url) || '';
         if (raw.indexOf('/api/') !== -1) {
           const opts = Object.assign({}, init || {});
           const headers = new Headers(opts.headers || (input && input.headers) || undefined);
-          headers.set('X-Riff-Token', token);
+          headers.set('X-Cremo-Token', token);
           opts.headers = headers;
           return origFetch(input, opts);
         }
@@ -75,19 +75,19 @@ var flushSync = window.flushSync || function() {};
 
 var EXCLUDED_PERSONAL_KEYS = new Set([
   'devsize_favorites', 'devsize_history', 'devsize_playlists',
-  'riff_local_tracks', 'riff_local_files', 'devsize_local_tracks', 'devsize_local_files',
-  'riff_saved_albums', 'riff_search_history_v2', 'riff_favorite_artists',
-  'riff_unfollowed_artists', 'riff_artist_meta_cache', 'riff_daily_mixes',
-  'riff_my_wave_cache', 'riff_trending_cache', 'riff_wave_skips',
-  'riff_failed_tracks', 'riff_mix_feedback', 'riff_pinned_tracks',
-  'riff_sidebar_pinned_tracks', 'riff_pinned_playlists', 'riff_user_nickname',
-  'riff_user_avatar', 'riff_lastfm_sk', 'riff_lastfm_user',
-  'riff_spotify_client_id', 'riff_owner_profile_backup',
-  'devsize_custom_presets', 'riff_track_trims', 'riff_queue_state',
-  'riff_track_art', 'riff_welcome_bg', 'riff_track_renames',
-  'riff_last_playback_state', 'riff_sidebar_library_tracks',
-  'riff_blocked_tracks', 'riff_top_moments', 'riff_blocked_audio_sources',
-  'riff_lottie_lib_cache'
+  'cremo_local_tracks', 'cremo_local_files', 'devsize_local_tracks', 'devsize_local_files',
+  'cremo_saved_albums', 'cremo_search_history_v2', 'cremo_favorite_artists',
+  'cremo_unfollowed_artists', 'cremo_artist_meta_cache', 'cremo_daily_mixes',
+  'cremo_my_wave_cache', 'cremo_trending_cache', 'cremo_wave_skips',
+  'cremo_failed_tracks', 'cremo_mix_feedback', 'cremo_pinned_tracks',
+  'cremo_sidebar_pinned_tracks', 'cremo_pinned_playlists', 'cremo_user_nickname',
+  'cremo_user_avatar', 'cremo_lastfm_sk', 'cremo_lastfm_user',
+  'cremo_spotify_client_id', 'cremo_owner_profile_backup',
+  'devsize_custom_presets', 'cremo_track_trims', 'cremo_queue_state',
+  'cremo_track_art', 'cremo_welcome_bg', 'cremo_track_renames',
+  'cremo_last_playback_state', 'cremo_sidebar_library_tracks',
+  'cremo_blocked_tracks', 'cremo_top_moments', 'cremo_blocked_audio_sources',
+  'cremo_lottie_lib_cache'
 ]);
 
 function getDefaultsJsonSync() {
@@ -106,7 +106,7 @@ function getDefaultsJsonSync() {
 }
 
 try {
-  if (localStorage.getItem('riff_user_initialized_v1') !== '1') {
+  if (localStorage.getItem('cremo_user_initialized_v1') !== '1') {
     const defs = getDefaultsJsonSync();
     if (defs && typeof defs === 'object') {
       for (const [k, v] of Object.entries(defs)) {
@@ -116,13 +116,13 @@ try {
         }
       }
     }
-    localStorage.setItem('riff_user_initialized_v1', '1');
+    localStorage.setItem('cremo_user_initialized_v1', '1');
   }
 } catch (_) {}
 
 
-localStorage.setItem('riff_wavy_progress', 'false');
-localStorage.setItem('riff_progress_knob', 'false');
+localStorage.setItem('cremo_wavy_progress', 'false');
+localStorage.setItem('cremo_progress_knob', 'false');
 document.body.classList.add('no-wavy');
 document.body.classList.add('no-knob');
 
@@ -141,7 +141,7 @@ document.body.classList.add('no-knob');
       window.electronAPI.logError(level, message, stack);
     }
   }
-  window.__riffLogError = reportError;
+  window.__cremoLogError = reportError;
   window.addEventListener('error', (e) => {
     const msg = e.message || '';
     if (!msg || /ResizeObserver loop|\[object ErrorEvent\]/i.test(msg)) return;
@@ -156,12 +156,12 @@ document.body.classList.add('no-knob');
 })();
 
 
-function runRiffSplash() {
-  window.__riffSplashDone = true;
+function runCremoSplash() {
+  window.__cremoSplashDone = true;
   const splash = document.getElementById('splash');
   if (splash) splash.remove();
 }
-runRiffSplash();
+runCremoSplash();
 
 
 function stripYoutubeTopic(artist) {
@@ -243,7 +243,7 @@ function computePromoSha256(input) {
 }
 
 function getAccountBadges() {
-  const stored = safeJson('riff_account_badges', {});
+  const stored = safeJson('cremo_account_badges', {});
   return {
     isOwner: Boolean(stored?.isOwner || localStorage.getItem('isOwner') === 'true'),
     isDonator: Boolean(stored?.isDonator || localStorage.getItem('isDonator') === 'true')
@@ -259,7 +259,7 @@ function setAccountBadge(type, value = true) {
     cur.isDonator = Boolean(value);
     localStorage.setItem('isDonator', cur.isDonator ? 'true' : 'false');
   }
-  localStorage.setItem('riff_account_badges', JSON.stringify(cur));
+  localStorage.setItem('cremo_account_badges', JSON.stringify(cur));
 }
 
 function verifyAndApplyPromocode(rawCode) {
@@ -296,49 +296,6 @@ window.verifyAndApplyPromocode = verifyAndApplyPromocode;
   }
   window.cleanTrackId = cleanTrackId;
   window.CleanTrackId = cleanTrackId;
-
-  function isStaticTikTokTrack(t) {
-    return Boolean(t && (t.isTikTok || t.staticAudio || t.platform === 'tiktok' || String(t.id || '').startsWith('tt_') || String(t.url || '').includes('/api/local-track?id=tt_')));
-  }
-  window.isStaticTikTokTrack = isStaticTikTokTrack;
-
-  function repairTikTokTrack(t) {
-    if (!t) return false;
-    const rawUrl = String(t.url || '');
-    const rawPre = String(t._preloadedStreamUrl || '');
-    const targetUrl = rawUrl.includes('id=tt_') ? rawUrl : (rawPre.includes('id=tt_') ? rawPre : '');
-    if (targetUrl) {
-      const m = targetUrl.match(/[?&]id=(tt_[^&]+)/);
-      if (m && m[1]) {
-        const restoredId = decodeURIComponent(m[1]);
-        let changed = false;
-        if (t.id !== restoredId) {
-          t.id = restoredId;
-          changed = true;
-        }
-        if (!t.isTikTok) { t.isTikTok = true; changed = true; }
-        if (!t.staticAudio) { t.staticAudio = true; changed = true; }
-        if (t.platform !== 'tiktok') { t.platform = 'tiktok'; changed = true; }
-        if (!t.isCached) { t.isCached = true; changed = true; }
-        const port = (window.state && window.state.serverPort) || (typeof state !== 'undefined' && state.serverPort) || '';
-        const localUrl = `http://127.0.0.1:${port}/api/local-track?id=${encodeURIComponent(cleanTrackId(restoredId))}`;
-        if (port && t.url !== localUrl) {
-          t.url = localUrl;
-          changed = true;
-        }
-        return changed;
-      }
-    } else if (isStaticTikTokTrack(t)) {
-      let changed = false;
-      if (!t.isTikTok) { t.isTikTok = true; changed = true; }
-      if (!t.staticAudio) { t.staticAudio = true; changed = true; }
-      if (t.platform !== 'tiktok') { t.platform = 'tiktok'; changed = true; }
-      if (!t.isCached) { t.isCached = true; changed = true; }
-      return changed;
-    }
-    return false;
-  }
-  window.repairTikTokTrack = repairTikTokTrack;
 
 
   var i18nSessionMap = new Map();
@@ -377,7 +334,7 @@ window.verifyAndApplyPromocode = verifyAndApplyPromocode;
   function t(str) {
     if (!str || typeof str !== 'string') return str;
     if (str === 'Plays') return '▶';
-    const lang = localStorage.getItem('riff_ui_lang') || 'en';
+    const lang = localStorage.getItem('cremo_ui_lang') || 'en';
     if (lang === 'en') return str;
     if (typeof BUILTIN_UI_DICT !== 'undefined' && BUILTIN_UI_DICT[lang] && BUILTIN_UI_DICT[lang][str]) {
       return BUILTIN_UI_DICT[lang][str];
@@ -389,7 +346,7 @@ window.verifyAndApplyPromocode = verifyAndApplyPromocode;
   function tSet(el, str) {
     if (!el) return;
     el.textContent = t(str);
-    const lang = localStorage.getItem('riff_ui_lang') || 'en';
+    const lang = localStorage.getItem('cremo_ui_lang') || 'en';
     if (lang === 'en') return;
     const dict = i18nSessionMap.get(lang);
     if (dict && dict.has(str)) return;
@@ -445,7 +402,7 @@ window.verifyAndApplyPromocode = verifyAndApplyPromocode;
                                     
     if (!activeToastGroup || !activeToastGroup.isConnected || activeToastGroup.classList.contains('leaving')) {
       activeToastGroup = document.createElement('div');
-      activeToastGroup.className = 'riff-toast';
+      activeToastGroup.className = 'cremo-toast';
       container.appendChild(activeToastGroup);
     }
 
@@ -539,40 +496,40 @@ window.verifyAndApplyPromocode = verifyAndApplyPromocode;
     }
   }
 
-  if (localStorage.getItem('riff_scale_rebased_v2') !== '1') {
-    localStorage.setItem('riff_scale_rebased_v2', '1');
+  if (localStorage.getItem('cremo_scale_rebased_v2') !== '1') {
+    localStorage.setItem('cremo_scale_rebased_v2', '1');
     if (localStorage.getItem('devsize_ui_scale') === '90') {
       localStorage.removeItem('devsize_ui_scale');
     }
-    if (localStorage.getItem('riff_font_scale') === '95') {
-      localStorage.removeItem('riff_font_scale');
+    if (localStorage.getItem('cremo_font_scale') === '95') {
+      localStorage.removeItem('cremo_font_scale');
     }
   }
 
-  if (localStorage.getItem('riff_defaults_v44_applied') !== '1') {
-    localStorage.setItem('riff_defaults_v44_applied', '1');
-    if (!localStorage.getItem('riff_platform') || localStorage.getItem('riff_platform') === 'youtube') {
-      localStorage.setItem('riff_platform', 'ytmusic');
+  if (localStorage.getItem('cremo_defaults_v44_applied') !== '1') {
+    localStorage.setItem('cremo_defaults_v44_applied', '1');
+    if (!localStorage.getItem('cremo_platform') || localStorage.getItem('cremo_platform') === 'youtube') {
+      localStorage.setItem('cremo_platform', 'ytmusic');
     }
-    if (!localStorage.getItem('riff_ui_alpha') || localStorage.getItem('riff_ui_alpha') === '20') {
-      localStorage.setItem('riff_ui_alpha', '100');
+    if (!localStorage.getItem('cremo_ui_alpha') || localStorage.getItem('cremo_ui_alpha') === '20') {
+      localStorage.setItem('cremo_ui_alpha', '100');
     }
-    if (localStorage.getItem('riff_adv_cover_bg') === null) {
-      localStorage.setItem('riff_adv_cover_bg', 'false');
+    if (localStorage.getItem('cremo_adv_cover_bg') === null) {
+      localStorage.setItem('cremo_adv_cover_bg', 'false');
     }
-    if (localStorage.getItem('riff_adv_track_banners') === null) {
-      localStorage.setItem('riff_adv_track_banners', 'false');
+    if (localStorage.getItem('cremo_adv_track_banners') === null) {
+      localStorage.setItem('cremo_adv_track_banners', 'false');
     }
-    if (localStorage.getItem('riff_bar_wave') === null) {
-      localStorage.setItem('riff_bar_wave', '0');
+    if (localStorage.getItem('cremo_bar_wave') === null) {
+      localStorage.setItem('cremo_bar_wave', '0');
     }
-    if (!localStorage.getItem('riff_theme_accent') || localStorage.getItem('riff_theme_accent') === '#6750A4') {
-      localStorage.setItem('riff_theme_accent', '#1DB954');
-      if (!localStorage.getItem('riff_theme_intensity') || localStorage.getItem('riff_theme_intensity') === '0') {
-        localStorage.setItem('riff_theme_intensity', '85');
+    if (!localStorage.getItem('cremo_theme_accent') || localStorage.getItem('cremo_theme_accent') === '#6750A4') {
+      localStorage.setItem('cremo_theme_accent', '#1DB954');
+      if (!localStorage.getItem('cremo_theme_intensity') || localStorage.getItem('cremo_theme_intensity') === '0') {
+        localStorage.setItem('cremo_theme_intensity', '85');
       }
-      if (!localStorage.getItem('riff_theme_brightness') || localStorage.getItem('riff_theme_brightness') === '0') {
-        localStorage.setItem('riff_theme_brightness', '50');
+      if (!localStorage.getItem('cremo_theme_brightness') || localStorage.getItem('cremo_theme_brightness') === '0') {
+        localStorage.setItem('cremo_theme_brightness', '50');
       }
     }
     if (!localStorage.getItem('devsize_ui_scale') || localStorage.getItem('devsize_ui_scale') === '100') {
@@ -580,16 +537,16 @@ window.verifyAndApplyPromocode = verifyAndApplyPromocode;
     }
   }
 
-  if (localStorage.getItem('riff_defaults_v44_hue246') !== '1') {
-    localStorage.setItem('riff_defaults_v44_hue246', '1');
-    localStorage.setItem('riff_theme_accent', '#5247d1');
-    localStorage.setItem('riff_theme_brightness', '20');
-    localStorage.setItem('riff_theme_intensity', '85');
+  if (localStorage.getItem('cremo_defaults_v44_hue246') !== '1') {
+    localStorage.setItem('cremo_defaults_v44_hue246', '1');
+    localStorage.setItem('cremo_theme_accent', '#e2475d');
+    localStorage.setItem('cremo_theme_brightness', '20');
+    localStorage.setItem('cremo_theme_intensity', '85');
   }
 
-  if (localStorage.getItem('riff_np_banners_off_v2') !== '1') {
-    localStorage.setItem('riff_np_banners_off_v2', '1');
-    localStorage.setItem('riff_adv_track_banners', 'false');
+  if (localStorage.getItem('cremo_np_banners_off_v2') !== '1') {
+    localStorage.setItem('cremo_np_banners_off_v2', '1');
+    localStorage.setItem('cremo_adv_track_banners', 'false');
   }
 
 
@@ -856,9 +813,9 @@ window.verifyAndApplyPromocode = verifyAndApplyPromocode;
   var i18nApplyVersion = 0;
   async function applyI18n(lang) {
     const applyVersion = ++i18nApplyVersion;
-    lang = String(lang || localStorage.getItem('riff_ui_lang') || 'en').trim();
+    lang = String(lang || localStorage.getItem('cremo_ui_lang') || 'en').trim();
     syncDocumentDirection(lang);
-    localStorage.setItem('riff_ui_lang', lang);
+    localStorage.setItem('cremo_ui_lang', lang);
 
     const found = TRANSLATION_LANGUAGES.find(l => l.code === lang);
     const uiLangLabel = document.getElementById('ui-lang-label');
@@ -911,7 +868,7 @@ window.verifyAndApplyPromocode = verifyAndApplyPromocode;
     }
 
     try {
-      const stored = JSON.parse(localStorage.getItem('riff_i18n_' + lang) || '{}');
+      const stored = JSON.parse(localStorage.getItem('cremo_i18n_' + lang) || '{}');
       for (const [k, v] of Object.entries(stored)) {
         if (v && typeof v === 'string' && (lang === 'en' || v !== k) && !/https?:\/\/|linux\.do/i.test(v) && !dict.has(k)) {
           dict.set(k, v);
@@ -957,7 +914,7 @@ window.verifyAndApplyPromocode = verifyAndApplyPromocode;
     if (missing.length > 0) {
       try {
         const port = state.serverPort || 38472;
-        const deeplKey = localStorage.getItem('riff_deepl_api_key') || '';
+        const deeplKey = localStorage.getItem('cremo_deepl_api_key') || '';
         const res = await fetch(`http://127.0.0.1:${port}/api/i18n-batch`, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
@@ -977,7 +934,7 @@ window.verifyAndApplyPromocode = verifyAndApplyPromocode;
         Object.entries(staticDict).forEach(([k, v]) => dict.set(k, v));
         const toPersist = {};
         for (const [k, v] of dict.entries()) toPersist[k] = v;
-        try { localStorage.setItem('riff_i18n_' + lang, JSON.stringify(toPersist)); } catch (_) {}
+        try { localStorage.setItem('cremo_i18n_' + lang, JSON.stringify(toPersist)); } catch (_) {}
         renderDictToDom();
       } catch (err) {
         if (dict.size === 0) {
@@ -993,7 +950,7 @@ window.verifyAndApplyPromocode = verifyAndApplyPromocode;
   function scheduleI18nApply() {}
 
   collectI18n();
-  applyI18n(localStorage.getItem('riff_ui_lang') || 'en');
+  applyI18n(localStorage.getItem('cremo_ui_lang') || 'en');
 
   var lyricsTranslationCache = new Map();
 
@@ -1028,12 +985,12 @@ window.verifyAndApplyPromocode = verifyAndApplyPromocode;
   var isShareInProgress = false;
 
   function showShareSpinnerToast() {
-    document.querySelectorAll('.riff-share-spinner-toast').forEach(t => t.remove());
+    document.querySelectorAll('.cremo-share-spinner-toast').forEach(t => t.remove());
     const container = document.getElementById('toast-container');
     if (!container) return () => {};
     const toast = document.createElement('div');
-    toast.className = 'riff-toast info riff-share-spinner-toast';
-    toast.innerHTML = '<span class="riff-dots-loader" aria-hidden="true"><i></i><i></i><i></i></span>';
+    toast.className = 'cremo-toast info cremo-share-spinner-toast';
+    toast.innerHTML = '<span class="cremo-dots-loader" aria-hidden="true"><i></i><i></i><i></i></span>';
     container.appendChild(toast);
     return () => {
       toast.classList.add('leaving');
@@ -1069,7 +1026,7 @@ window.verifyAndApplyPromocode = verifyAndApplyPromocode;
       if ((track.url || track.id) && track.platform !== 'local') {
         directStream = await resolveFullTrackStreamForShare(track);
       }
-      const shareUrl = buildRiffShareUrl(track, directStream, '', 0);
+      const shareUrl = buildCremoShareUrl(track, directStream, '', 0);
       await navigator.clipboard.writeText(shareUrl);
       showToast('Share link copied to clipboard!', 'success');
     } catch (e) {
@@ -1113,7 +1070,7 @@ window.verifyAndApplyPromocode = verifyAndApplyPromocode;
 
     function getProxyList() {
       try {
-        const raw = localStorage.getItem('riff_proxy_list');
+        const raw = localStorage.getItem('cremo_proxy_list');
         const parsed = JSON.parse(raw);
         return Array.isArray(parsed) ? parsed : [];
       } catch (_) {
@@ -1122,17 +1079,17 @@ window.verifyAndApplyPromocode = verifyAndApplyPromocode;
     }
 
     function saveProxyList(list) {
-      localStorage.setItem('riff_proxy_list', JSON.stringify(list));
+      localStorage.setItem('cremo_proxy_list', JSON.stringify(list));
     }
 
     function isProxyEnabled() {
-      return localStorage.getItem('riff_proxy_enabled') === 'true';
+      return localStorage.getItem('cremo_proxy_enabled') === 'true';
     }
 
     function getActiveProxy() {
       const list = getProxyList();
       if (!list.length) return null;
-      const activeId = localStorage.getItem('riff_proxy_active_id');
+      const activeId = localStorage.getItem('cremo_proxy_active_id');
       return list.find(p => p.id === activeId) || list[0];
     }
 
@@ -1224,12 +1181,12 @@ window.verifyAndApplyPromocode = verifyAndApplyPromocode;
           let currentList = getProxyList();
           currentList = currentList.filter(p => p.id !== item.id);
           saveProxyList(currentList);
-          if (localStorage.getItem('riff_proxy_active_id') === item.id) {
+          if (localStorage.getItem('cremo_proxy_active_id') === item.id) {
             const nextActive = currentList[0];
             if (nextActive) {
-              localStorage.setItem('riff_proxy_active_id', nextActive.id);
+              localStorage.setItem('cremo_proxy_active_id', nextActive.id);
             } else {
-              localStorage.removeItem('riff_proxy_active_id');
+              localStorage.removeItem('cremo_proxy_active_id');
             }
           }
           renderProxyList();
@@ -1242,7 +1199,7 @@ window.verifyAndApplyPromocode = verifyAndApplyPromocode;
         row.appendChild(right);
 
         row.addEventListener('click', () => {
-          localStorage.setItem('riff_proxy_active_id', item.id);
+          localStorage.setItem('cremo_proxy_active_id', item.id);
           renderProxyList();
           syncActiveProxyToBackend();
         });
@@ -1255,7 +1212,7 @@ window.verifyAndApplyPromocode = verifyAndApplyPromocode;
       btnProxyEnable.classList.toggle('active', isProxyEnabled());
       btnProxyEnable.addEventListener('click', () => {
         const next = !isProxyEnabled();
-        localStorage.setItem('riff_proxy_enabled', next ? 'true' : 'false');
+        localStorage.setItem('cremo_proxy_enabled', next ? 'true' : 'false');
         btnProxyEnable.classList.toggle('active', next);
         syncActiveProxyToBackend();
       });
@@ -1277,8 +1234,8 @@ window.verifyAndApplyPromocode = verifyAndApplyPromocode;
       };
       list.push(newProxy);
       saveProxyList(list);
-      localStorage.setItem('riff_proxy_active_id', newProxy.id);
-      localStorage.setItem('riff_proxy_enabled', 'true');
+      localStorage.setItem('cremo_proxy_active_id', newProxy.id);
+      localStorage.setItem('cremo_proxy_enabled', 'true');
       if (btnProxyEnable) btnProxyEnable.classList.add('active');
       proxyInputUrl.value = '';
       renderProxyList();
@@ -1348,7 +1305,7 @@ window.verifyAndApplyPromocode = verifyAndApplyPromocode;
     if (!drop || !trigger || !menu) return;
 
     const qualityNames = { low: 'Low', medium: 'Medium', high: 'High', max: 'Max' };
-    const saved = localStorage.getItem('riff_audio_quality') || 'medium';
+    const saved = localStorage.getItem('cremo_audio_quality') || 'medium';
     const active = qualityNames[saved] ? saved : 'medium';
 
     const applySelection = (val) => {
@@ -1370,7 +1327,7 @@ window.verifyAndApplyPromocode = verifyAndApplyPromocode;
         e.stopPropagation();
         const val = opt.dataset.val;
         if (val) {
-          localStorage.setItem('riff_audio_quality', val);
+          localStorage.setItem('cremo_audio_quality', val);
           applySelection(val);
         }
         drop.classList.remove('open');
@@ -1392,7 +1349,7 @@ window.verifyAndApplyPromocode = verifyAndApplyPromocode;
     overlay.classList.remove('hidden');
     requestAnimationFrame(() => overlay.classList.add('visible'));
 
-    const S = window.RiffShapes;
+    const S = window.CremoShapes;
     let animActive = true;
     if (S && S.ready()) {
       let fromIdx = 0, toIdx = S.next(0), stepStart = performance.now();
@@ -1464,8 +1421,8 @@ window.verifyAndApplyPromocode = verifyAndApplyPromocode;
   if (btnConfirmLangRestart) {
     btnConfirmLangRestart.addEventListener('click', () => {
       if (window.electronAPI && window.electronAPI.restartApp) {
-        if (window.electronAPI.storageSaveSync && window.__RIFF_STORAGE_MAP__) {
-          window.electronAPI.storageSaveSync(window.__RIFF_STORAGE_MAP__);
+        if (window.electronAPI.storageSaveSync && window.__CREMO_STORAGE_MAP__) {
+          window.electronAPI.storageSaveSync(window.__CREMO_STORAGE_MAP__);
         }
         window.electronAPI.restartApp();
       } else {
@@ -1496,7 +1453,7 @@ window.verifyAndApplyPromocode = verifyAndApplyPromocode;
       opt.addEventListener('click', (e) => {
         e.stopPropagation();
         const val = opt.dataset.value;
-        localStorage.setItem('riff_lyrics_ease', val);
+        localStorage.setItem('cremo_lyrics_ease', val);
         if (lyricsEaseLabel) lyricsEaseLabel.textContent = opt.textContent;
         lyricsEaseMenu.querySelectorAll('.m3-dropdown-option').forEach(o => o.classList.toggle('selected', o === opt));
         applyLyricsEase();
@@ -1519,7 +1476,7 @@ window.verifyAndApplyPromocode = verifyAndApplyPromocode;
     sliderLyricsSpeed.addEventListener('input', () => {
       const val = parseInt(sliderLyricsSpeed.value, 10) / 10;
       valLyricsSpeed.textContent = `${val.toFixed(1)}x`;
-      localStorage.setItem('riff_lyrics_speed', val.toString());
+      localStorage.setItem('cremo_lyrics_speed', val.toString());
       applyLyricsEase();
     });
   }
@@ -1530,7 +1487,7 @@ window.verifyAndApplyPromocode = verifyAndApplyPromocode;
   var lyricsSourceMenu = document.getElementById('lyrics-source-menu');
 
   if (lyricsSourceDropdown && lyricsSourceTrigger && lyricsSourceMenu) {
-    const curSource = localStorage.getItem('riff_lyrics_source') || 'auto';
+    const curSource = localStorage.getItem('cremo_lyrics_source') || 'auto';
     lyricsSourceMenu.querySelectorAll('.m3-dropdown-option').forEach(opt => {
       const isSel = opt.dataset.value === curSource;
       opt.classList.toggle('selected', isSel);
@@ -1546,7 +1503,7 @@ window.verifyAndApplyPromocode = verifyAndApplyPromocode;
       opt.addEventListener('click', (e) => {
         e.stopPropagation();
         const val = opt.dataset.value;
-        localStorage.setItem('riff_lyrics_source', val);
+        localStorage.setItem('cremo_lyrics_source', val);
         if (lyricsSourceLabel) lyricsSourceLabel.textContent = opt.textContent;
         lyricsSourceMenu.querySelectorAll('.m3-dropdown-option').forEach(o => o.classList.toggle('selected', o === opt));
         lyricsSourceDropdown.classList.remove('open');
@@ -1568,7 +1525,7 @@ window.verifyAndApplyPromocode = verifyAndApplyPromocode;
   var wordSourceMenu = document.getElementById('word-source-menu');
 
   if (wordSourceDropdown && wordSourceTrigger && wordSourceMenu) {
-    const curWordSource = localStorage.getItem('riff_word_source') || 'auto';
+    const curWordSource = localStorage.getItem('cremo_word_source') || 'auto';
     wordSourceMenu.querySelectorAll('.m3-dropdown-option').forEach(opt => {
       const isSel = opt.dataset.value === curWordSource;
       opt.classList.toggle('selected', isSel);
@@ -1584,7 +1541,7 @@ window.verifyAndApplyPromocode = verifyAndApplyPromocode;
       opt.addEventListener('click', (e) => {
         e.stopPropagation();
         const val = opt.dataset.value;
-        localStorage.setItem('riff_word_source', val);
+        localStorage.setItem('cremo_word_source', val);
         if (wordSourceLabel) wordSourceLabel.textContent = opt.textContent;
         wordSourceMenu.querySelectorAll('.m3-dropdown-option').forEach(o => o.classList.toggle('selected', o === opt));
         wordSourceDropdown.classList.remove('open');
@@ -1622,7 +1579,7 @@ window.verifyAndApplyPromocode = verifyAndApplyPromocode;
       opt.addEventListener('click', (e) => {
         e.stopPropagation();
         const val = opt.dataset.value;
-        localStorage.setItem('riff_lyrics_word_style', val);
+        localStorage.setItem('cremo_lyrics_word_style', val);
         if (lyricsWordStyleLabel) lyricsWordStyleLabel.textContent = opt.textContent;
         lyricsWordStyleMenu.querySelectorAll('.m3-dropdown-option').forEach(o => o.classList.toggle('selected', o === opt));
         lyricsWordStyleDropdown.classList.remove('open');
@@ -1646,8 +1603,8 @@ window.verifyAndApplyPromocode = verifyAndApplyPromocode;
     sliderLyricsTightness.addEventListener('input', () => {
       const val = parseInt(sliderLyricsTightness.value, 10);
       valLyricsTightness.textContent = `${val}%`;
-      localStorage.setItem('riff_lyrics_gradient_tightness', val.toString());
-      localStorage.setItem('riff_gradient_tight', val.toString());
+      localStorage.setItem('cremo_lyrics_gradient_tightness', val.toString());
+      localStorage.setItem('cremo_gradient_tight', val.toString());
       applyLyricsGradientTightness();
       updateActiveGradient();
     });
@@ -1659,9 +1616,9 @@ window.verifyAndApplyPromocode = verifyAndApplyPromocode;
     state.hqSettings = { engine: 'hqmusic-3', preset: 'studio', vocal: 0, air: 0, bass: 0 };
     state.hqEnabled = false;
 
-    localStorage.setItem('riff_hq_enabled', '0');
+    localStorage.setItem('cremo_hq_enabled', '0');
     updateHqRouting();
-    localStorage.setItem('riff_audio_normalize', '0');
+    localStorage.setItem('cremo_audio_normalize', '0');
     const toggleNorm = document.getElementById('toggle-normalize');
     if (toggleNorm) toggleNorm.classList.remove('active');
     if (typeof resetLevelWatcher === 'function') resetLevelWatcher();
@@ -1702,12 +1659,12 @@ window.verifyAndApplyPromocode = verifyAndApplyPromocode;
 
   var toggleNormalize = document.getElementById('toggle-normalize');
   if (toggleNormalize) {
-    const isNorm = localStorage.getItem('riff_audio_normalize') === '1';
+    const isNorm = localStorage.getItem('cremo_audio_normalize') === '1';
     toggleNormalize.classList.toggle('active', isNorm);
     toggleNormalize.addEventListener('click', () => {
       const active = !toggleNormalize.classList.contains('active');
       toggleNormalize.classList.toggle('active', active);
-      localStorage.setItem('riff_audio_normalize', active ? '1' : '0');
+      localStorage.setItem('cremo_audio_normalize', active ? '1' : '0');
       if (!active) resetLevelWatcher();
     });
   }
@@ -1795,7 +1752,7 @@ window.verifyAndApplyPromocode = verifyAndApplyPromocode;
       if (!modal || !sheet || !notesEl) return;
 
       const rawVer = String(info?.version || '').replace(/^v/i, '');
-      const ignoredVer = localStorage.getItem('riff_ignored_update_ver') || '';
+      const ignoredVer = localStorage.getItem('cremo_ignored_update_ver') || '';
       if (!manualUpdateCheck && rawVer && ignoredVer === rawVer) return;
 
       const displayVer = rawVer.endsWith('.0.0') ? ('v' + rawVer.slice(0, -4)) : (rawVer.endsWith('.0') ? ('v' + rawVer.slice(0, -2)) : ('v' + rawVer));
@@ -1893,7 +1850,7 @@ window.verifyAndApplyPromocode = verifyAndApplyPromocode;
         if (manualUpdateCheck) return;
         manualUpdateCheck = true;
         btn.disabled = true;
-        btn.innerHTML = `<span class="riff-dots-loader sm" style="margin-right:6px;" aria-hidden="true"><i></i><i></i><i></i></span><span>Checking...</span>`;
+        btn.innerHTML = `<span class="cremo-dots-loader sm" style="margin-right:6px;" aria-hidden="true"><i></i><i></i><i></i></span><span>Checking...</span>`;
 
         if (!api || !api.checkForUpdates) {
           checkDirectFromRenderer();
@@ -2058,7 +2015,7 @@ window.verifyAndApplyPromocode = verifyAndApplyPromocode;
     if (btnUpdateLater) {
       btnUpdateLater.addEventListener('click', () => {
         if (latestUpdateInfo?.version) {
-          localStorage.setItem('riff_ignored_update_ver', String(latestUpdateInfo.version).replace(/^v/i, ''));
+          localStorage.setItem('cremo_ignored_update_ver', String(latestUpdateInfo.version).replace(/^v/i, ''));
         }
         if (api && api.updateAction) {
           api.updateAction('ignore');
@@ -2078,8 +2035,6 @@ window.verifyAndApplyPromocode = verifyAndApplyPromocode;
 window.escapeHtml = escapeHtml;
 window.cleanTrackId = cleanTrackId;
 window.CleanTrackId = cleanTrackId;
-window.isStaticTikTokTrack = isStaticTikTokTrack;
-window.repairTikTokTrack = repairTikTokTrack;
 window.t = t;
 window.tSet = tSet;
 window.showToast = showToast;
@@ -2153,7 +2108,7 @@ var AUTO_I18N_SELECTORS = [
   '[data-i18n]',
   '.setting-name',
   '.setting-hint',
-  '.setting-item-top div > span:not(.setting-name):not(.riff-beta-badge)',
+  '.setting-item-top div > span:not(.setting-name):not(.cremo-beta-badge)',
   '.setting-item > div:not([class]):not(:has(*))',
   '.setting-hints > span',
   '.customizer-box > div:first-child',
@@ -2204,7 +2159,7 @@ var DYNAMIC_EXCLUDE_SEL = [
 window.DYNAMIC_EXCLUDE_SEL = DYNAMIC_EXCLUDE_SEL;
 
 var PROTECTED_BRAND_TEXTS = new Set([
-  'Riff', 'devsize', 'Spotify', 'YouTube', 'Apple Music', 'Discord', 'Last.fm', 'HQMusic',
+  'Cremo', 'devsize', 'Spotify', 'YouTube', 'Apple Music', 'Discord', 'Last.fm', 'HQMusic',
   'Lossless', 'FLAC', 'MP3', 'WAV', 'OPUS', 'AAC', 'WebM', 'GitHub', 'Telegram'
 ]);
 window.PROTECTED_BRAND_TEXTS = PROTECTED_BRAND_TEXTS;
@@ -2216,8 +2171,6 @@ function ensureUiPackStyles() {}
 window.ensureUiPackStyles = ensureUiPackStyles;
 function ensurePack2Styles() {}
 window.ensurePack2Styles = ensurePack2Styles;
-function ensureAboutSupportStyles() {}
-window.ensureAboutSupportStyles = ensureAboutSupportStyles;
 function ensurePack3MasterOverridesStyles() {}
 window.ensurePack3MasterOverridesStyles = ensurePack3MasterOverridesStyles;
 
@@ -2235,32 +2188,32 @@ window.isI18nFixed = isI18nFixed;
 
 
 function getLyricsEase() {
-  const v = localStorage.getItem('riff_lyrics_ease') || 'spring';
+  const v = localStorage.getItem('cremo_lyrics_ease') || 'spring';
   return (typeof LYRIC_EASINGS !== 'undefined' && LYRIC_EASINGS && LYRIC_EASINGS[v]) ? v : 'spring';
 }
 window.getLyricsEase = getLyricsEase;
 
 function isLyricsFullscreenOnly() {
-  return localStorage.getItem('riff_lyrics_fullscreen_only') === '1';
+  return localStorage.getItem('cremo_lyrics_fullscreen_only') === '1';
 }
 window.isLyricsFullscreenOnly = isLyricsFullscreenOnly;
 
 
 function getLyricsSpeed() {
-  const v = parseFloat(localStorage.getItem('riff_lyrics_speed'));
+  const v = parseFloat(localStorage.getItem('cremo_lyrics_speed'));
   return Number.isFinite(v) && v >= 0.5 && v <= 2.0 ? v : 1.0;
 }
 window.getLyricsSpeed = getLyricsSpeed;
 
 
 function getLyricsWordStyle() {
-  return localStorage.getItem('riff_lyrics_word_style') || 'glow';
+  return localStorage.getItem('cremo_lyrics_word_style') || 'glow';
 }
 window.getLyricsWordStyle = getLyricsWordStyle;
 
 
 function getLyricsGradientTightness() {
-  const v = parseFloat(localStorage.getItem('riff_lyrics_tightness'));
+  const v = parseFloat(localStorage.getItem('cremo_lyrics_tightness'));
   return Number.isFinite(v) && v >= 0.05 && v <= 0.6 ? v : 0.22;
 }
 window.getLyricsGradientTightness = getLyricsGradientTightness;

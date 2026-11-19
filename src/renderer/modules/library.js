@@ -47,23 +47,14 @@ window.HomeCache = HomeCache;
     if (!state) return;
     if (!Array.isArray(state.favorites)) state.favorites = [];
     if (!Array.isArray(state.playlists)) state.playlists = [];
-    let favChanged = false;
-    if (Array.isArray(state.favorites)) {
-      for (const f of state.favorites) {
-        if (repairTikTokTrack(f)) favChanged = true;
-      }
-    }
     const favorites = backfillAddedAt(state.favorites, true);
-    if (favChanged || favorites !== state.favorites) {
+    if (favorites !== state.favorites) {
       state.favorites = favorites;
       localStorage.setItem('devsize_favorites', JSON.stringify(state.favorites));
     }
     let playlistsChanged = false;
     for (const pl of state.playlists) {
       if (!pl || !Array.isArray(pl.tracks)) continue;
-      for (const pt of pl.tracks) {
-        if (repairTikTokTrack(pt)) playlistsChanged = true;
-      }
       const tracks = backfillAddedAt(pl.tracks, false);
       if (tracks !== pl.tracks) {
         pl.tracks = tracks;
@@ -75,7 +66,7 @@ window.HomeCache = HomeCache;
 
   migrateAddedAt();
 
-  if (typeof applyFont === 'function' && typeof state !== 'undefined' && state) applyFont(state.riffFont);
+  if (typeof applyFont === 'function' && typeof state !== 'undefined' && state) applyFont(state.cremoFont);
 
   var cachedTrackIds = new Set();
   window.cachedTrackIds = cachedTrackIds;
@@ -101,7 +92,7 @@ window.HomeCache = HomeCache;
 
   function isTrackLocallyCached(t) {
     if (!t) return false;
-    if (t.isCached || (typeof isStaticTikTokTrack === 'function' && isStaticTikTokTrack(t))) return true;
+    if (t.isCached) return true;
     const cid = typeof cleanTrackId === 'function' ? cleanTrackId(t.id) : String(t.id || '').replace(/[^a-zA-Z0-9_-]/g, '_');
     if (cid && cachedTrackIds.has(cid)) return true;
     if (t.id && cachedTrackIds.has(t.id)) return true;
@@ -225,7 +216,7 @@ window.HomeCache = HomeCache;
 
       if (updateArr(state.history)) localStorage.setItem('devsize_history', JSON.stringify(state.history));
       if (updateArr(state.favorites)) localStorage.setItem('devsize_favorites', JSON.stringify(state.favorites));
-      if (updateArr(state.queue)) renderQueueView();
+      updateArr(state.queue);
 
       if (Array.isArray(state.playlists)) {
         let plChanged = false;
@@ -243,7 +234,6 @@ window.HomeCache = HomeCache;
 
       if (state.currentView === 'favorites' && typeof renderFavoritesView === 'function') renderFavoritesView();
       if (state.currentView === 'playlist-detail' && typeof renderPlaylistDetailView === 'function' && state.selectedPlaylist) renderPlaylistDetailView(state.selectedPlaylist);
-      if (state.currentView === 'history' && typeof renderHistoryView === 'function') renderHistoryView();
 
       sendStateToServer();
       sendDiscordRpcUpdate(state.currentTrack, state.isPlaying);
@@ -258,14 +248,6 @@ window.HomeCache = HomeCache;
 
   function getTrackCanonicalId(track) {
     if (!track) return '';
-    if (isStaticTikTokTrack(track)) {
-      let tid = track.id;
-      if (!tid || !String(tid).startsWith('tt_')) {
-        const m = String(track.url || '').match(/[?&]id=(tt_[^&]+)/) || String(track._preloadedStreamUrl || '').match(/[?&]id=(tt_[^&]+)/);
-        if (m && m[1]) tid = decodeURIComponent(m[1]);
-      }
-      return `tiktok:${tid || 'unknown'}`;
-    }
     const platform = track.platform || state.platform || 'yt';
     if (track.id) return `${platform}:${track.id}`;
     if (track.url || track.videoId) return `${platform}:${track.url || track.videoId}`;
@@ -280,7 +262,7 @@ window.HomeCache = HomeCache;
     return getTrackCanonicalId(a) === getTrackCanonicalId(b);
   }
 
-  function getTrackTrims() { return safeJson('riff_track_trims', {}); }
+  function getTrackTrims() { return safeJson('cremo_track_trims', {}); }
   function getTrackTrim(track) {
     if (!track) return null;
     const cid = getTrackCanonicalId(track);
@@ -296,12 +278,12 @@ window.HomeCache = HomeCache;
     } else {
       all[cid] = { start: Math.round(startSec * 10) / 10, end: Math.round(endSec * 10) / 10, updatedAt: Date.now() };
     }
-    try { localStorage.setItem('riff_track_trims', JSON.stringify(all)); } catch (_) {}
+    try { localStorage.setItem('cremo_track_trims', JSON.stringify(all)); } catch (_) {}
   }
 
   function getTrackArt(t) {
     try {
-      return JSON.parse(localStorage.getItem('riff_track_art') || '{}')[getTrackCanonicalId(t)] || {};
+      return JSON.parse(localStorage.getItem('cremo_track_art') || '{}')[getTrackCanonicalId(t)] || {};
     } catch (e) {
       return {};
     }
@@ -310,17 +292,17 @@ window.HomeCache = HomeCache;
   function setTrackArt(t, patch) {
     let all = {};
     try {
-      all = JSON.parse(localStorage.getItem('riff_track_art') || '{}');
+      all = JSON.parse(localStorage.getItem('cremo_track_art') || '{}');
     } catch (e) {}
     const id = getTrackCanonicalId(t);
     if (!id) return;
     const cur = { ...(all[id] || {}), ...patch };
     for (const k in cur) if (cur[k] === undefined || cur[k] === null || cur[k] === '') delete cur[k];
     if (Object.keys(cur).length) all[id] = cur; else delete all[id];
-    localStorage.setItem('riff_track_art', JSON.stringify(all));
+    localStorage.setItem('cremo_track_art', JSON.stringify(all));
   }
 
-  function getTrackRenames() { return safeJson('riff_track_renames', {}); }
+  function getTrackRenames() { return safeJson('cremo_track_renames', {}); }
   function saveTrackRename(canonicalId, title, artist, album, url) {
     if (!canonicalId) return;
     const all = getTrackRenames();
@@ -331,7 +313,7 @@ window.HomeCache = HomeCache;
     if (album !== undefined) entry.album = album;
     if (url !== undefined) entry.url = url;
     all[canonicalId] = entry;
-    try { localStorage.setItem('riff_track_renames', JSON.stringify(all)); } catch (_) {}
+    try { localStorage.setItem('cremo_track_renames', JSON.stringify(all)); } catch (_) {}
   }
   function applyTrackRenames(t) {
     if (!t) return t;
@@ -345,8 +327,8 @@ window.HomeCache = HomeCache;
     }
     return t;
   }
-  // Cremo: share the track's own link (YouTube/SoundCloud...), not Riff's share site.
-  function buildRiffShareUrl(track, directStream = '', resolvedUrl = '', maxLen = 0) {
+  // Cremo: share the track's own link (YouTube/SoundCloud...), not a share website.
+  function buildCremoShareUrl(track, directStream = '', resolvedUrl = '', maxLen = 0) {
     if (!track) return '';
     applyTrackRenames(track);
     const isHttpUrl = (u) => typeof u === 'string' && (u.startsWith('http://') || u.startsWith('https://')) && !u.includes('127.0.0.1');
@@ -372,7 +354,7 @@ window.HomeCache = HomeCache;
   function getMixFeedback() {
     const defaultVal = { likedArtists: [], dislikedArtists: [], likedTracks: [], dislikedTracks: [], ratingsByMix: {} };
     try {
-      const raw = localStorage.getItem('riff_mix_feedback');
+      const raw = localStorage.getItem('cremo_mix_feedback');
       const val = raw ? JSON.parse(raw) : defaultVal;
       if (!val || typeof val !== 'object') return defaultVal;
       if (!Array.isArray(val.likedArtists)) val.likedArtists = [];
@@ -389,7 +371,7 @@ window.HomeCache = HomeCache;
 
   function saveMixFeedback(data) {
     try {
-      localStorage.setItem('riff_mix_feedback', JSON.stringify(data || {}));
+      localStorage.setItem('cremo_mix_feedback', JSON.stringify(data || {}));
     } catch (_) {}
   }
   window.saveMixFeedback = saveMixFeedback;
@@ -509,7 +491,7 @@ window.HomeCache = HomeCache;
   window.handleDailyMixRating = handleDailyMixRating;
 
 
-  var SEARCH_HISTORY_KEY = 'riff_search_history_v2';
+  var SEARCH_HISTORY_KEY = 'cremo_search_history_v2';
   var VERIFIED_CHECK_SVG = '<svg class="verified-check" width="14" height="14" viewBox="0 0 24 24" aria-label="Verified artist"><circle cx="12" cy="12" r="11" fill="currentColor"></circle><path d="M7 12.5l3.2 3.2L17 9" fill="none" stroke="var(--md-sys-color-on-primary, #000)" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"></path></svg>';
 
   function stripFeaturing(title) {
@@ -793,7 +775,7 @@ window.HomeCache = HomeCache;
 
 
   function getPinnedPlaylists() {
-    return safeJson('riff_pinned_playlists', []);
+    return safeJson('cremo_pinned_playlists', []);
   }
 
   function isPlaylistPinned(plId) {
@@ -816,9 +798,8 @@ window.HomeCache = HomeCache;
       list.unshift(sId);
       pinned = true;
     }
-    localStorage.setItem('riff_pinned_playlists', JSON.stringify(list));
+    localStorage.setItem('cremo_pinned_playlists', JSON.stringify(list));
     if (typeof renderPlaylistsList === 'function') renderPlaylistsList();
-    if (typeof renderSidebarLibraryFeed === 'function') renderSidebarLibraryFeed();
     showToast(pinned ? 'Playlist pinned' : 'Playlist unpinned');
     return pinned;
   }
@@ -837,7 +818,6 @@ window.HomeCache = HomeCache;
       if (String(tr.id || '').startsWith('local_')) return true;
       if (String(tr.url || '').startsWith('file:')) return true;
       if (tr.path || tr.filePath) return true;
-      if (typeof isStaticTikTokTrack === 'function' && isStaticTikTokTrack(tr)) return true;
       return false;
     };
     const streamingTracks = tracksList.filter(tr => !isLocalTrackItem(tr));
@@ -943,9 +923,9 @@ window.HomeCache = HomeCache;
       const updated = state.localTracks || state.localFiles || [];
       const serialized = JSON.stringify(updated);
       localStorage.setItem('devsize_local_tracks', serialized);
-      localStorage.setItem('riff_local_tracks', serialized);
+      localStorage.setItem('cremo_local_tracks', serialized);
       localStorage.setItem('devsize_local_files', serialized);
-      localStorage.setItem('riff_local_files', serialized);
+      localStorage.setItem('cremo_local_files', serialized);
     } catch (_) {}
   }
   window.saveLocalTracks = saveLocalTracks;
@@ -976,14 +956,14 @@ window.HomeCache = HomeCache;
     fetch('http://127.0.0.1:' + state.serverPort + '/api/library-remove', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ ids: tracksToRemove.map(t => t?.id).filter(Boolean), clearAll: (state.localFiles || []).length === 0 }) }).catch(() => {});
 
     try {
-      const removedBlacklist = safeJson('riff_removed_local_paths', []);
+      const removedBlacklist = safeJson('cremo_removed_local_paths', []);
       const mergedBlacklist = Array.from(new Set([...removedBlacklist, ...pathsToRemove, ...idsToRemove]));
-      localStorage.setItem('riff_removed_local_paths', JSON.stringify(mergedBlacklist));
+      localStorage.setItem('cremo_removed_local_paths', JSON.stringify(mergedBlacklist));
       const serialized = JSON.stringify(updated);
       localStorage.setItem('devsize_local_tracks', serialized);
-      localStorage.setItem('riff_local_tracks', serialized);
+      localStorage.setItem('cremo_local_tracks', serialized);
       localStorage.setItem('devsize_local_files', serialized);
-      localStorage.setItem('riff_local_files', serialized);
+      localStorage.setItem('cremo_local_files', serialized);
       if (typeof saveLocalTracks === 'function') saveLocalTracks();
     } catch (_) {}
 
@@ -1008,7 +988,7 @@ window.HomeCache = HomeCache;
     }
 
     const query = el.favoritesSearchInput ? el.favoritesSearchInput.value.trim().toLowerCase() : '';
-    const userNick = localStorage.getItem('riff_user_nickname') || 'User';
+    const userNick = localStorage.getItem('cremo_user_nickname') || 'User';
     const totalSec = (state.favorites || []).reduce((acc, t) => acc + (t.duration || 0), 0);
     const totalMin = Math.round(totalSec / 60);
     const hrs = Math.floor(totalSec / 3600);
@@ -1043,7 +1023,7 @@ window.HomeCache = HomeCache;
     if (emptyHint) emptyHint.remove();
 
     const query = el.favoritesSearchInput ? el.favoritesSearchInput.value.trim().toLowerCase() : '';
-    const userNick = localStorage.getItem('riff_user_nickname') || 'User';
+    const userNick = localStorage.getItem('cremo_user_nickname') || 'User';
     const totalSec = (state.favorites || []).reduce((acc, t) => acc + (t.duration || 0), 0);
     const totalMin = Math.round(totalSec / 60);
     const hrs = Math.floor(totalSec / 3600);
@@ -1072,7 +1052,6 @@ window.HomeCache = HomeCache;
 
   function toggleFavoriteTrack(track, sourceRow = null) {
     if (!track) return;
-    repairTikTokTrack(track);
     const exists = state.favorites.some(f => isSameTrack(f, track));
     
     if (exists) {
@@ -1145,13 +1124,12 @@ window.HomeCache = HomeCache;
 
   function updateFavoritesBadge() {
     setNavCount(el.favoritesCount, state.favorites.length);
-    if (typeof renderSidebarLibraryFeed === 'function') renderSidebarLibraryFeed();
   }
 
-  var TRACK_SORT_KEYS = { favorites: 'riff_favorites_sort', playlist: 'riff_playlist_sort' };
+  var TRACK_SORT_KEYS = { favorites: 'cremo_favorites_sort', playlist: 'cremo_playlist_sort' };
 
   function getTrackSortMode(kind) {
-    const key = (typeof TRACK_SORT_KEYS !== 'undefined' && TRACK_SORT_KEYS && TRACK_SORT_KEYS[kind]) || (kind ? `riff_${kind}_sort` : null);
+    const key = (typeof TRACK_SORT_KEYS !== 'undefined' && TRACK_SORT_KEYS && TRACK_SORT_KEYS[kind]) || (kind ? `cremo_${kind}_sort` : null);
     const stored = key ? localStorage.getItem(key) : null;
     const modes = (typeof TRACK_SORT_MODES !== 'undefined' && Array.isArray(TRACK_SORT_MODES)) ? TRACK_SORT_MODES : ['manual', 'title', 'artist', 'album', 'duration', 'date'];
     return modes.includes(stored) ? stored : 'manual';
@@ -1161,7 +1139,7 @@ window.HomeCache = HomeCache;
     localStorage.setItem(TRACK_SORT_KEYS[kind], TRACK_SORT_MODES.includes(mode) ? mode : 'manual');
   }
 
-  var PINNED_TRACKS_KEY = 'riff_pinned_tracks';
+  var PINNED_TRACKS_KEY = 'cremo_pinned_tracks';
 
   function pinScopeFor(kind, playlistId) {
     if (kind === 'favorites') return 'favorites';
@@ -1254,7 +1232,7 @@ window.HomeCache = HomeCache;
     const hrs = Math.floor(totalSec / 3600);
     const mins = Math.floor((totalSec % 3600) / 60);
     const totalDurStr = totalSec > 0 ? (hrs > 0 ? `, ${hrs} hr ${mins} min` : `, ${totalMin || 1} min`) : '';
-    const userNick = localStorage.getItem('riff_user_nickname') || 'User';
+    const userNick = localStorage.getItem('cremo_user_nickname') || 'User';
     if (el.favoritesSubtitle) {
       el.favoritesSubtitle.textContent = query
         ? `${userNick} • ${filtered.length} of ${state.favorites.length} songs${totalDurStr}`
@@ -1398,7 +1376,7 @@ window.HomeCache = HomeCache;
     if (!sec || !listEl) return;
     if (isAddingFavRec) return;
 
-    if (localStorage.getItem('riff_show_fav_recs') === '0' || !state.favorites || !state.favorites.length) {
+    if (localStorage.getItem('cremo_show_fav_recs') === '0' || !state.favorites || !state.favorites.length) {
       sec.classList.add('hidden');
       return;
     }
@@ -1481,7 +1459,7 @@ window.HomeCache = HomeCache;
       state.queueHistory = [];
       if (state.isShuffle) {
         state.isShuffle = false;
-        localStorage.setItem('riff_shuffle', '0');
+        localStorage.setItem('cremo_shuffle', '0');
         if (el.btnShuffle) el.btnShuffle.classList.remove('active');
       }
       playTrack(list[0], list, 0, 'favorites');
@@ -1502,7 +1480,7 @@ window.HomeCache = HomeCache;
       state.queueHistory = [];
       if (!state.isShuffle) {
         state.isShuffle = true;
-        localStorage.setItem('riff_shuffle', '1');
+        localStorage.setItem('cremo_shuffle', '1');
         if (el.btnShuffle) el.btnShuffle.classList.add('active');
       }
       playTrack(shuffled[0], shuffled, 0, 'favorites');
@@ -1557,13 +1535,8 @@ window.HomeCache = HomeCache;
 
   function updateHistoryBadge() {
     setNavCount(el.historyCount, state.history.length);
-    if (typeof renderSidebarLibraryFeed === 'function') renderSidebarLibraryFeed();
   }
 
-  function renderHistoryView() {
-    updateHistoryBadge();
-    if (el.historyTracksList) renderTracks(el.historyTracksList, state.history, 'history');
-  }
 
 
   function updateLocalBadge() {
@@ -1586,7 +1559,7 @@ window.HomeCache = HomeCache;
     
 
     try {
-      const removedBlacklist = safeJson('riff_removed_local_paths', []);
+      const removedBlacklist = safeJson('cremo_removed_local_paths', []);
       if (Array.isArray(removedBlacklist) && removedBlacklist.length > 0) {
         const addedSet = new Set();
         for (const t of newTracks) {
@@ -1597,7 +1570,7 @@ window.HomeCache = HomeCache;
           if (t.id) addedSet.add(String(t.id));
         }
         const updatedBlacklist = removedBlacklist.filter(p => !addedSet.has(String(p)));
-        localStorage.setItem('riff_removed_local_paths', JSON.stringify(updatedBlacklist));
+        localStorage.setItem('cremo_removed_local_paths', JSON.stringify(updatedBlacklist));
       }
     } catch (_) {}
 
@@ -1618,9 +1591,9 @@ window.HomeCache = HomeCache;
     state.localTracks = state.localFiles;
     const serialized = JSON.stringify(state.localFiles);
     try {
-      localStorage.setItem('riff_local_files', serialized);
+      localStorage.setItem('cremo_local_files', serialized);
       localStorage.setItem('devsize_local_files', serialized);
-      localStorage.setItem('riff_local_tracks', serialized);
+      localStorage.setItem('cremo_local_tracks', serialized);
       localStorage.setItem('devsize_local_tracks', serialized);
       if (typeof saveLocalTracks === 'function') saveLocalTracks();
     } catch (_) {}
@@ -1659,10 +1632,10 @@ window.HomeCache = HomeCache;
 
   async function renderLocalFiles(forceFetch = false) {
     if (!Array.isArray(state.localFiles)) {
-      state.localFiles = safeArray('riff_local_files');
+      state.localFiles = safeArray('cremo_local_files');
     }
 
-    const removedBlacklist = new Set(safeJson('riff_removed_local_paths', []).map(String));
+    const removedBlacklist = new Set(safeJson('cremo_removed_local_paths', []).map(String));
     const shouldKeepLocal = (t) => {
       if (!t) return false;
       const p = String(t.path || t.filePath || t.url || '');
@@ -1699,9 +1672,9 @@ window.HomeCache = HomeCache;
             });
             if (updated) {
               const serialized = JSON.stringify(state.localFiles);
-              localStorage.setItem('riff_local_files', serialized);
+              localStorage.setItem('cremo_local_files', serialized);
               localStorage.setItem('devsize_local_files', serialized);
-              localStorage.setItem('riff_local_tracks', serialized);
+              localStorage.setItem('cremo_local_tracks', serialized);
               localStorage.setItem('devsize_local_tracks', serialized);
               state.localTracks = state.localFiles;
               if (state.currentView === 'local') {
@@ -1806,7 +1779,7 @@ window.HomeCache = HomeCache;
         (t.album && t.album.toLowerCase().includes(query))
       );
     }
-    const localSortMode = localStorage.getItem('riff_local_sort') || 'manual';
+    const localSortMode = localStorage.getItem('cremo_local_sort') || 'manual';
     if (localSortMode === 'title-asc') {
       filtered = [...filtered].sort((a, b) => (a.title || '').localeCompare(b.title || ''));
     } else if (localSortMode === 'added-desc') {
@@ -1891,10 +1864,10 @@ window.HomeCache = HomeCache;
 
   var localSortSelect = document.getElementById('local-sort');
   if (localSortSelect) {
-    localSortSelect.value = localStorage.getItem('riff_local_sort') || 'manual';
+    localSortSelect.value = localStorage.getItem('cremo_local_sort') || 'manual';
     localSortSelect.addEventListener('change', () => {
       const val = localSortSelect.value;
-      localStorage.setItem('riff_local_sort', val);
+      localStorage.setItem('cremo_local_sort', val);
       renderLocalFiles(false);
     });
     setupSortDropdown('local-sort-dropdown', 'local-sort-trigger', 'local-sort-menu', 'local-sort-label', localSortSelect);
@@ -2041,7 +2014,6 @@ window.HomeCache = HomeCache;
   var lastPlaylistsSig = '';
   function renderPlaylistsList() {
     if (typeof updateRpSaveButton === 'function') updateRpSaveButton();
-    if (typeof renderSidebarLibraryFeed === 'function') renderSidebarLibraryFeed();
     if (!el.playlistsList) return;
     const structureSig = (state.playlists || []).map(p => `${p.id}:${p.name}:${p.cover || ''}:${isPlaylistPinned(p.id)}:${p.tracks && p.tracks.length > 0 ? (p.tracks[0]?.id || '1') : '0'}`).join('|');
     if (structureSig === lastPlaylistsSig && el.playlistsList.children.length > 0) {
@@ -2443,7 +2415,7 @@ window.HomeCache = HomeCache;
         const hrs = Math.floor(totalSec / 3600);
         const mins = Math.floor((totalSec % 3600) / 60);
         const totalDurStr = totalSec > 0 ? (hrs > 0 ? `, ${hrs} hr ${mins} min` : `, ${totalMin || 1} min`) : '';
-        const userNick = localStorage.getItem('riff_user_nickname') || 'User';
+        const userNick = localStorage.getItem('cremo_user_nickname') || 'User';
         el.favoritesSubtitle.textContent = `${userNick} • ${state.favorites.length} songs${totalDurStr}`;
       }
       if (el.mainContent) el.mainContent.scrollTop = savedScroll;
@@ -2510,7 +2482,7 @@ window.HomeCache = HomeCache;
   }
 
   function formatRelativeTime(ts) {
-    const lang = (localStorage.getItem('riff_ui_lang') || localStorage.getItem('riff_lang') || 'en').toLowerCase();
+    const lang = (localStorage.getItem('cremo_ui_lang') || localStorage.getItem('cremo_lang') || 'en').toLowerCase();
     if (!ts || typeof ts !== 'number' || isNaN(ts)) {
       if (lang === 'ru') return 'только что';
       if (lang === 'uk') return 'щойно';
@@ -2566,12 +2538,9 @@ window.HomeCache = HomeCache;
     if (!platform && syncUrl) {
       if (syncUrl.includes('spotify.com')) platform = 'spotify';
       else if (syncUrl.includes('apple.com') || syncUrl.includes('itunes.apple.com')) platform = 'apple';
-      else if (syncUrl.includes('music.yandex') || syncUrl.includes('yandex.')) platform = 'yandex';
-      else if (syncUrl.includes('vk.com')) platform = 'vk';
       else if (syncUrl.includes('soundcloud.com')) platform = 'soundcloud';
       else if (syncUrl.includes('music.youtube.com')) platform = 'ytmusic';
       else if (syncUrl.includes('youtube.com') || syncUrl.includes('youtu.be')) platform = 'youtube';
-      else if (syncUrl.includes('tiktok.com')) platform = 'tiktok';
       else if (syncUrl.includes('deezer.com')) platform = 'deezer';
     }
 
@@ -2583,9 +2552,6 @@ window.HomeCache = HomeCache;
       const lowerName = pl.name.toLowerCase().trim();
       if (lowerName === 'spotify playlist' || lowerName.includes('spotify import')) platform = 'spotify';
       else if (lowerName === 'apple music playlist' || lowerName.includes('apple music')) platform = 'apple';
-      else if (lowerName === 'yandex music playlist' || lowerName.includes('yandex music')) platform = 'yandex';
-      else if (lowerName === 'vk music' || lowerName.includes('vk import')) platform = 'vk';
-      else if (lowerName === 'tiktok track') platform = 'tiktok';
       else if (lowerName === 'imported playlist') platform = 'file';
     }
 
@@ -2597,8 +2563,6 @@ window.HomeCache = HomeCache;
 
     platform = String(platform).toLowerCase().trim();
     if (platform === 'applemusic') platform = 'apple';
-    if (platform === 'yandexmusic') platform = 'yandex';
-    if (platform === 'vkmusic') platform = 'vk';
 
     let rawTs = pl.importedAt ?? pl.lastSyncedAt ?? pl.createdAt;
     if (!rawTs && Array.isArray(pl.tracks) && pl.tracks[0] && typeof pl.tracks[0].addedAt === 'number') {
@@ -2626,20 +2590,11 @@ window.HomeCache = HomeCache;
     if (p === 'apple') {
       return '<svg width="20" height="20" viewBox="0 0 24 24" fill="#FA243C"><path d="M18.71 19.5c-.83 1.24-1.71 2.45-3.05 2.47-1.34.03-1.77-.79-3.29-.79-1.53 0-2 .77-3.27.82-1.31.05-2.3-1.32-3.14-2.53C4.25 17 2.94 12.45 4.7 9.39c.87-1.52 2.43-2.48 4.12-2.51 1.28-.02 2.5.87 3.29.87.78 0 2.26-1.07 3.81-.91.65.03 2.47.26 3.64 1.98-.09.06-2.17 1.28-2.15 3.81.03 3.02 2.65 4.03 2.68 4.04-.03.07-.42 1.44-1.38 2.83M15.97 6.37c.58-.71.97-1.7 1.01-2.69-.85.04-1.88.58-2.49 1.29-.54.63-.98 1.64-.86 2.62.95.07 1.76-.51 2.34-1.22z"/></svg>';
     }
-    if (p === 'vk') {
-      return '<svg width="20" height="20" viewBox="0 0 24 24" fill="#0077FF"><path d="M15.684 0H8.316C1.592 0 0 1.592 0 8.316v7.368C0 22.408 1.592 24 8.316 24h7.368C22.408 24 24 22.408 24 15.684V8.316C24 1.592 22.408 0 15.684 0zm3.692 16.945h-1.668c-.63 0-.824-.5-1.957-1.636-1-.986-1.443-1.113-1.689-1.113-.346 0-.444.1-.444.577v1.547c0 .414-.133.625-1.23.625-1.815 0-3.83-1.101-5.253-3.155-2.14-3.033-2.73-5.319-2.73-5.787 0-.256.1-.495.59-.495h1.668c.444 0 .61.205.78.69.854 2.476 2.28 4.646 2.872 4.646.222 0 .324-.102.324-.662V9.827c-.07-.946-.554-1.026-.554-1.365 0-.166.138-.33.364-.33h2.3c.312 0 .424.164.424.536v3.29c0 .354.156.495.259.495.223 0 .408-.141.818-.55 1.254-1.405 2.148-3.565 2.148-3.565.118-.256.326-.406.77-.406h1.668c.501 0 .607.256.499.614-.205.952-2.186 3.73-2.287 3.883-.242.36-.337.52 0 .967.238.32 1.026.997 1.554 1.611.968 1.121 1.705 2.062 1.902 2.712.197.64-.108.971-.74.971z"/></svg>';
-    }
-    if (p === 'yandex') {
-      return '<svg width="20" height="20" viewBox="0 0 24 24"><circle cx="12" cy="12" r="11" fill="#FC3F1D"/><path fill="#fff" d="M13.5 17.5h-2.1l-3.2-6.5v6.5H6.2V6.5h2.2l3.2 6.4V6.5h1.9v11z"/></svg>';
-    }
     if (p === 'youtube' || p === 'ytmusic') {
       return '<svg width="20" height="20" viewBox="0 0 24 24" fill="#FF0000"><path d="M23.498 6.186a3.016 3.016 0 0 0-2.122-2.136C19.505 3.545 12 3.545 12 3.545s-7.505 0-9.377.505A3.017 3.017 0 0 0 .502 6.186C0 8.07 0 12 0 12s0 3.93.502 5.814a3.016 3.016 0 0 0 2.122 2.136c1.871.505 9.376.505 9.376.505s7.505 0 9.377-.505a3.015 3.015 0 0 0 2.122-2.136C24 15.93 24 12 24 12s0-3.93-.502-5.814zM9.545 15.568V8.432L15.818 12l-6.273 3.568z"/></svg>';
     }
     if (p === 'soundcloud') {
       return '<svg width="20" height="20" viewBox="0 0 24 24" fill="#FF5500"><path d="M11.56 8.87V17h8.77c1.47 0 2.67-1.19 2.67-2.66s-1.2-2.67-2.67-2.67c-.24 0-.46.03-.68.1-.38-1.74-1.92-3.03-3.76-3.03-.89 0-1.72.3-2.39.81-.35-.4-.83-.68-1.94-.68zm-1.5 1.48v6.65h.75V9.75c-.28.16-.54.36-.75.6zm-1.5.73v5.92h.75v-6.3c-.28.11-.53.24-.75.38zm-1.5.38v5.54h.75v-5.74c-.27.05-.52.12-.75.2zm-1.5.21v5.33h.75v-5.42c-.27.01-.52.05-.75.09zm-1.5.17v5.16h.75v-5.2c-.26 0-.51.01-.75.04zm-1.5.34v4.82h.75v-4.88c-.26.01-.51.03-.75.06zm-1.5.4v4.42h.75v-4.47c-.26.01-.5.03-.75.05zm-1.06.65v3.77h.75v-3.8c-.26.01-.5.02-.75.03z"/></svg>';
-    }
-    if (p === 'tiktok') {
-      return '<svg width="20" height="20" viewBox="0 0 24 24"><path fill="#25F4EE" d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.24 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z" transform="translate(1, 1)"/><path fill="#FE2C55" d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.24 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z" transform="translate(-1, -1)"/><path fill="#FFFFFF" d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.24 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg>';
     }
     if (p === 'deezer') {
       return '<svg width="20" height="20" viewBox="0 0 24 24" fill="#A238FF"><path d="M18.8 6.7h4.8v2.7h-4.8zm0 3.7h4.8v2.7h-4.8zm0 3.7h4.8v2.7h-4.8zm0 3.7h4.8v2.7h-4.8zM12.6 10.4h4.8v2.7h-4.8zm0 3.7h4.8v2.7h-4.8zm0 3.7h4.8v2.7h-4.8zM6.3 14.1h4.8v2.7H6.3zm0 3.7h4.8v2.7H6.3zM0 17.8h4.8v2.7H0z"/></svg>';
@@ -2796,7 +2751,7 @@ window.HomeCache = HomeCache;
     const listEl = document.getElementById('playlist-recs-list');
     if (!sec || !listEl) return;
 
-    if (localStorage.getItem('riff_show_playlist_recs') === '0') {
+    if (localStorage.getItem('cremo_show_playlist_recs') === '0') {
       sec.classList.add('hidden');
       return;
     }
@@ -3655,8 +3610,8 @@ window.HomeCache = HomeCache;
   window.renderAccountBadgesUI = renderAccountBadgesUI;
 
   function syncLocalAccountUI() {
-    const nick = (localStorage.getItem('riff_user_nickname') || '').trim() || 'User';
-    const avatar = (localStorage.getItem('riff_user_avatar') || '').trim() || DEFAULT_USER_AVATAR;
+    const nick = (localStorage.getItem('cremo_user_nickname') || '').trim() || 'User';
+    const avatar = (localStorage.getItem('cremo_user_avatar') || '').trim() || DEFAULT_USER_AVATAR;
     const navName = document.getElementById('settings-nav-account-name');
     const nickInput = document.getElementById('account-nickname-input');
     const navAvatar = document.getElementById('settings-nav-avatar');
@@ -3714,14 +3669,14 @@ window.HomeCache = HomeCache;
   if (accountNicknameInput) {
     accountNicknameInput.addEventListener('input', (e) => {
       const val = e.target.value;
-      localStorage.setItem('riff_user_nickname', val);
+      localStorage.setItem('cremo_user_nickname', val);
       const navName = document.getElementById('settings-nav-account-name');
       if (navName) navName.textContent = val.trim() || 'User';
     });
     accountNicknameInput.addEventListener('blur', () => {
       if (!accountNicknameInput.value.trim()) {
         accountNicknameInput.value = 'User';
-        localStorage.setItem('riff_user_nickname', 'User');
+        localStorage.setItem('cremo_user_nickname', 'User');
         syncLocalAccountUI();
       }
     });
@@ -3733,7 +3688,7 @@ window.HomeCache = HomeCache;
       if (window.electronAPI && window.electronAPI.pickMedia) {
         const url = await window.electronAPI.pickMedia();
         if (url) {
-          localStorage.setItem('riff_user_avatar', url);
+          localStorage.setItem('cremo_user_avatar', url);
           syncLocalAccountUI();
         }
       }
@@ -3743,7 +3698,7 @@ window.HomeCache = HomeCache;
   var btnResetAccountAvatar = document.getElementById('btn-reset-account-avatar');
   if (btnResetAccountAvatar) {
     btnResetAccountAvatar.addEventListener('click', () => {
-      localStorage.removeItem('riff_user_avatar');
+      localStorage.removeItem('cremo_user_avatar');
       syncLocalAccountUI();
     });
   }
@@ -4293,7 +4248,7 @@ window.HomeCache = HomeCache;
       if (cid) {
         const all = getTrackTrims();
         delete all[cid];
-        try { localStorage.setItem('riff_track_trims', JSON.stringify(all)); } catch (_) {}
+        try { localStorage.setItem('cremo_track_trims', JSON.stringify(all)); } catch (_) {}
       }
       trimDraft.start = 0;
       trimDraft.end = trimDraft.dur;
@@ -4305,7 +4260,7 @@ window.HomeCache = HomeCache;
 
   function setDownloadFormat(fmt) {
     selectedFormat = fmt || 'mp3';
-    localStorage.setItem('riff_download_format', selectedFormat);
+    localStorage.setItem('cremo_download_format', selectedFormat);
     document.querySelectorAll('.format-chip').forEach(c => {
       c.classList.toggle('active', c.dataset.format === selectedFormat);
     });
@@ -4322,7 +4277,7 @@ window.HomeCache = HomeCache;
       badge.className = 'lossless-warn-badge hidden';
       document.body.appendChild(badge);
     }
-    const isRu = (localStorage.getItem('riff_ui_lang') || localStorage.getItem('riff_lang') || 'en').startsWith('ru');
+    const isRu = (localStorage.getItem('cremo_ui_lang') || localStorage.getItem('cremo_lang') || 'en').startsWith('ru');
     const fmtName = (fmt || 'flac').toUpperCase();
     badge.textContent = isRu
       ? `${fmtName} — не магия: стриминговый звук не станет студийным lossless`
@@ -4487,7 +4442,7 @@ window.HomeCache = HomeCache;
       for (let i = 0; i < str.length; i++) view.setUint8(offset + i, str.charCodeAt(i));
     };
 
-    writeStr(0, 'RIFF');
+    writeStr(0, 'CREMO');
     view.setUint32(4, 36 + dataSize, true);
     writeStr(8, 'WAVE');
     writeStr(12, 'fmt ');
@@ -4525,7 +4480,7 @@ window.HomeCache = HomeCache;
           if (el.downloadBtnText) el.downloadBtnText.textContent = `Downloading ${i + 1}/${tracks.length}`;
           if (el.btnConfirmDownload) el.btnConfirmDownload.title = `Downloading ${i + 1}/${tracks.length}`;
           try {
-            const customDir = state.downloadDir || localStorage.getItem('riff_download_dir') || '';
+            const customDir = state.downloadDir || localStorage.getItem('cremo_download_dir') || '';
             const thumbUrl = getTrackThumbUrl(t) || t.thumbnail || t.cover || '';
             const downloadUrl = `http://127.0.0.1:${state.serverPort}/api/download?url=${encodeURIComponent(t.url || '')}&id=${encodeURIComponent(t.id || '')}&title=${encodeURIComponent(t.title || '')}&artist=${encodeURIComponent(t.artist || '')}&format=${selectedFormat}&quality=${selectedQuality}&thumbnail=${encodeURIComponent(thumbUrl)}&customDir=${encodeURIComponent(customDir)}`;
             const res = await fetch(downloadUrl);
@@ -4573,7 +4528,7 @@ window.HomeCache = HomeCache;
       }
       const spinnerEl = el.downloadSpinner || document.getElementById('download-spinner');
       if (spinnerEl) {
-        spinnerEl.innerHTML = `<div class="m3-spinner-container" style="width: 32px; height: 32px; padding: 4px; background: transparent; color: var(--md-sys-color-primary);"><span class="riff-dots-loader" aria-hidden="true"><i></i><i></i><i></i></span></div>`;
+        spinnerEl.innerHTML = `<div class="m3-spinner-container" style="width: 32px; height: 32px; padding: 4px; background: transparent; color: var(--md-sys-color-primary);"><span class="cremo-dots-loader" aria-hidden="true"><i></i><i></i><i></i></span></div>`;
       }
 
       showToast(`Downloading: ${t.title || 'Track'} (.${selectedFormat})`, 'info');
@@ -4745,7 +4700,7 @@ window.HomeCache = HomeCache;
             thumbUrl = decodeURIComponent(String(thumbUrl).replace(/^file:\/\//, ''));
           }
         }
-        const customDir = state.downloadDir || localStorage.getItem('riff_download_dir') || '';
+        const customDir = state.downloadDir || localStorage.getItem('cremo_download_dir') || '';
         const encodeUrl = `http://127.0.0.1:${state.serverPort}/api/encode?title=${encodeURIComponent(t.title || 'untitled')}&artist=${encodeURIComponent(t.artist || 'unknown artist')}&format=${selectedFormat}&quality=${selectedQuality}&thumbnail=${encodeURIComponent(thumbUrl)}&customDir=${encodeURIComponent(customDir)}`;
         const resEncode = await fetch(encodeUrl, {
           method: 'POST',
@@ -4804,7 +4759,7 @@ window.HomeCache = HomeCache;
       state.queueHistory = [];
       if (!state.isShuffle) {
         state.isShuffle = true;
-        localStorage.setItem('riff_shuffle', '1');
+        localStorage.setItem('cremo_shuffle', '1');
         if (el.btnShuffle) el.btnShuffle.classList.add('active');
       }
       playTrack(shuffled[0], shuffled, 0, 'playlist');
@@ -4821,7 +4776,7 @@ window.HomeCache = HomeCache;
       state.queueHistory = [];
       if (state.isShuffle) {
         state.isShuffle = false;
-        localStorage.setItem('riff_shuffle', '0');
+        localStorage.setItem('cremo_shuffle', '0');
         if (el.btnShuffle) el.btnShuffle.classList.remove('active');
       }
       playTrack(list[0], list, 0, 'playlist');
@@ -4844,7 +4799,7 @@ window.HomeCache = HomeCache;
   var analysisCache = new Map();
   myWaveCurrentTracks = (Array.isArray(myWaveCurrentTracks) && myWaveCurrentTracks.length > 0) ? myWaveCurrentTracks : [];
   var jumpBackCurrentTracks = [];
-  var homeMode = localStorage.getItem('riff_home_pane') === 'recent' ? 'recent' : 'wave';
+  var homeMode = localStorage.getItem('cremo_home_pane') === 'recent' ? 'recent' : 'wave';
   var isExtendingMyWave = false;
 
 
@@ -4853,7 +4808,7 @@ window.HomeCache = HomeCache;
     const cleanId = String(trackId).replace(/[^a-zA-Z0-9_-]/g, '_');
     if (analysisCache.has(cleanId)) return analysisCache.get(cleanId);
     try {
-      const stored = localStorage.getItem(`riff_audio_analysis_${cleanId}`);
+      const stored = localStorage.getItem(`cremo_audio_analysis_${cleanId}`);
       if (stored) {
         const parsed = JSON.parse(stored);
         analysisCache.set(cleanId, parsed);
@@ -4868,7 +4823,7 @@ window.HomeCache = HomeCache;
     const cleanId = String(trackId).replace(/[^a-zA-Z0-9_-]/g, '_');
     analysisCache.set(cleanId, analysis);
     try {
-      localStorage.setItem(`riff_audio_analysis_${cleanId}`, JSON.stringify(analysis));
+      localStorage.setItem(`cremo_audio_analysis_${cleanId}`, JSON.stringify(analysis));
       fetch(`http://127.0.0.1:${state.serverPort}/api/track-analysis`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -4949,8 +4904,8 @@ window.HomeCache = HomeCache;
     return false;
   }
 
-  var WAVE_SKIPS_KEY = 'riff_wave_skips';
-  var FAILED_TRACKS_KEY = 'riff_failed_tracks';
+  var WAVE_SKIPS_KEY = 'cremo_wave_skips';
+  var FAILED_TRACKS_KEY = 'cremo_failed_tracks';
 
 
   function normalizeArtistName(name) {
@@ -4988,7 +4943,7 @@ window.HomeCache = HomeCache;
 
   function getBlockedArtists() {
     try {
-      const raw = localStorage.getItem('riff_blocked_artists');
+      const raw = localStorage.getItem('cremo_blocked_artists');
       return Array.isArray(JSON.parse(raw)) ? JSON.parse(raw) : [];
     } catch (_) {
       return [];
@@ -4997,7 +4952,7 @@ window.HomeCache = HomeCache;
 
   function getBlockedTracks() {
     try {
-      const raw = localStorage.getItem('riff_blocked_tracks');
+      const raw = localStorage.getItem('cremo_blocked_tracks');
       return Array.isArray(JSON.parse(raw)) ? JSON.parse(raw) : [];
     } catch (_) {
       return [];
@@ -5054,7 +5009,7 @@ window.HomeCache = HomeCache;
       list.push(clean);
       blocked = true;
     }
-    localStorage.setItem('riff_blocked_artists', JSON.stringify(list));
+    localStorage.setItem('cremo_blocked_artists', JSON.stringify(list));
     showToast(blocked ? `Blocked artist "${clean}"` : `Unblocked artist "${clean}"`, 'info');
     renderBlockedItemsSettings();
     syncArtistBlockButtonUI();
@@ -5089,7 +5044,7 @@ window.HomeCache = HomeCache;
       list.push({ key: trackKey, id: trackId, title, artist });
       blocked = true;
     }
-    localStorage.setItem('riff_blocked_tracks', JSON.stringify(list));
+    localStorage.setItem('cremo_blocked_tracks', JSON.stringify(list));
     showToast(blocked ? `Blocked track "${title || 'Track'}"` : `Unblocked track "${title || 'Track'}"`, 'info');
     renderBlockedItemsSettings();
     return blocked;
@@ -5572,8 +5527,6 @@ window.HomeCache = HomeCache;
 
   async function generateDailyMixes(force = false) {
     if (!getAdv('my_wave', true)) return null;
-    const sp = (localStorage.getItem('riff_home_layout') || 'spotify') === 'spotify';
-    if (!sp) return null;
 
     const today = getLocalDateString();
     let cached = (window.HomeCache && window.HomeCache.get('daily_mixes', 24 * 3600 * 1000)) || safeJson(MIX_KEY, null);
@@ -5796,7 +5749,7 @@ window.HomeCache = HomeCache;
       coverWrap.style.justifyContent = 'center';
       coverWrap.innerHTML = `
         <div class="m3-spinner-container" style="width: 32px; height: 32px; background: transparent;">
-          <span class="riff-dots-loader" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="cremo-dots-loader" aria-hidden="true"><i></i><i></i><i></i></span>
         </div>
       `;
       const titleEl = document.createElement('div');
@@ -5890,7 +5843,7 @@ window.HomeCache = HomeCache;
         coverWrap.style.justifyContent = 'center';
         coverWrap.innerHTML = `
           <div class="m3-spinner-container" style="width: 32px; height: 32px; background: transparent;">
-            <span class="riff-dots-loader" aria-hidden="true"><i></i><i></i><i></i></span>
+            <span class="cremo-dots-loader" aria-hidden="true"><i></i><i></i><i></i></span>
           </div>
         `;
         const titleEl = document.createElement('div');
@@ -5904,7 +5857,6 @@ window.HomeCache = HomeCache;
 
     bindHorizontalWheel(row);
     requestAnimationFrame(() => updateRowFade(row));
-    if (typeof updateSidebarSplitCovers === 'function') updateSidebarSplitCovers();
     refreshOverflowFades(row);
   }
 
@@ -5931,11 +5883,11 @@ window.HomeCache = HomeCache;
       btnResetRecommendations.disabled = true;
       try {
         const recKeys = [
-          'riff_daily_mixes',
-          'riff_my_wave_cache',
-          'riff_wave_skips',
-          'riff_failed_tracks',
-          'riff_mix_feedback'
+          'cremo_daily_mixes',
+          'cremo_my_wave_cache',
+          'cremo_wave_skips',
+          'cremo_failed_tracks',
+          'cremo_mix_feedback'
         ];
         recKeys.forEach(k => {
           try { localStorage.removeItem(k); } catch (_) {}
@@ -6288,481 +6240,6 @@ window.HomeCache = HomeCache;
   }
 
 
-  function getSidebarPinnedTracks() {
-    const arr = safeJson(SIDEBAR_PINNED_TRACKS_KEY, []);
-    return Array.isArray(arr) ? arr : [];
-  }
-  function isTrackPinnedToSidebar(track) {
-    if (!track) return false;
-    const cid = getTrackCanonicalId(track);
-    return getSidebarPinnedTracks().some(t => getTrackCanonicalId(t) === cid || isSameTrack(t, track));
-  }
-  function togglePinTrackToSidebar(track) {
-    if (!track) return false;
-    const list = getSidebarPinnedTracks();
-    const cid = getTrackCanonicalId(track);
-    const idx = list.findIndex(t => getTrackCanonicalId(t) === cid || isSameTrack(t, track));
-    let pinned = false;
-    if (idx >= 0) {
-      list.splice(idx, 1);
-    } else {
-      list.unshift({
-        id: track.id,
-        title: track.title,
-        artist: track.artist,
-        album: track.album,
-        duration: track.duration,
-        thumbnail: getTrackThumbUrl(track) || track.thumbnail || track.cover || '',
-        cover: track.cover || track.thumbnail || '',
-        url: track.url || '',
-        platform: track.platform || state.platform || 'ytmusic',
-        searchQuery: track.searchQuery || ''
-      });
-      pinned = true;
-    }
-    try { localStorage.setItem(SIDEBAR_PINNED_TRACKS_KEY, JSON.stringify(list.slice(0, 50))); } catch (_) {}
-    renderSidebarLibraryFeed();
-    showToast(pinned ? 'Pinned to sidebar' : 'Unpinned from sidebar', 'info');
-    return pinned;
-  }
-
-  var SIDEBAR_LIBRARY_TRACKS_KEY = 'riff_sidebar_library_tracks';
-  function getSidebarLibraryTracks() {
-    const arr = safeJson(SIDEBAR_LIBRARY_TRACKS_KEY, []);
-    return Array.isArray(arr) ? arr : [];
-  }
-  function isTrackInSidebarLibrary(track) {
-    if (!track) return false;
-    const cid = getTrackCanonicalId(track);
-    return getSidebarLibraryTracks().some(t => (cid && getTrackCanonicalId(t) === cid) || isSameTrack(t, track));
-  }
-  function toggleTrackInSidebarLibrary(track) {
-    if (!track) return false;
-    const list = getSidebarLibraryTracks();
-    const cid = getTrackCanonicalId(track);
-    const idx = list.findIndex(t => (cid && getTrackCanonicalId(t) === cid) || isSameTrack(t, track));
-    let added = false;
-    if (idx >= 0) {
-      list.splice(idx, 1);
-    } else {
-      list.unshift({
-        id: track.id,
-        title: track.title,
-        artist: track.artist,
-        album: track.album,
-        duration: track.duration,
-        thumbnail: (typeof getTrackThumbUrl === 'function' ? getTrackThumbUrl(track) : '') || track.thumbnail || track.cover || '',
-        cover: track.cover || track.thumbnail || '',
-        url: track.url || '',
-        platform: track.platform || (typeof state !== 'undefined' ? state.platform : '') || 'ytmusic',
-        searchQuery: track.searchQuery || '',
-        addedAt: Date.now()
-      });
-      added = true;
-    }
-    try { localStorage.setItem(SIDEBAR_LIBRARY_TRACKS_KEY, JSON.stringify(list.slice(0, 200))); } catch (_) {}
-    renderSidebarLibraryFeed();
-    showToast(added ? t('Added to library') : t('Removed from library'), 'info');
-    return added;
-  }
-  window.getSidebarLibraryTracks = getSidebarLibraryTracks;
-  window.isTrackInSidebarLibrary = isTrackInSidebarLibrary;
-  window.toggleTrackInSidebarLibrary = toggleTrackInSidebarLibrary;
-
-  var currentSidebarLibFilter = currentSidebarLibFilter || 'playlists';
-
-  function renderSidebarLibraryFeed(forceAnim = false) {
-    if (!document.body.classList.contains('sidebar-expanded')) return;
-    if (typeof currentSidebarLibFilter === 'undefined' || !currentSidebarLibFilter) currentSidebarLibFilter = 'playlists';
-    const feed = document.getElementById('sidebar-library-feed');
-    if (!feed) return;
-    feed.dataset.tab = currentSidebarLibFilter;
-
-    const sbSortMode = localStorage.getItem('riff_sb_lib_sort') || 'Recents';
-    const structureSig = [
-      currentSidebarLibFilter,
-      sbSortMode,
-      localStorage.getItem('riff_sidebar_custom_order') || '',
-      getSidebarPinnedTracks().map(t => t.id || t.title).join(','),
-      getSidebarLibraryTracks().map(t => t.id || t.title).join(','),
-      (state.playlists || []).map(p => `${p.id}:${p.name}:${p.cover || ''}:${isPlaylistPinned(p.id)}:${p.tracks && p.tracks.length > 0 ? (p.tracks[0]?.id || '1') : '0'}`).join('|'),
-      (typeof getSavedAlbums === 'function' ? getSavedAlbums() : []).map(a => a.id || a.title).join(','),
-      currentSidebarLibFilter === 'queue' ? `${state.currentTrack?.id || ''}:${state.queueIndex}:${(state.queue || []).length}:${(state.history || []).length}:${typeof autoplayEnabled === 'function' && autoplayEnabled() ? '1' : '0'}` : ''
-    ].join('::');
-    if (!forceAnim && feed._lastSig === structureSig && feed.children.length > 0) {
-      const curId = state.currentTrack ? getTrackCanonicalId(state.currentTrack) : '';
-      const pinSvg = '<svg class="sb-lib-pin-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z"/></svg>';
-      feed.querySelectorAll('.sb-lib-row').forEach(r => {
-        if (r.dataset.viewTarget) {
-          r.classList.toggle('active', state.currentView === r.dataset.viewTarget);
-          if (r.dataset.viewTarget === 'favorites') {
-            const favCount = (state.favorites || []).length;
-            const subSpan = r.querySelector('.sb-lib-sub span');
-            if (subSpan) subSpan.textContent = `${favCount} ${favCount === 1 ? 'song' : 'songs'}`;
-          } else if (r.dataset.viewTarget === 'local') {
-            const localCnt = (state.localTracks && state.localTracks.length) || 0;
-            const sub = r.querySelector('.sb-lib-sub');
-            if (sub) sub.textContent = `${localCnt} ${localCnt === 1 ? 'file' : 'files'}`;
-          }
-        } else if (r.dataset.playlistId) {
-          r.classList.toggle('active', state.currentView === 'playlist-detail' && state.currentPlaylistId === r.dataset.playlistId);
-          const pl = (state.playlists || []).find(p => p.id === r.dataset.playlistId);
-          if (pl) {
-            const cnt = (pl.tracks || []).length;
-            r.title = `${pl.name || 'Untitled'} (${cnt})`;
-            const sub = r.querySelector('.sb-lib-sub');
-            if (sub) {
-              const isPinned = isPlaylistPinned(pl.id);
-              sub.innerHTML = `${isPinned ? pinSvg : ''}${cnt} ${cnt === 1 ? 'track' : 'tracks'}`;
-            }
-          }
-        } else if (r.dataset.canonicalId) {
-          r.classList.toggle('playing', Boolean(curId && r.dataset.canonicalId === curId));
-        }
-      });
-      const btnSbSet = document.getElementById('btn-sb-settings');
-      if (btnSbSet) btnSbSet.classList.toggle('active', state.currentView === 'settings');
-      if (typeof window.applySidebarLibFilter === 'function') window.applySidebarLibFilter();
-      return;
-    }
-    feed._lastSig = structureSig;
-
-    const prevScrollTop = feed.scrollTop;
-    const isFeedFadeTop = feed.scrollTop > 6;
-
-    feed.innerHTML = '';
-    const frag = document.createDocumentFragment();
-    const pinSvg = '<svg class="sb-lib-pin-icon" viewBox="0 0 24 24" fill="currentColor"><path d="M16 12V4h1V2H7v2h1v8l-2 2v2h5.2v6h1.6v-6H18v-2l-2-2z"/></svg>';
-
-    const makeTrackCard = (tr, list, idx, opts = {}) => {
-      const row = document.createElement('div');
-      const isPlaying = state.currentTrack && isSameTrack(state.currentTrack, tr);
-      row.className = 'sb-lib-row sb-lib-track' + (isPlaying ? ' playing' : '');
-      row.title = `${tr.title || 'Untitled'} • ${tr.artist || 'Unknown artist'}`;
-      row.dataset.canonicalId = getTrackCanonicalId(tr);
-      if (!forceAnim) row.classList.add('no-sb-anim');
-      const thumb = typeof getTrackThumbUrl === 'function' ? getTrackThumbUrl(tr) : (tr.thumbnail || tr.cover || '');
-      row.innerHTML = `
-        <div class="sb-lib-cover">
-          ${thumb ? `<img src="${escapeHtml(thumb)}" alt="" loading="lazy" onerror="this.style.display='none'">` : '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>'}
-        </div>
-        <div class="sb-lib-info">
-          <span class="sb-lib-title">${escapeHtml(tr.title || 'Untitled')}</span>
-          <span class="sb-lib-sub">${opts.pinned ? pinSvg : ''}${escapeHtml(tr.artist || 'Unknown artist')}</span>
-        </div>
-        ${opts.onAction ? `<button type="button" class="sb-lib-row-action" title="${escapeHtml(opts.actionTitle || '')}">${opts.actionIcon}</button>` : ''}
-      `;
-      if (opts.onAction) {
-        const actBtn = row.querySelector('.sb-lib-row-action');
-        if (actBtn) actBtn.addEventListener('click', (e) => { e.stopPropagation(); opts.onAction(); });
-      }
-      row.addEventListener('click', () => {
-        const matchFn = f => isSameTrack(f, tr) || (f.title && tr.title && getTrackNormalizedKey(f.artist, f.title) === getTrackNormalizedKey(tr.artist, tr.title));
-        const fullTrack = (state.favorites || []).find(matchFn) ||
-                          (state.history || []).find(matchFn) || tr;
-        playTrack(fullTrack, [fullTrack], 0, 'sidebar-pinned');
-      });
-      row.addEventListener('contextmenu', (e) => openTrackContextMenu(e, tr, { row, index: idx }));
-      return row;
-    };
-
-    if (currentSidebarLibFilter === 'playlists') {
-      const likedRow = document.createElement('div');
-      likedRow.className = 'sb-lib-row' + (state.currentView === 'favorites' ? ' active' : '');
-      likedRow.title = t('Liked songs');
-      likedRow.dataset.viewTarget = 'favorites';
-      if (!forceAnim) likedRow.classList.add('no-sb-anim');
-      const favCount = (state.favorites || []).length;
-      likedRow.innerHTML = `
-        <div class="sb-lib-cover liked-grad">
-          <svg width="22" height="22" viewBox="0 0 24 24" fill="currentColor"><path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"/></svg>
-        </div>
-        <div class="sb-lib-info">
-          <span class="sb-lib-title">${escapeHtml(t('Liked songs'))}</span>
-          <span class="sb-lib-sub">${pinSvg}<span>${favCount} ${favCount === 1 ? 'song' : 'songs'}</span></span>
-        </div>
-      `;
-      likedRow.addEventListener('click', () => switchView('favorites'));
-      frag.appendChild(likedRow);
-
-      const pinnedTracks = getSidebarPinnedTracks();
-      if (pinnedTracks.length > 0) {
-        pinnedTracks.forEach((tr, idx) => {
-          const row = makeTrackCard(tr, pinnedTracks, idx, {
-            pinned: true,
-            actionTitle: 'Unpin from sidebar',
-            actionIcon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
-            onAction: () => togglePinTrackToSidebar(tr)
-          });
-          row.dataset.sbGroup = 'pinned-track';
-          row.dataset.sbKey = getTrackCanonicalId(tr);
-          frag.appendChild(row);
-        });
-      }
-
-      const getPlScore = (pl) => {
-        if (sbSortMode === 'Alphabetical') return 0;
-        if (sbSortMode === 'Recently Added') {
-          return pl.createdAt || pl.addedAt || 0;
-        }
-        if (pl.lastPlayedAt) return pl.lastPlayedAt;
-        if (pl.lastOpenedAt) return pl.lastOpenedAt;
-        if (pl.updatedAt) return pl.updatedAt;
-        if (pl.createdAt) return pl.createdAt;
-        const hist = (state.history || []).slice(0, 30);
-        const matchIdx = hist.findIndex(h => (pl.tracks || []).some(t => isSameTrack(t, h)));
-        if (matchIdx >= 0) return 1000000000000 - matchIdx * 1000;
-        return 0;
-      };
-
-      let customOrderMap = null;
-      try {
-        const rawCustom = localStorage.getItem('riff_sidebar_custom_order');
-        if (rawCustom) {
-          const parsed = JSON.parse(rawCustom);
-          if (Array.isArray(parsed) && parsed.length > 0) {
-            customOrderMap = new Map(parsed.map((id, idx) => [String(id), idx]));
-          }
-        }
-      } catch (_) {}
-
-      const sortedSidebarPlaylists = [...(state.playlists || [])].sort((a, b) => {
-        const aPinned = isPlaylistPinned(a.id) ? 1 : 0;
-        const bPinned = isPlaylistPinned(b.id) ? 1 : 0;
-        if (bPinned !== aPinned) return bPinned - aPinned;
-        if (sbSortMode === 'Custom' && customOrderMap) {
-          const aIdx = customOrderMap.has(String(a.id)) ? customOrderMap.get(String(a.id)) : 999999;
-          const bIdx = customOrderMap.has(String(b.id)) ? customOrderMap.get(String(b.id)) : 999999;
-          if (aIdx !== bIdx) return aIdx - bIdx;
-        }
-        if (sbSortMode === 'Alphabetical') {
-          return (a.name || '').localeCompare(b.name || '');
-        }
-        if (sbSortMode !== 'Recently Added' && customOrderMap) {
-          const aIdx = customOrderMap.has(String(a.id)) ? customOrderMap.get(String(a.id)) : 999999;
-          const bIdx = customOrderMap.has(String(b.id)) ? customOrderMap.get(String(b.id)) : 999999;
-          if (aIdx !== bIdx) return aIdx - bIdx;
-        }
-        const aScore = getPlScore(a);
-        const bScore = getPlScore(b);
-        if (aScore && bScore && aScore !== bScore) return bScore - aScore;
-        if (aScore && !bScore) return -1;
-        if (!aScore && bScore) return 1;
-        return (state.playlists.indexOf(b) - state.playlists.indexOf(a));
-      });
-      sortedSidebarPlaylists.forEach(pl => {
-        const row = document.createElement('div');
-        row.className = 'sb-lib-row' + (state.currentView === 'playlist-detail' && state.currentPlaylistId === pl.id ? ' active' : '');
-        if (!forceAnim) row.classList.add('no-sb-anim');
-        row.title = `${pl.name || 'Untitled'} (${(pl.tracks || []).length})`;
-        const isPinned = isPlaylistPinned(pl.id);
-        row.dataset.sbGroup = isPinned ? 'pinned-pl' : 'unpinned-pl';
-        row.dataset.playlistId = pl.id;
-        const coverBox = document.createElement('div');
-        coverBox.className = 'sb-lib-cover';
-        renderPlaylistCover(coverBox, pl, 60);
-        const info = document.createElement('div');
-        info.className = 'sb-lib-info';
-        const cnt = (pl.tracks || []).length;
-        info.innerHTML = `
-          <span class="sb-lib-title">${escapeHtml(pl.name || 'Untitled')}</span>
-          <span class="sb-lib-sub">${isPinned ? pinSvg : ''}${cnt} ${cnt === 1 ? 'track' : 'tracks'}</span>
-        `;
-        row.append(coverBox, info);
-        row.addEventListener('click', () => openPlaylistDetail(pl.id));
-        row.addEventListener('contextmenu', (e) => {
-          openPlaylistInAppMenu(e, pl.id);
-        });
-        frag.appendChild(row);
-      });
-
-      const libTracks = getSidebarLibraryTracks().filter(tr => {
-        const cid = getTrackCanonicalId(tr);
-        return !pinnedTracks.some(p => (cid && getTrackCanonicalId(p) === cid) || isSameTrack(p, tr));
-      });
-      if (sbSortMode === 'Custom') {
-         
-      } else if (sbSortMode === 'Alphabetical') {
-        libTracks.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
-      } else if (sbSortMode === 'Recently Added') {
-        libTracks.sort((a, b) => (b.addedAt || 0) - (a.addedAt || 0));
-      } else {
-        libTracks.sort((a, b) => {
-          const aTime = a.lastPlayedAt || a.addedAt || 0;
-          const bTime = b.lastPlayedAt || b.addedAt || 0;
-          return bTime - aTime;
-        });
-      }
-      libTracks.forEach((tr, idx) => {
-        const row = makeTrackCard(tr, libTracks, idx, {
-          pinned: false,
-          actionTitle: t('Remove from library'),
-          actionIcon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
-          onAction: () => toggleTrackInSidebarLibrary(tr)
-        });
-        row.dataset.sbGroup = 'unpinned-track';
-        row.dataset.sbKey = getTrackCanonicalId(tr);
-        frag.appendChild(row);
-      });
-    } else if (currentSidebarLibFilter === 'albums') {
-      if (localStorage.getItem('riff_show_local') !== 'false') {
-        const localRow = document.createElement('div');
-        localRow.className = 'sb-lib-row' + (state.currentView === 'local' ? ' active' : '');
-        localRow.title = t('My files');
-        localRow.dataset.viewTarget = 'local';
-        if (!forceAnim) localRow.classList.add('no-sb-anim');
-        const localCnt = (state.localTracks && state.localTracks.length) || 0;
-        localRow.innerHTML = `
-          <div class="sb-lib-cover local-grad">
-            <svg width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M22 19a2 2 0 0 1-2 2H4a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5l2 3h9a2 2 0 0 1 2 2z"/></svg>
-          </div>
-          <div class="sb-lib-info">
-            <span class="sb-lib-title">${escapeHtml(t('My files'))}</span>
-            <span class="sb-lib-sub">${localCnt} ${localCnt === 1 ? 'file' : 'files'}</span>
-          </div>
-        `;
-        localRow.addEventListener('click', () => switchView('local'));
-        frag.appendChild(localRow);
-      }
-
-      const albums = typeof getSavedAlbums === 'function' ? [...getSavedAlbums()] : [];
-      if (sbSortMode === 'Alphabetical') {
-        albums.sort((a, b) => (a.title || '').localeCompare(b.title || ''));
-      } else if (sbSortMode === 'Recently Added') {
-        albums.sort((a, b) => (b.savedAt || b.addedAt || 0) - (a.savedAt || a.addedAt || 0));
-      } else {
-        albums.sort((a, b) => (b.lastPlayedAt || b.savedAt || b.addedAt || 0) - (a.lastPlayedAt || a.savedAt || a.addedAt || 0));
-      }
-      if (albums.length === 0) {
-        const empty = document.createElement('div');
-        empty.className = 'empty-hint';
-        empty.style.padding = '28px 12px';
-        empty.textContent = t('No saved albums yet');
-        frag.appendChild(empty);
-      } else {
-        albums.forEach(alb => {
-          const row = document.createElement('div');
-          row.className = 'sb-lib-row';
-          if (!forceAnim) row.classList.add('no-sb-anim');
-          row.title = `${alb.title || 'Album'}${alb.artist ? ' • ' + alb.artist : ''}`;
-          row.innerHTML = `
-            <div class="sb-lib-cover">
-              ${alb.cover ? `<img src="${escapeHtml(alb.cover)}" alt="" loading="lazy" onerror="this.style.display='none'">` : '<svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="10"/><circle cx="12" cy="12" r="3"/></svg>'}
-            </div>
-            <div class="sb-lib-info">
-              <span class="sb-lib-title">${escapeHtml(alb.title || 'Album')}</span>
-              <span class="sb-lib-sub">${escapeHtml(alb.artist || '')}</span>
-            </div>
-          `;
-          row.addEventListener('click', () => openAlbum(alb));
-          frag.appendChild(row);
-        });
-      }
-    } else if (currentSidebarLibFilter === 'queue') {
-      if (typeof autoplayEnabled === 'function' && autoplayEnabled() && typeof ensureAutoplayBuffer === 'function') {
-        ensureAutoplayBuffer();
-      }
-      if (state.currentTrack) {
-        const lblNow = document.createElement('div');
-        lblNow.className = 'sb-lib-section-label';
-        lblNow.textContent = t('Now playing');
-        frag.appendChild(lblNow);
-        frag.appendChild(makeTrackCard(state.currentTrack, state.queue, state.queueIndex));
-      }
-
-      const autoplayBar = document.createElement('div');
-      autoplayBar.className = 'sb-lib-autoplay-bar';
-      autoplayBar.innerHTML = `<div class="np-queue-autoplay-text"><span>${escapeHtml(t('Autoplay'))}</span><small>${escapeHtml(t('Similar songs'))}</small></div><button type="button" class="effect-switch-btn ${typeof autoplayEnabled === 'function' && autoplayEnabled() ? 'active' : ''}" id="btn-sb-queue-autoplay"><span class="thumb"></span></button>`;
-      const btnSbQueueAutoplay = autoplayBar.querySelector('#btn-sb-queue-autoplay');
-      if (btnSbQueueAutoplay) {
-        btnSbQueueAutoplay.addEventListener('click', (e) => {
-          e.stopPropagation();
-          const next = !autoplayEnabled();
-          setAdv('autoplay', next);
-          btnSbQueueAutoplay.classList.toggle('active', next);
-          const rightBtn = document.getElementById('btn-queue-autoplay');
-          if (rightBtn) rightBtn.classList.toggle('active', next);
-          if (!next) {
-            const head = (state.queue || []).slice(0, state.queueIndex + 1);
-            const tail = (state.queue || []).slice(state.queueIndex + 1).filter(t => !t || t._isAutoplay !== true);
-            state.queue = [...head, ...tail];
-            if (typeof updateQueueBadge === 'function') updateQueueBadge();
-            if (state.currentView === 'queue' && typeof renderQueueView === 'function') {
-              renderQueueView();
-            }
-            if (typeof window.refreshQueuePanel === 'function') {
-              window.refreshQueuePanel();
-            }
-            feed._lastSig = '';
-            renderSidebarLibraryFeed(false);
-          } else {
-            const head = (state.queue || []).slice(0, state.queueIndex + 1);
-            state.queue = [...head];
-            state._autoplayPool = [];
-            state._autoplayAnchorSeeds = null;
-            if (typeof ensureAutoplayBuffer === 'function') ensureAutoplayBuffer();
-            if (typeof updateQueueBadge === 'function') updateQueueBadge();
-            if (state.currentView === 'queue' && typeof renderQueueView === 'function') {
-              renderQueueView();
-            }
-            if (typeof window.refreshQueuePanel === 'function') {
-              window.refreshQueuePanel();
-            }
-            feed._lastSig = '';
-            renderSidebarLibraryFeed(false);
-          }
-        });
-      }
-      frag.appendChild(autoplayBar);
-
-      const startIdx = Math.max(0, state.queueIndex + 1);
-      const upcoming = (state.queue || []).slice(startIdx, startIdx + 40);
-      if (upcoming.length > 0) {
-        const lblNext = document.createElement('div');
-        lblNext.className = 'sb-lib-section-label';
-        lblNext.textContent = t('Next up');
-        frag.appendChild(lblNext);
-        upcoming.forEach((tr, i) => {
-          const qIdx = startIdx + i;
-          frag.appendChild(makeTrackCard(tr, state.queue, qIdx, {
-            actionTitle: 'Remove from queue',
-            actionIcon: '<svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/></svg>',
-            onAction: () => { removeTrackFromQueue(qIdx); renderSidebarLibraryFeed(); }
-          }));
-        });
-      }
-      const recent = (state.history || []).slice(0, 20);
-      if (recent.length > 0) {
-        const lblRec = document.createElement('div');
-        lblRec.className = 'sb-lib-section-label';
-        lblRec.textContent = t('Recently played');
-        frag.appendChild(lblRec);
-        recent.forEach((tr, idx) => {
-          frag.appendChild(makeTrackCard(tr, recent, idx));
-        });
-      }
-      if (!state.currentTrack && upcoming.length === 0 && recent.length === 0) {
-        const empty = document.createElement('div');
-        empty.className = 'empty-hint';
-        empty.style.padding = '28px 12px';
-        empty.textContent = t('Queue is empty');
-        frag.appendChild(empty);
-      }
-    }
-
-    Array.from(frag.querySelectorAll('.sb-lib-row')).forEach((r, i) => r.style.setProperty('--i', String(i)));
-    feed.appendChild(frag);
-    if (prevScrollTop > 0) feed.scrollTop = prevScrollTop;
-    feed.classList.toggle('fade-top', isFeedFadeTop);
-    const btnSbSettings = document.getElementById('btn-sb-settings');
-    if (btnSbSettings) btnSbSettings.classList.toggle('active', state.currentView === 'settings');
-    if (typeof window.applySidebarLibFilter === 'function') {
-      window.applySidebarLibFilter();
-    } else {
-      feed.classList.toggle('sb-feed-sparse', feed.querySelectorAll('.sb-lib-row').length <= 4);
-    }
-  }
-  window.renderSidebarLibraryFeed = renderSidebarLibraryFeed;
 
 
 
@@ -6770,7 +6247,6 @@ window.HomeCache = HomeCache;
 window.isTrackFavorited = isTrackFavorited;
 window.toggleFavorite = toggleFavorite;
 window.renderFavoritesView = renderFavoritesView;
-window.renderHistoryView = renderHistoryView;
 window.renderLocalFiles = renderLocalFiles;
 window.createPlaylist = createPlaylist;
 window.openPlaylistDetail = openPlaylistDetail;

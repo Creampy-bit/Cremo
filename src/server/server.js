@@ -127,8 +127,8 @@ async function exportSessionCookiesToYtFile(ses) {
 function attachGoogleAuthStealthToWindow(win) {
   if (!win || win.isDestroyed() || !win.webContents) return;
   const wc = win.webContents;
-  if (wc._riffGoogleAuthPatched) return;
-  wc._riffGoogleAuthPatched = true;
+  if (wc._cremoGoogleAuthPatched) return;
+  wc._cremoGoogleAuthPatched = true;
 
   try {
     patchSessionForGoogleAuth(wc.session);
@@ -306,6 +306,7 @@ function i18nValueBroken(key, value) {
 }
 const logger = require('../shared/logger');
 const cremoSources = require('./cremo-sources');
+const silenceScan = require('./silence');
 const { getSystemAudioOutputInfo } = require('../shared/audio-output');
 
 let serverActiveProxy = '';
@@ -331,14 +332,14 @@ function checkProxyAlive(proxyUrl, timeoutMs = 1200) {
 }
 
 const _nativeFetch = typeof globalThis.fetch === 'function' ? globalThis.fetch.bind(globalThis) : null;
-function riffFetch(...args) {
-  if (serverActiveProxy && typeof global.riffSessionFetch === 'function') {
-    return global.riffSessionFetch(...args);
+function cremoFetch(...args) {
+  if (serverActiveProxy && typeof global.cremoSessionFetch === 'function') {
+    return global.cremoSessionFetch(...args);
   }
   return _nativeFetch ? _nativeFetch(...args) : Promise.reject(new Error('fetch not available'));
 }
-globalThis.fetch = riffFetch;
-const fetch = riffFetch;
+globalThis.fetch = cremoFetch;
+const fetch = cremoFetch;
 
 function stripYoutubeTopic(artist) {
   if (!artist || typeof artist !== 'string') return artist || '';
@@ -646,7 +647,7 @@ async function findCachedFile(trackId) {
     const filePath = path.join(CACHE_DIR, `${cleanId}${ext}`);
     try {
       const stat = await fs.promises.stat(filePath);
-      if (stat.size > 16000 || (cleanId.startsWith('tt_') && stat.size > 1000)) {
+      if (stat.size > 16000) {
         const now = new Date();
         try {
           await fs.promises.utimes(filePath, now, now);
@@ -1242,7 +1243,7 @@ async function fetchDirectYoutubeStreamServer(videoId, quality = 'medium') {
       if (typeof AbortSignal !== 'undefined' && typeof AbortSignal.timeout === 'function') {
         fetchOpts.signal = AbortSignal.timeout(2200);
       }
-      const res = await riffFetch(targetUrl, fetchOpts);
+      const res = await cremoFetch(targetUrl, fetchOpts);
       if (!res.ok) throw new Error('status ' + res.status);
       const data = await res.json();
       const chosenUrl = extractAudioFromPlayerResponse(data);
@@ -1707,9 +1708,9 @@ async function ytmNextRequest(reqBody, timeoutMs = 6000) {
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36'
   };
 
-  if (typeof global.riffSessionFetch === 'function') {
+  if (typeof global.cremoSessionFetch === 'function') {
     try {
-      const res = await global.riffSessionFetch('https://music.youtube.com/youtubei/v1/next?prettyPrint=false', {
+      const res = await global.cremoSessionFetch('https://music.youtube.com/youtubei/v1/next?prettyPrint=false', {
         method: 'POST',
         headers,
         body,
@@ -2766,7 +2767,7 @@ async function fetchTrackCredits(artist, title) {
 async function imageContentType(buf) {
   if (buf.length > 3 && buf[0] === 0xff && buf[1] === 0xd8) return 'image/jpeg';
   if (buf.length > 8 && buf[0] === 0x89 && buf[1] === 0x50) return 'image/png';
-  if (buf.length > 12 && buf.toString('ascii', 0, 4) === 'RIFF' && buf.toString('ascii', 8, 12) === 'WEBP') return 'image/webp';
+  if (buf.length > 12 && buf.toString('ascii', 0, 4) === 'CREMO' && buf.toString('ascii', 8, 12) === 'WEBP') return 'image/webp';
   if (buf.length > 6 && buf.toString('ascii', 0, 3) === 'GIF') return 'image/gif';
   return 'image/jpeg';
 }
@@ -3051,8 +3052,8 @@ async function ytmSearchRequest(query, params = YTM_SONGS_PARAMS, attempt = 0, t
   if (params) reqBody.params = params;
   const body = JSON.stringify(reqBody);
 
-  if (typeof global.riffSessionFetch === 'function') {
-    return global.riffSessionFetch('https://music.youtube.com/youtubei/v1/search?prettyPrint=false', {
+  if (typeof global.cremoSessionFetch === 'function') {
+    return global.cremoSessionFetch('https://music.youtube.com/youtubei/v1/search?prettyPrint=false', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
@@ -3070,8 +3071,8 @@ async function ytmSearchRequest(query, params = YTM_SONGS_PARAMS, attempt = 0, t
 
   return new Promise((resolve, reject) => {
     const doSessionFallback = () => {
-      if (typeof global.riffSessionFetch === 'function') {
-        return global.riffSessionFetch('https://music.youtube.com/youtubei/v1/search?prettyPrint=false', {
+      if (typeof global.cremoSessionFetch === 'function') {
+        return global.cremoSessionFetch('https://music.youtube.com/youtubei/v1/search?prettyPrint=false', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -3104,7 +3105,7 @@ async function ytmSearchRequest(query, params = YTM_SONGS_PARAMS, attempt = 0, t
       if (res.statusCode < 200 || res.statusCode >= 300) {
         try { logger.log('warn', `ytmusic search status ${res.statusCode}`); } catch (_) {}
         res.resume();
-        if (typeof global.riffSessionFetch === 'function') {
+        if (typeof global.cremoSessionFetch === 'function') {
           return doSessionFallback();
         }
         return reject(new Error(`ytmusic status ${res.statusCode}`));
@@ -3117,7 +3118,7 @@ async function ytmSearchRequest(query, params = YTM_SONGS_PARAMS, attempt = 0, t
           resolve(JSON.parse(raw));
         } catch (err) {
           try { logger.log('warn', `ytmusic search parse error: ${err.message}`); } catch (_) {}
-          if (typeof global.riffSessionFetch === 'function') {
+          if (typeof global.cremoSessionFetch === 'function') {
             return doSessionFallback();
           }
           reject(err);
@@ -3131,7 +3132,7 @@ async function ytmSearchRequest(query, params = YTM_SONGS_PARAMS, attempt = 0, t
       if (attempt < maxRetries) {
         return resolve(ytmSearchRequest(query, params, attempt + 1, timeoutMs, maxRetries));
       }
-      if (typeof global.riffSessionFetch === 'function') {
+      if (typeof global.cremoSessionFetch === 'function') {
         return doSessionFallback();
       }
       try { logger.log('warn', `ytmusic search error: ${err.message}`); } catch (_) {}
@@ -3145,7 +3146,7 @@ async function ytmSearchRequest(query, params = YTM_SONGS_PARAMS, attempt = 0, t
       if (/ECONNRESET|socket hang up|EPIPE|ETIMEDOUT/i.test(err && err.message || '')) {
         return retryOrReject(err);
       }
-      if (typeof global.riffSessionFetch === 'function') {
+      if (typeof global.cremoSessionFetch === 'function') {
         return doSessionFallback();
       }
       try { logger.log('warn', `ytmusic search error: ${err.message}`); } catch (_) {}
@@ -3428,7 +3429,7 @@ async function ytmusicSearch(query, options = {}) {
   return [];
 }
 
-async function fetchRiffLibraryPool(qStr) {
+async function fetchCremoLibraryPool(qStr) {
   const [ytmTracks, scTracks] = await Promise.all([
     (async () => {
       let tracks = (await ytmusicSearch(qStr).catch(() => [])) || [];
@@ -3473,11 +3474,11 @@ async function handleSearch(req, res, query, platform = 'ytmusic', limit = 12, o
   let pool = searchCache.get(poolCacheKey);
 
   if (offset === 0 && (!pool || !Array.isArray(pool))) {
-    if (platform === 'rifflibrary') {
-      pool = await fetchRiffLibraryPool(qStr);
-      const riffCacheKey = `pool:rifflibrary:${qStr.toLowerCase()}`;
-      searchCache.set(riffCacheKey, pool);
-      setTimeout(() => { searchCache.delete(riffCacheKey); }, 300000);
+    if (platform === 'cremolibrary') {
+      pool = await fetchCremoLibraryPool(qStr);
+      const cremoCacheKey = `pool:cremolibrary:${qStr.toLowerCase()}`;
+      searchCache.set(cremoCacheKey, pool);
+      setTimeout(() => { searchCache.delete(cremoCacheKey); }, 300000);
       const sliced = pool.slice(0, limit);
       await Promise.all(sliced.map(async t => {
         if (t.isCached === undefined && t.id) {
@@ -3574,8 +3575,8 @@ async function handleSearch(req, res, query, platform = 'ytmusic', limit = 12, o
   }
 
   if (!pool || !Array.isArray(pool)) {
-    if (platform === 'rifflibrary') {
-      pool = await fetchRiffLibraryPool(qStr);
+    if (platform === 'cremolibrary') {
+      pool = await fetchCremoLibraryPool(qStr);
     } else if (platform === 'soundcloud') {
       pool = (await fetchSoundCloudSearch(qStr, 40).catch(() => [])) || [];
     } else if (platform === 'youtube') {
@@ -3588,7 +3589,7 @@ async function handleSearch(req, res, query, platform = 'ytmusic', limit = 12, o
         pool = (await directYoutubeSearch(qStr, false, 40).catch(() => [])) || [];
       }
     }
-    if (platform !== 'rifflibrary') {
+    if (platform !== 'cremolibrary') {
       pool = cleanSearchResults(pool, qStr);
       if ((platform === 'ytmusic' || platform === 'youtube') && pool.length === 0) {
         pool = await fetchMetadataSearchFallback(qStr, 30);
@@ -3863,8 +3864,8 @@ function ytmBrowseRequest(reqBody, timeoutMs = 4500) {
     'Referer': 'https://music.youtube.com/',
     'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/131.0.0.0 Safari/537.36'
   };
-  if (serverActiveProxy && typeof global.riffSessionFetch === 'function') {
-    return global.riffSessionFetch('https://music.youtube.com/youtubei/v1/browse?prettyPrint=false', {
+  if (serverActiveProxy && typeof global.cremoSessionFetch === 'function') {
+    return global.cremoSessionFetch('https://music.youtube.com/youtubei/v1/browse?prettyPrint=false', {
       method: 'POST',
       headers,
       body,
@@ -4113,58 +4114,6 @@ async function fetchLastFmCountryChart(country) {
   }
 }
 
-async function fetchYandexRussiaChart() {
-  const tracks = [];
-  const pushYandexList = (items) => {
-    for (let i = 0; i < items.length; i++) {
-      const it = items[i];
-      const rawT = it?.track || it?.data?.track || (it?.title ? it : null);
-      if (!rawT) continue;
-      const norm = normalizeYandexTrack(rawT);
-      if (!norm || !norm.title) continue;
-      const est = Math.max(200000, 3400000 - tracks.length * 45000);
-      tracks.push({
-        id: 'ym_' + (rawT.id || tracks.length),
-        title: norm.title,
-        artist: norm.artist || 'Unknown artist',
-        album: norm.album || '',
-        duration: norm.duration || 180,
-        thumbnail: norm.cover || norm.thumbnail || '',
-        cover: norm.cover || norm.thumbnail || '',
-        searchQuery: `${norm.artist || ''} - ${norm.title}`.trim(),
-        platform: 'ytmusic',
-        listeners: est,
-        listenersText: formatListeners(est)
-      });
-    }
-  };
-
-  try {
-    const [plData, chartData] = await Promise.all([
-      httpGetJson(`${YANDEX_API}/users/yamusic-top/playlists/1076`, 4000, YANDEX_HEADERS).catch(() => null),
-      httpGetJson(`${YANDEX_API}/landing3/chart`, 4000, YANDEX_HEADERS).catch(() => null)
-    ]);
-    if (Array.isArray(plData?.result?.tracks) && plData.result.tracks.length > 0) {
-      pushYandexList(plData.result.tracks);
-    } else if (Array.isArray(chartData?.result?.chart?.tracks) && chartData.result.chart.tracks.length > 0) {
-      pushYandexList(chartData.result.chart.tracks);
-    }
-    if (tracks.length >= 10) return dedupeTrendingTracks(tracks);
-  } catch (_) {}
-
-  const kwTracks = await fetchKworbChart('/charts/apple_s/ru.html').catch(() => []);
-  if (kwTracks && kwTracks.length >= 8) {
-    return kwTracks;
-  }
-
-  const lfmRu = await fetchLastFmCountryChart('ru').catch(() => []);
-  if (lfmRu && lfmRu.length > 0) {
-    return lfmRu;
-  }
-
-  return dedupeTrendingTracks(tracks);
-}
-
 async function handleTopChart(req, res) {
   const parsedUrl = url.parse(req.url, true);
   const country = String(parsedUrl.query.country || 'ua').toLowerCase().replace(/[^a-z]/g, '') || 'ua';
@@ -4176,9 +4125,7 @@ async function handleTopChart(req, res) {
 
   const loadJob = async () => {
     let tracks = [];
-    if (country === 'ru') {
-      tracks = await fetchYandexRussiaChart().catch(() => []);
-    } else if (country === 'global') {
+    if (country === 'global') {
       tracks = await fetchYtmCountryChart('global').catch(() => []);
       if (!tracks || tracks.length < 8) {
         const dzTracks = await fetchDeezerChart(40).catch(() => []);
@@ -4454,6 +4401,8 @@ function scoreImportedCandidate(targetTitle, targetArtist, targetDur, cand) {
     else if (diff > 45) score -= 35;
   }
   if (tDur > 45 && cDur > 0 && cDur < 35) return -500;
+  // Hour-long loops and long mixes that share the exact title are not the song.
+  if (tDur > 30 && cDur > tDur * 2 && cDur - tDur > 120) return -500;
 
   return score;
 }
@@ -4520,7 +4469,7 @@ async function handleStreamInfo(req, res, trackUrl, trackId, platform = 'youtube
   const forceYtDlp = Boolean(parsedUrl.query && parsedUrl.query.forceYtDlp === '1');
   const quality = (parsedUrl.query && parsedUrl.query.quality) || 'medium';
   const queryQ = (parsedUrl.query && parsedUrl.query.q) ? String(parsedUrl.query.q).trim() : '';
-  const riffStream = parsedUrl.query && parsedUrl.query.riffStream === '1';
+  const cremoStream = parsedUrl.query && parsedUrl.query.cremoStream === '1';
   let cleanId = cleanTrackId(trackId);
   if (!cleanId && trackUrl && trackUrl.includes('v=')) {
     cleanId = cleanTrackId(trackUrl.split('v=')[1].split('&')[0]);
@@ -4819,7 +4768,7 @@ async function handleStreamInfo(req, res, trackUrl, trackId, platform = 'youtube
     if (platform === 'soundcloud' || isSc) {
       streamUrl = await resolveScCandidateStream(trackUrl, cleanId);
       if (streamUrl) return sendStreamResponse(streamUrl);
-      if (riffStream && searchQ) {
+      if (cremoStream && searchQ) {
         try {
           const ytHits = await ytmusicSearch(searchQ, { limit: 1, timeoutMs: 3000 }).catch(() => []);
           const hitId = ytHits && ytHits[0] && ytHits[0].id;
@@ -4840,7 +4789,7 @@ async function handleStreamInfo(req, res, trackUrl, trackId, platform = 'youtube
 
     if (!streamUrl && searchQ) {
       const maxCand = needYtAuth ? 1 : 3;
-      const needScRace = riffStream ? true : (failedYtIds.size > 0 || !cleanId || !isRealYtId);
+      const needScRace = cremoStream ? true : (failedYtIds.size > 0 || !cleanId || !isRealYtId);
       const scFallback = needScRace
         ? fetchDirectSoundCloudStreamServer('', q || searchQ).then(u => u ? { url: u, id: null } : Promise.reject(new Error('no sc')))
         : null;
@@ -7776,10 +7725,8 @@ const TOKEN_PROTECTED_ROUTES = new Set([
   '/api/clear-offline-library',
   '/api/save-custom-lyrics',
   '/api/encode',
-  '/api/yandex-import',
-  '/api/tiktok-import',
-  '/api/vk-import',
   '/api/check-playlist-unavailable',
+  '/api/silence-scan',
   ...cremoSources.PATHS
 ]);
 
@@ -8095,6 +8042,12 @@ function pathfinderRequest(accessToken, variables) {
   });
 }
 
+// Spotify track id + link, so the renderer can give imported tracks a stable id.
+function spotifyTrackRef(idOrUri) {
+  const m = /^(?:spotify:track:)?([A-Za-z0-9]{22})$/.exec(String(idOrUri || ''));
+  return m ? { spotifyId: m[1], spotifyUrl: `https://open.spotify.com/track/${m[1]}` } : {};
+}
+
 async function fetchFullSpotifyPlaylist(playlistId, accessToken) {
   const uri = `spotify:playlist:${playlistId}`;
   const first = await pathfinderRequest(accessToken, { uri, offset: 0, limit: 100, enableWatchFeedEntrypoint: true });
@@ -8122,6 +8075,7 @@ async function fetchFullSpotifyPlaylist(playlistId, accessToken) {
     return {
       title: (t.name || '').trim(),
       artist: artists.join(', '),
+      ...spotifyTrackRef(t.uri || t.id),
       duration,
       cover,
       thumbnail: cover,
@@ -8161,6 +8115,7 @@ async function trySpotifyWebApi(playlistId) {
         return {
           title: t.name || '',
           artist: Array.isArray(t.artists) ? t.artists.map(a => a.name).join(', ') : '',
+          ...spotifyTrackRef(t.id || t.uri),
           duration: t.duration_ms ? Math.round(t.duration_ms / 1000) : undefined,
           cover,
           thumbnail: cover,
@@ -8211,9 +8166,6 @@ const BRAND_ICON_COLORS = {
   soundcloud: 'FF5500',
   applemusic: 'FA243C',
   deezer: 'A238FF',
-  yandexmusic: 'FFCC00',
-  tiktok: 'FFFFFF',
-  vk: '0077FF',
   json: '7E7A8A'
 };
 
@@ -8344,6 +8296,7 @@ async function handleSpotifyImport(req, res, inputUrl) {
           return {
             title: (t.title || t.name || '').trim(),
             artist: (t.subtitle || t.artist || '').trim(),
+            ...spotifyTrackRef(t.uri || t.id),
             duration,
             thumbnail: trackCover,
             cover: trackCover,
@@ -8366,7 +8319,7 @@ async function handleSpotifyImport(req, res, inputUrl) {
               seen.add(key);
               const durSec = typeof duration === 'number' ? (duration > 1000 ? Math.round(duration / 1000) : Math.round(duration)) : 0;
               const trackCover = node.image || node.coverArt?.sources?.[0]?.url || '';
-              tracks.push({ title: title.trim(), artist: typeof subtitle === 'string' ? subtitle.trim() : '', duration: durSec, thumbnail: trackCover, cover: trackCover });
+              tracks.push({ title: title.trim(), artist: typeof subtitle === 'string' ? subtitle.trim() : '', ...spotifyTrackRef(uri), duration: durSec, thumbnail: trackCover, cover: trackCover });
             }
             return;
           }
@@ -8596,156 +8549,6 @@ async function handleAppleImport(req, res, inputUrl) {
     const isNet = err.message === 'timeout' || /fetch|network|dns|econnrefused|etimedout/i.test(err.message || '');
     res.writeHead(isNet ? 504 : 500, { 'Content-Type': 'application/json' });
     return res.end(JSON.stringify({ success: false, error: isNet ? 'network' : 'unknown', status: isNet ? 504 : 500 }));
-  }
-}
-
-const YANDEX_API = 'https://api.music.yandex.net';
-const YANDEX_HEADERS = {
-  'User-Agent': 'Yandex-Music-API',
-  'X-Yandex-Music-Client': 'YandexMusicAndroid/24023231',
-  'Accept': 'application/json'
-};
-
-function parseYandexLink(input) {
-  const text = String(input || '').trim();
-  let m = text.match(/users\/([^/?#]+)\/playlists\/(\d+)/i);
-  if (m) return { type: 'playlist', path: `/users/${m[1]}/playlists/${m[2]}` };
-  m = text.match(/playlists\/((?:lk\.)?[a-f0-9-]{8,})/i);
-  if (m) return { type: 'playlist', path: `/playlist/${m[1]}` };
-  m = text.match(/album\/(\d+)\/track\/(\d+)/i);
-  if (m) return { type: 'track', ids: [`${m[2]}:${m[1]}`] };
-  m = text.match(/track\/(\d+)/i);
-  if (m) return { type: 'track', ids: [m[1]] };
-  m = text.match(/album\/(\d+)/i);
-  if (m) return { type: 'album', id: m[1] };
-  return null;
-}
-
-async function yandexRequest(apiPath, options = {}) {
-  let lastErr;
-  for (let attempt = 0; attempt < 2; attempt++) {
-    try {
-      const response = await fetch(YANDEX_API + apiPath, {
-        method: options.method || 'GET',
-        headers: Object.assign({}, YANDEX_HEADERS, options.headers || {}),
-        body: options.body,
-        signal: AbortSignal.timeout(15000)
-      });
-      if (response.status >= 500 && attempt === 0) {
-        await new Promise(r => setTimeout(r, 400));
-        continue;
-      }
-      return response;
-    } catch (e) {
-      lastErr = e;
-    }
-  }
-  throw lastErr || new Error('network');
-}
-
-async function fetchYandexTracksByIds(ids) {
-  const found = new Map();
-  for (let i = 0; i < ids.length; i += 100) {
-    const body = new URLSearchParams({ 'track-ids': ids.slice(i, i + 100).join(',') });
-    const response = await yandexRequest('/tracks', {
-      method: 'POST',
-      body,
-      headers: { 'Content-Type': 'application/x-www-form-urlencoded' }
-    });
-    if (!response.ok) continue;
-    const data = await response.json().catch(() => null);
-    const list = data && Array.isArray(data.result) ? data.result : [];
-    for (const t of list) {
-      if (t && t.id != null) found.set(String(t.id), t);
-    }
-  }
-  return found;
-}
-
-function yandexCoverUrl(uri, size = '400x400') {
-  if (!uri || typeof uri !== 'string') return '';
-  const value = uri.replace('%%', size);
-  return /^https?:\/\//i.test(value) ? value : 'https://' + value;
-}
-
-function normalizeYandexTrack(t, fallbackAlbum = '') {
-  if (!t || !t.title) return null;
-  let title = String(t.title).trim();
-  const version = typeof t.version === 'string' ? t.version.trim() : '';
-  if (version && !title.toLowerCase().includes(version.toLowerCase())) title += ` (${version})`;
-  const names = Array.isArray(t.artists) ? t.artists.map(a => a && a.name).filter(Boolean) : [];
-  const artist = names.join(', ') || (typeof t.artist === 'string' ? t.artist : '');
-  const album = Array.isArray(t.albums) && t.albums[0] ? t.albums[0] : null;
-  const cover = yandexCoverUrl(t.ogImage || t.coverUri || (album && album.coverUri) || (typeof t.cover === 'string' ? t.cover : '')) || t.thumbnail || t.image || '';
-  const duration = t.durationMs ? Math.round(t.durationMs / 1000) : (t.duration ? Math.round(t.duration) : 0);
-  return { title, artist, album: (album && album.title) || fallbackAlbum, duration, cover, thumbnail: cover, image: cover };
-}
-
-async function handleYandexImport(req, res, inputUrl) {
-  const send = (status, body) => {
-    res.writeHead(status, { 'Content-Type': 'application/json' });
-    return res.end(JSON.stringify(body));
-  };
-  const fail = (status) => {
-    if (status === 401 || status === 403) return send(403, { success: false, error: 'private', status: 403 });
-    if (status === 404) return send(404, { success: false, error: 'not found', status: 404 });
-    if (status === 429) return send(429, { success: false, error: 'too many requests', status: 429 });
-    return send(status || 502, { success: false, error: 'Failed to fetch from Yandex Music', status: status || 502 });
-  };
-
-  const link = parseYandexLink(inputUrl);
-  if (!link) return send(400, { success: false, error: 'unsupported link', status: 400 });
-
-  try {
-    let name = 'Yandex Music Playlist';
-    let cover = '';
-    let rawTracks = [];
-
-    if (link.type === 'playlist') {
-      const response = await yandexRequest(link.path);
-      if (!response.ok) return fail(response.status);
-      const data = await response.json();
-      const r = data && data.result ? data.result : (data || {});
-      name = r.title || r.name || name;
-      cover = yandexCoverUrl(r.ogImage || r.coverUrl || (r.cover && r.cover.uri) || (typeof r.cover === 'string' ? r.cover : ''));
-      const items = Array.isArray(r.tracks) ? r.tracks : [];
-      const resolved = new Array(items.length).fill(null);
-      const missing = [];
-      items.forEach((item, idx) => {
-        const t = item && item.track ? item.track : (item && item.title ? item : null);
-        if (t && t.title) resolved[idx] = t;
-        else if (item && item.id != null) missing.push({ idx, id: String(item.id), key: item.albumId != null ? `${item.id}:${item.albumId}` : String(item.id) });
-      });
-      if (missing.length) {
-        const found = await fetchYandexTracksByIds(missing.map(m => m.key));
-        for (const m of missing) resolved[m.idx] = found.get(m.id) || null;
-      }
-      rawTracks = resolved;
-    } else if (link.type === 'album') {
-      const response = await yandexRequest(`/albums/${link.id}/with-tracks`);
-      if (!response.ok) return fail(response.status);
-      const data = await response.json();
-      const r = data && data.result ? data.result : {};
-      name = r.title || 'Yandex Music Album';
-      cover = yandexCoverUrl(r.ogImage || r.coverUri);
-      rawTracks = (Array.isArray(r.volumes) ? r.volumes : []).flat();
-      rawTracks = rawTracks.map(t => (t && !t.albums ? Object.assign({}, t, { albums: [{ title: r.title, coverUri: r.coverUri }] }) : t));
-    } else {
-      const found = await fetchYandexTracksByIds(link.ids);
-      rawTracks = Array.from(found.values());
-      if (!rawTracks.length) return fail(404);
-      const first = normalizeYandexTrack(rawTracks[0]);
-      name = first ? first.title : 'Yandex Music Track';
-      cover = first ? first.cover : '';
-    }
-
-    const tracks = rawTracks.map(t => normalizeYandexTrack(t)).filter(Boolean);
-    if (!tracks.length) return fail(404);
-    return send(200, { success: true, name, cover, tracks, total: rawTracks.length, skipped: rawTracks.length - tracks.length });
-  } catch (err) {
-    try { logger.error('Yandex import failed: ' + inputUrl, err); } catch (_) {}
-    const isNet = err && (err.name === 'TimeoutError' || err.name === 'AbortError' || /fetch|network|dns|econnrefused|etimedout|timeout/i.test(err.message || ''));
-    return send(isNet ? 504 : 500, { success: false, error: isNet ? 'network' : (err.message || 'unknown'), status: isNet ? 504 : 500 });
   }
 }
 
@@ -9346,135 +9149,6 @@ async function handlePlaylistImport(req, res, inputUrl) {
   }
 }
 
-async function handleTikTokImport(req, res, inputUrl) {
-  const send = (status, body) => {
-    if (res.writableEnded) return;
-    res.writeHead(status, { 'Content-Type': 'application/json' });
-    return res.end(JSON.stringify(body));
-  };
-  const fail = (status, msg) => {
-    return send(status || 500, { success: false, error: msg || 'Failed to import TikTok track' });
-  };
-
-  const rawUrl = String(inputUrl || '').trim();
-  if (!rawUrl) return fail(400, 'Missing TikTok URL');
-
-  try {
-    const data = await httpGetJson(`https://www.tikwm.com/api/?url=${encodeURIComponent(rawUrl)}`, 6000).catch(() => null);
-    if (data && data.code === 0 && data.data) {
-      const d = data.data;
-      const m = d.music_info || {};
-      const isOrig = Boolean(m.original || !m.title || /original sound|оригинальный звук|звук\s*-/i.test(m.title || ''));
-      const rawTitle = (!isOrig && m.title) ? m.title : (d.title || m.title || 'TikTok Sound');
-      const cleanTitle = rawTitle.replace(/#[^\s#]+/g, '').replace(/\s+/g, ' ').trim() || (m.title || 'TikTok Audio');
-      const cleanArtist = (!isOrig && m.author) ? m.author : (d.author?.nickname || d.author?.unique_id || m.author || 'TikTok');
-      const cover = m.cover || d.origin_cover || d.cover || '';
-      const audioUrl = m.play || d.play || d.wmplay || '';
-      const dur = Number(m.duration || d.duration) || 0;
-
-      if (audioUrl) {
-        try {
-          const tid = 'tt_' + String(d.id || m.id || crypto.createHash('md5').update(inputUrl).digest('hex').slice(0, 12)).replace(/[^a-zA-Z0-9_-]/g, '');
-          const fp = path.join(CACHE_DIR, tid + '.mp3');
-          const fpLib = path.join(LIBRARY_DIR, tid + '.mp3');
-          const resp = await fetch(audioUrl, {
-            headers: { 'User-Agent': 'Mozilla/5.0' },
-            signal: AbortSignal.timeout(10000)
-          });
-          if (resp.ok) {
-            const buf = Buffer.from(await resp.arrayBuffer());
-            if (buf && buf.length > 1000) {
-              await fs.promises.writeFile(fp, buf);
-              try { await fs.promises.writeFile(fpLib, buf); } catch (_) {}
-              saveTrackMetadata(tid, {
-                id: tid,
-                title: cleanTitle,
-                artist: cleanArtist,
-                duration: dur,
-                thumbnail: cover,
-                platform: 'tiktok'
-              });
-              return send(200, {
-                success: true,
-                name: cleanTitle,
-                cover,
-                tracks: [{
-                  id: tid,
-                  title: cleanTitle,
-                  artist: cleanArtist,
-                  duration: dur,
-                  thumbnail: cover,
-                  cover,
-                  isCached: true,
-                  isTikTok: true,
-                  staticAudio: true,
-                  url: 'http://127.0.0.1:' + ACTIVE_PORT + '/api/local-track?id=' + encodeURIComponent(tid),
-                  platform: 'tiktok'
-                }]
-              });
-            }
-          }
-        } catch (_) {}
-      }
-    }
-
-    const rawJson = await executeYtDlp(['--no-playlist', '--dump-single-json', '--no-warnings', rawUrl], 12000);
-    const info = JSON.parse(rawJson);
-    const rawInfoTitle = info.track || info.title || 'TikTok Sound';
-    const cleanTitle = rawInfoTitle.replace(/#[^\s#]+/g, '').replace(/\s+/g, ' ').trim() || 'TikTok Audio';
-    const cleanArtist = String(info.artist || info.uploader || info.creator || 'TikTok').trim();
-    const cover = info.thumbnail || '';
-    const dur = Math.round(Number(info.duration) || 0);
-    const tid = 'tt_' + String(info.id || crypto.createHash('md5').update(inputUrl).digest('hex').slice(0, 12)).replace(/[^a-zA-Z0-9_-]/g, '');
-
-    await downloadTrackToDisk(rawUrl, tid, 'tiktok', {
-      title: cleanTitle,
-      artist: cleanArtist,
-      duration: dur,
-      thumbnail: cover
-    }).catch(() => {});
-
-    const cachedFp = await findCachedFile(tid);
-    if (cachedFp) {
-      try {
-        const ext = path.extname(cachedFp);
-        await fs.promises.copyFile(cachedFp, path.join(LIBRARY_DIR, `${tid}${ext}`));
-      } catch (_) {}
-    }
-
-    saveTrackMetadata(tid, {
-      id: tid,
-      title: cleanTitle,
-      artist: cleanArtist,
-      duration: dur,
-      thumbnail: cover,
-      platform: 'tiktok'
-    });
-
-    return send(200, {
-      success: true,
-      name: cleanTitle,
-      cover,
-      tracks: [{
-        id: tid,
-        title: cleanTitle,
-        artist: cleanArtist,
-        duration: dur,
-        thumbnail: cover,
-        cover,
-        isCached: true,
-        isTikTok: true,
-        staticAudio: true,
-        url: 'http://127.0.0.1:' + ACTIVE_PORT + '/api/local-track?id=' + encodeURIComponent(tid),
-        platform: 'tiktok'
-      }]
-    });
-  } catch (err) {
-    try { logger.error('TikTok import failed: ' + inputUrl, err); } catch (_) {}
-    return fail(500, err.message || 'TikTok import failed');
-  }
-}
-
 function decodeHtmlEntities(str) {
   if (!str) return '';
   return String(str)
@@ -9486,251 +9160,6 @@ function decodeHtmlEntities(str) {
     .replace(/&nbsp;/g, ' ')
     .replace(/&#(\d+);/g, (_, code) => String.fromCharCode(Number(code)))
     .replace(/&#x([0-9a-fA-F]+);/g, (_, code) => String.fromCharCode(parseInt(code, 16)));
-}
-
-function parseVkImportText(text) {
-  const lines = String(text || '')
-    .split(/\r?\n/)
-    .map(l => l.trim())
-    .filter(l => {
-      if (!l) return false;
-      if (/^(?:мне нравится|слушать всё|слушать все|перемешать|плейлист)$/i.test(l)) return false;
-      if (/^[eе]$/i.test(l)) return false;
-      if (/^\d+$/.test(l)) return false;
-      return true;
-    });
-
-  if (!lines.length) return [];
-
-                                                                            
-  const singleLineTracks = [];
-  for (const line of lines) {
-    if (/^\d{1,2}:\d{2}$/.test(line)) continue;
-    const match = line.match(/^(\d+[\.\)]\s*)?([^-–—\t]+?)\s*(?:[-–—]|\t)\s*(.+?)(?:\s*[\(\[]?(\d{1,2}:\d{2})[\)\]]?)?$/);
-    if (match) {
-      const artist = match[2].trim();
-      const title = match[3].trim();
-      const duration = match[4] ? parseDurationSeconds(match[4]) : 0;
-      if (artist && title && artist.length < 100 && title.length < 150) {
-        singleLineTracks.push({ title, artist, duration });
-      }
-    }
-  }
-
-                                                                                                                    
-  const multiLineTracks = [];
-  for (let i = 0; i < lines.length; i++) {
-    if (/^\d{1,2}:\d{2}$/.test(lines[i])) {
-      if (i >= 2) {
-        const title = lines[i - 2];
-        const artist = lines[i - 1];
-        const duration = parseDurationSeconds(lines[i]);
-        if (title && artist && !/^\d{1,2}:\d{2}$/.test(title) && !/^\d{1,2}:\d{2}$/.test(artist)) {
-          multiLineTracks.push({ title, artist, duration });
-        }
-      }
-    }
-  }
-
-  if (multiLineTracks.length > singleLineTracks.length) {
-    return multiLineTracks;
-  }
-  if (singleLineTracks.length > 0) {
-    return singleLineTracks;
-  }
-  return multiLineTracks;
-}
-
-async function enrichVkTracks(rawItems) {
-  const tracksToResolve = rawItems.slice(0, 100);
-  const enriched = [];
-  const BATCH_SIZE = 6;
-
-  for (let i = 0; i < tracksToResolve.length; i += BATCH_SIZE) {
-    const batch = tracksToResolve.slice(i, i + BATCH_SIZE);
-    const batchResults = await Promise.all(batch.map(async (item, batchIdx) => {
-      const idx = i + batchIdx;
-      const query = `${item.artist} - ${item.title}`.trim();
-      try {
-        const ytHits = await ytmusicSearch(query, 1).catch(() => []);
-        if (ytHits && ytHits[0]) {
-          const hit = ytHits[0];
-          let thumb = hit.thumbnail || hit.cover || '';
-          if (thumb.includes('=w')) thumb = thumb.replace(/=w\d+-h\d+[^"]*/, '=w600-h600-l90-rj');
-          return {
-            id: hit.id,
-            title: hit.title || item.title,
-            artist: hit.artist || item.artist,
-            album: hit.album || '',
-            duration: hit.duration || item.duration || 180,
-            thumbnail: thumb,
-            cover: thumb,
-            url: hit.url || `https://www.youtube.com/watch?v=${hit.id}`,
-            platform: 'ytmusic'
-          };
-        }
-      } catch (_) {}
-
-      return {
-        id: 'vk_' + idx,
-        title: item.title,
-        artist: item.artist,
-        duration: item.duration || 180,
-        thumbnail: item.thumbnail || '',
-        cover: item.thumbnail || '',
-        searchQuery: `${item.artist} ${item.title}`.trim(),
-        platform: 'ytmusic'
-      };
-    }));
-    enriched.push(...batchResults);
-  }
-  return enriched;
-}
-
-async function handleVkImport(req, res, payload = {}) {
-  const send = (status, body) => {
-    if (res.writableEnded) return;
-    res.writeHead(status, { 'Content-Type': 'application/json' });
-    return res.end(JSON.stringify(body));
-  };
-  const fail = (status, msg) => {
-    return send(status || 500, { success: false, error: msg || 'VK import failed' });
-  };
-
-  const parsedQuery = (req && req.url) ? url.parse(req.url, true).query : {};
-  const text = String(payload?.text || parsedQuery?.text || '').trim();
-  const targetUrl = String(payload?.url || parsedQuery?.url || '').trim();
-  let name = payload?.name || parsedQuery?.name || 'VK Music';
-  let cover = '';
-
-  if (text) {
-    const rawTracks = parseVkImportText(text);
-    if (!rawTracks.length) {
-      return fail(400, 'Could not parse any tracks from pasted text');
-    }
-    const enriched = await enrichVkTracks(rawTracks);
-    return send(200, {
-      success: true,
-      name,
-      cover: cover || enriched[0]?.cover || enriched[0]?.thumbnail || '',
-      tracks: enriched
-    });
-  }
-
-  if (targetUrl) {
-    try {
-      const tracks = [];
-      const seen = new Set();
-      const stripTags = (s) => decodeHtmlEntities(String(s || '').replace(/<[^>]+>/g, ' ')).replace(/\s+/g, ' ').trim();
-
-      try {
-        const fetched = await fetchHtmlWithRedirects(targetUrl, 5, 10000);
-        const html = fetched && fetched.body ? fetched.body : '';
-
-        const titleMatch = html.match(/<title>([^<]+)<\/title>/i);
-        if (titleMatch) {
-          name = titleMatch[1].replace(/\s*\|\s*(?:VK|ВКонтакте).*$/i, '').trim() || name;
-        }
-
-        const coverMatch = html.match(/<meta\s+property="og:image"\s+content="([^"]+)"/i) || html.match(/class="[^"]*audio_pl_snippet__cover[^"]*"[^>]*style="[^"]*background-image:\s*url\('?([^'\)]+)'?\)/i);
-        if (coverMatch) cover = coverMatch[1];
-
-                                                                                        
-        const dataAudioRegex = /data-audio\s*=\s*(["'])([\s\S]*?)\1/gi;
-        let daMatch;
-        while ((daMatch = dataAudioRegex.exec(html)) !== null) {
-          try {
-            const jsonStr = decodeHtmlEntities(daMatch[2]);
-            const arr = JSON.parse(jsonStr);
-            if (Array.isArray(arr) && arr.length >= 5) {
-              const rawTitle = arr[3];
-              const rawArtist = arr[4];
-              if (rawTitle && rawArtist) {
-                const title = stripTags(rawTitle);
-                const artist = stripTags(rawArtist);
-                const duration = Number(arr[5]) || 0;
-                if (title && artist) {
-                  const key = `${artist.toLowerCase()} - ${title.toLowerCase()}`;
-                  if (!seen.has(key)) {
-                    seen.add(key);
-                    tracks.push({ title, artist, duration });
-                  }
-                }
-              }
-            }
-          } catch (_) {}
-        }
-
-                                                                                                       
-        const rowRegex = /class="[^"]*(?:audio_row__performer_title|audio_row)[^"]*"[\s\S]*?(?=class="[^"]*(?:audio_row__performer_title|audio_row)[^"]*"|$)/gi;
-        let rMatch;
-        while ((rMatch = rowRegex.exec(html)) !== null) {
-          const rowHtml = rMatch[0];
-          const perfMatch = rowHtml.match(/class="[^"]*audio_row__performers?[^"]*"[^>]*>([\s\S]*?)<\/(?:div|span|a)>/i);
-          const titleMatch2 = rowHtml.match(/class="[^"]*(?:audio_row__title_inner|audio_row__title|ai_title)[^"]*"[^>]*>([\s\S]*?)<\/(?:div|span|a)>/i);
-          const durMatch = rowHtml.match(/class="[^"]*(?:audio_row__duration|ai_dur)[^"]*"[^>]*>([^<]+)<\/(?:div|span|a)>/i);
-
-          if (perfMatch && titleMatch2) {
-            const artist = stripTags(perfMatch[1]);
-            const title = stripTags(titleMatch2[1]);
-            let duration = 0;
-            if (durMatch) {
-              duration = parseDurationSeconds(durMatch[1].trim());
-            }
-            if (title && artist) {
-              const key = `${artist.toLowerCase()} - ${title.toLowerCase()}`;
-              if (!seen.has(key)) {
-                seen.add(key);
-                tracks.push({ title, artist, duration });
-              }
-            }
-          }
-        }
-      } catch (_) {}
-
-                                                             
-      if (tracks.length === 0) {
-        try {
-          const raw = await executeYtDlp(['--flat-playlist', '--dump-single-json', targetUrl], 30000);
-          const data = JSON.parse(raw);
-          if (data.title && name === 'VK Music') name = data.title;
-          if (data.thumbnail && !cover) cover = data.thumbnail;
-          const entries = Array.isArray(data.entries) ? data.entries : [data];
-          for (const item of entries) {
-            if (!item) continue;
-            const rawTitle = (item.title || item.track || '').trim();
-            const rawArtist = (item.artist || item.uploader || item.creator || '').trim();
-            const smart = parseSmartArtistAndTitle(rawTitle, rawArtist);
-            if (smart.title && smart.title !== 'untitled') {
-              tracks.push({
-                title: smart.title,
-                artist: smart.artist || 'Unknown Artist',
-                duration: Math.round(item.duration || 0),
-                thumbnail: item.thumbnail || ''
-              });
-            }
-          }
-        } catch (_) {}
-      }
-
-      if (tracks.length === 0) {
-        return fail(404, 'No tracks found in VK link');
-      }
-
-      const enriched = await enrichVkTracks(tracks);
-      return send(200, {
-        success: true,
-        name,
-        cover: cover || enriched[0]?.cover || enriched[0]?.thumbnail || '',
-        tracks: enriched
-      });
-    } catch (err) {
-      try { logger.error('VK import failed: ' + targetUrl, err); } catch (_) {}
-      return fail(500, err.message || 'VK import failed');
-    }
-  }
-
-  return fail(400, 'Neither url nor text was provided');
 }
 
 const SPOTIFY_SCOPES = 'user-library-read playlist-read-private playlist-read-collaborative';
@@ -9849,7 +9278,7 @@ async function getSpotifyAccessToken(forceRefresh = false) {
       spotifyAuthError = '';
       if (typeof result.data.refresh_token === 'string' && result.data.refresh_token) {
         spotifyAuth.refreshToken = result.data.refresh_token;
-        if (!saveSpotifyAuth()) spotifyAuthError = 'Spotify login could not be saved securely; reconnect after restarting Riff.';
+        if (!saveSpotifyAuth()) spotifyAuthError = 'Spotify login could not be saved securely; reconnect after restarting Cremo.';
       }
       return spotifyAuth.token;
     })().finally(() => { spotifyRefreshPromise = null; });
@@ -10144,12 +9573,12 @@ function queryGoogleTranslateFallback(text, to) {
 
 async function callDeepLTranslate(text, toLang, apiKey = '') {
   if (!text || typeof text !== 'string') return null;
-  const safeText = text.replace(/\bRiff\b/g, '__RIFF_BRAND__');
+  const safeText = text.replace(/\bCremo\b/g, '__CREMO_BRAND__');
   if (!DEEPL_LANG_MAP[toLang]) {
     const googleResult = await queryGoogleTranslateFallback(safeText, toLang);
     const gArr = Array.isArray(googleResult) ? googleResult : (typeof googleResult === 'string' ? googleResult.split('\n') : null);
     if (gArr) {
-      return gArr.map(str => { const s = String(str || '').replace(/__RIFF_BRAND__/g, 'Riff').replace(/__RIFF_APP__/g, 'Riff').trim(); return (!s || s.includes('linux.do') || /https?:\/\//i.test(s)) ? '' : s; });
+      return gArr.map(str => { const s = String(str || '').replace(/__CREMO_BRAND__/g, 'Cremo').replace(/__CREMO_APP__/g, 'Cremo').trim(); return (!s || s.includes('linux.do') || /https?:\/\//i.test(s)) ? '' : s; });
     }
     return null;
   }
@@ -10169,7 +9598,7 @@ async function callDeepLTranslate(text, toLang, apiKey = '') {
 
   const resArr = Array.isArray(results) ? results : (typeof results === 'string' ? results.split('\n') : null);
   if (resArr) {
-    return resArr.map(str => { const s = String(str || '').replace(/__RIFF_BRAND__/g, 'Riff').replace(/__RIFF_APP__/g, 'Riff').trim(); return (!s || s.includes('linux.do') || /https?:\/\//i.test(s)) ? '' : s; });
+    return resArr.map(str => { const s = String(str || '').replace(/__CREMO_BRAND__/g, 'Cremo').replace(/__CREMO_APP__/g, 'Cremo').trim(); return (!s || s.includes('linux.do') || /https?:\/\//i.test(s)) ? '' : s; });
   }
   return null;
 }
@@ -10912,8 +10341,8 @@ function callLastFmApi(params, secret, method = 'POST') {
       hostname: 'ws.audioscrobbler.com',
       path: reqPath,
       method,
-      headers: isGet ? { 'User-Agent': 'Riff-Desktop-Player/43.0' } : {
-        'User-Agent': 'Riff-Desktop-Player/43.0',
+      headers: isGet ? { 'User-Agent': 'Cremo-Desktop-Player/43.0' } : {
+        'User-Agent': 'Cremo-Desktop-Player/43.0',
         'Content-Type': 'application/x-www-form-urlencoded',
         'Content-Length': Buffer.byteLength(bodyData)
       },
@@ -11030,8 +10459,7 @@ let activeReqSeq = 0;
 const LONG_LIVED_ROUTES = new Set([
   '/api/audio-proxy', '/api/lyrics-stream', '/api/local-track', '/api/downloaded-track',
   '/api/library-file', '/api/download', '/api/encode',
-  '/api/playlist-import', '/api/spotify-import', '/api/apple-import', '/api/yandex-import',
-  '/api/tiktok-import', '/api/vk-import'
+  '/api/playlist-import', '/api/spotify-import', '/api/apple-import', '/api/silence-scan'
 ]);
 setInterval(() => {
   try {
@@ -11111,7 +10539,7 @@ async function requestHandler(req, res) {
 
   if (pathname.startsWith('/api/lastfm/')) { handleLastFmRoute(req, res, pathname); return; }
 
-  if (TOKEN_PROTECTED_ROUTES.has(parsedUrl.pathname) && !tokenMatches(req.headers['x-riff-token'])) {
+  if (TOKEN_PROTECTED_ROUTES.has(parsedUrl.pathname) && !tokenMatches(req.headers['x-cremo-token'])) {
     res.writeHead(403, { 'Content-Type': 'application/json' });
     return res.end(JSON.stringify({ success: false, error: 'forbidden' }));
   }
@@ -11477,43 +10905,9 @@ async function requestHandler(req, res) {
     return handleAppleImport(req, res, appleUrl);
   }
 
-  if (parsedUrl.pathname === '/api/yandex-import') {
-    const yandexUrl = parsedUrl.query.url || '';
-    return handleYandexImport(req, res, yandexUrl);
-  }
-
   if (parsedUrl.pathname === '/api/playlist-import') {
     const playlistUrl = parsedUrl.query.url || '';
     return handlePlaylistImport(req, res, playlistUrl);
-  }
-
-  if (parsedUrl.pathname === '/api/tiktok-import') {
-    if (req.method === 'POST') {
-      let body = '';
-      req.on('data', chunk => { if (res.writableEnded) return; body += chunk; if (body.length > MAX_BODY_BYTES) { body = ''; req.removeAllListeners('data'); req.removeAllListeners('end'); res.writeHead(413, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ success: false, error: 'payload too large' })); req.resume(); } });
-      req.on('end', () => {
-        const payload = safeJsonParse(body, {});
-        const inputUrl = payload.url || parsedUrl.query.url || '';
-        return handleTikTokImport(req, res, inputUrl);
-      });
-      return;
-    }
-    const inputUrl = parsedUrl.query.url || '';
-    return handleTikTokImport(req, res, inputUrl);
-  }
-
-  if (parsedUrl.pathname === '/api/vk-import') {
-    if (req.method === 'POST') {
-      let body = '';
-      req.on('data', chunk => { if (res.writableEnded) return; body += chunk; if (body.length > MAX_BODY_BYTES) { body = ''; req.removeAllListeners('data'); req.removeAllListeners('end'); res.writeHead(413, { 'Content-Type': 'application/json' }); res.end(JSON.stringify({ success: false, error: 'payload too large' })); req.resume(); } });
-      req.on('end', () => {
-        const payload = safeJsonParse(body, {});
-        return handleVkImport(req, res, payload);
-      });
-      return;
-    }
-    const payload = { url: parsedUrl.query.url || '', text: parsedUrl.query.text || '' };
-    return handleVkImport(req, res, payload);
   }
 
   if (parsedUrl.pathname === '/api/track-cover') {
@@ -11579,7 +10973,7 @@ async function requestHandler(req, res) {
       spotifyAuthError = errParam === 'access_denied' ? 'Spotify authorization was denied.' : 'Spotify login failed. Check the Client ID, allowed account and redirect URI.';
       spotifyAuth.state = '';
       res.writeHead(400, { 'Content-Type': 'text/html; charset=utf-8' });
-      return res.end('<!DOCTYPE html><html><body><p>Spotify login failed. Return to Riff for details.</p></body></html>');
+      return res.end('<!DOCTYPE html><html><body><p>Spotify login failed. Return to Cremo for details.</p></body></html>');
     }
     const redirectUri = getSpotifyRedirectUri();
     try {
@@ -11587,7 +10981,7 @@ async function requestHandler(req, res) {
       const tokenResult = await requestSpotifyToken({ grant_type: 'authorization_code', code, redirect_uri: redirectUri, client_id: spotifyAuth.clientId, code_verifier: spotifyAuth.verifier });
       if (spotifyAuth !== session) {
         res.writeHead(409, { 'Content-Type': 'text/html; charset=utf-8' });
-        return res.end('<!DOCTYPE html><html><body><p>Spotify login session changed. Return to Riff and try again.</p></body></html>');
+        return res.end('<!DOCTYPE html><html><body><p>Spotify login session changed. Return to Cremo and try again.</p></body></html>');
       }
       spotifyAuth.state = '';
       if (tokenResult.status >= 200 && tokenResult.status < 300 && typeof tokenResult.data?.access_token === 'string' && tokenResult.data.access_token) {
@@ -11595,20 +10989,20 @@ async function requestHandler(req, res) {
         spotifyAuth.refreshToken = typeof tokenResult.data.refresh_token === 'string' ? tokenResult.data.refresh_token : '';
         spotifyAuth.expiresAt = Date.now() + (Number.isFinite(tokenResult.data.expires_in) && tokenResult.data.expires_in > 0 ? tokenResult.data.expires_in : 3600) * 1000;
         if (!spotifyAuth.refreshToken) spotifyAuthError = 'Spotify did not provide a refresh token; reconnect when this session expires.';
-        else if (!saveSpotifyAuth()) spotifyAuthError = 'Spotify login could not be saved securely; reconnect after restarting Riff.';
+        else if (!saveSpotifyAuth()) spotifyAuthError = 'Spotify login could not be saved securely; reconnect after restarting Cremo.';
         res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8' });
-        return res.end('<!DOCTYPE html><html><body><p>Riff is connected to Spotify. You can close this tab.</p></body></html>');
+        return res.end('<!DOCTYPE html><html><body><p>Cremo is connected to Spotify. You can close this tab.</p></body></html>');
       } else {
         const reason = tokenResult.data?.error_description || tokenResult.data?.error || `HTTP ${tokenResult.status}`;
         spotifyAuthError = `Spotify token exchange failed: ${reason}`;
         res.writeHead(400, { 'Content-Type': 'text/html; charset=utf-8' });
-        return res.end('<!DOCTYPE html><html><body><p>Spotify login failed. Return to Riff for details.</p></body></html>');
+        return res.end('<!DOCTYPE html><html><body><p>Spotify login failed. Return to Cremo for details.</p></body></html>');
       }
     } catch (err) {
       spotifyAuth.state = '';
       spotifyAuthError = `Could not reach Spotify: ${err.message}`;
       res.writeHead(500, { 'Content-Type': 'text/html; charset=utf-8' });
-      return res.end('<!DOCTYPE html><html><body><p>Spotify login failed. Return to Riff for details.</p></body></html>');
+      return res.end('<!DOCTYPE html><html><body><p>Spotify login failed. Return to Cremo for details.</p></body></html>');
     }
   }
 
@@ -12083,6 +11477,34 @@ async function requestHandler(req, res) {
     return res.end(JSON.stringify({ success: true, analysis: meta.analysis || null }));
   }
 
+  // Cremo: silent stretches of a track, so the player can skip them.
+  // Reads the cached copy when there is one, otherwise the same stream the
+  // player is using (only our own /api/ URLs or a local file, never the web).
+  if (parsedUrl.pathname === '/api/silence-scan') {
+    const send = (body) => { res.writeHead(200, { 'Content-Type': 'application/json' }); res.end(JSON.stringify(body)); };
+    const ffmpegBin = resolveBinary('ffmpeg');
+    if (!ffmpegBin) return send({ success: false, error: 'ffmpeg not found' });
+    const head = parsedUrl.query.head === '1';
+    const id = cleanTrackId(String(parsedUrl.query.id || '')).slice(0, 120);
+    const src = String(parsedUrl.query.src || '');
+    let input = id ? await findCachedFile(id) : null;
+    if (!input && src.startsWith(`http://127.0.0.1:${ACTIVE_PORT}/api/`)) input = src;
+    if (!input && /^file:/i.test(src)) {
+      let p = '';
+      try { p = url.fileURLToPath(src); } catch (_) {
+        try { p = decodeURIComponent(src.replace(/^file:\/*/i, process.platform === 'win32' ? '' : '/')); } catch (_) {}
+      }
+      if (p && fs.existsSync(p)) input = p;
+    }
+    if (!input) return send({ success: false, error: 'no input' });
+    try {
+      const r = await silenceScan.scan(ffmpegBin, input, { key: id || input, head: head ? 30 : 0 });
+      return send({ success: true, duration: r.duration, skip: r.skip, cached: input !== src });
+    } catch (e) {
+      return send({ success: false, error: e.message });
+    }
+  }
+
   if (parsedUrl.pathname === '/api/save-track-source' && req.method === 'POST') {
     let body = '';
     req.on('data', chunk => { if (body.length < MAX_BODY_BYTES) body += chunk; });
@@ -12235,7 +11657,7 @@ function stopServer() {
   });
 }
 
-module.exports = { startServer, stopServer, PORT, getServerToken, fetchLyricsDirect, fetchLrcLib, fetchGeniusLyrics, fetchNetEaseWords, fetchKugouLyrics, fetchMusixmatchLyrics, fetchNeteaseLyrics, fetchSoundCloudSearch, ytmusicSearch, parseYrc, cleanSearchResults };
+module.exports = { startServer, stopServer, PORT, getServerToken, fetchLyricsDirect, fetchLrcLib, fetchGeniusLyrics, fetchNetEaseWords, fetchKugouLyrics, fetchMusixmatchLyrics, fetchNeteaseLyrics, fetchSoundCloudSearch, ytmusicSearch, parseYrc, cleanSearchResults, scoreImportedCandidate, findDownloadedFileName, decodeUtf8Chunks, hasBrokenLyricText };
 
 if (require.main === module) {
   startServer();

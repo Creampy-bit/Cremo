@@ -3,7 +3,7 @@
 
 var streamPrefetchQueue = window.streamPrefetchQueue || [];
 window.streamPrefetchQueue = streamPrefetchQueue;
-var audioEngine = window.audioEngine || (window.RiffAudioEngine ? new window.RiffAudioEngine() : null);
+var audioEngine = window.audioEngine || (window.CremoAudioEngine ? new window.CremoAudioEngine() : null);
 window.audioEngine = audioEngine;
 var activeStreamRecovery = window.activeStreamRecovery || null;
 window.activeStreamRecovery = activeStreamRecovery;
@@ -55,7 +55,7 @@ async function recoverCurrentStreamOnce(resumePos, myToken) {
         document.body.classList.remove('is-playing');
         updatePlayPauseButton(false, false);
         setPlayPauseState(false, false);
-        window.__riffLogError?.('ERROR', `Stream failed [stage=${cur._retryCount}] id=${cur.id || ''} title="${cur.title || ''}" mediaErr=${el.nativeAudio?.error?.code || 'none'} src=${(el.nativeAudio?.getAttribute('src') || '').slice(0, 120)} apiErr=${d?.error || 'none'}`);
+        window.__cremoLogError?.('ERROR', `Stream failed [stage=${cur._retryCount}] id=${cur.id || ''} title="${cur.title || ''}" mediaErr=${el.nativeAudio?.error?.code || 'none'} src=${(el.nativeAudio?.getAttribute('src') || '').slice(0, 120)} apiErr=${d?.error || 'none'}`);
         try {
           if (el.nativeAudio) {
             el.nativeAudio.pause();
@@ -74,12 +74,12 @@ async function recoverCurrentStreamOnce(resumePos, myToken) {
       state.isLoadingTrack = true;
 
       try {
-        const qQuality = encodeURIComponent(localStorage.getItem('riff_audio_quality') || 'medium');
+        const qQuality = encodeURIComponent(localStorage.getItem('cremo_audio_quality') || 'medium');
         const qSearch = encodeURIComponent(cur.searchQuery || ((cur.artist ? cur.artist + ' - ' : '') + (cur.title || '')));
-        const isRiffStream = localStorage.getItem('riff_library_streaming') === '1' ? '&riffStream=1' : '';
+        const isCremoStream = localStorage.getItem('cremo_library_streaming') === '1' ? '&cremoStream=1' : '';
         const forceYtDlpParam = (cur._retryCount >= 2) ? '&forceYtDlp=1' : '';
         const retryTimeoutMs = (cur._retryCount >= 2) ? 25000 : 12000;
-        const retryUrl = `http://127.0.0.1:${state.serverPort}/api/stream-info?url=${encodeURIComponent(cur.url || '')}&id=${encodeURIComponent(cur.id || '')}&platform=${encodeURIComponent(cur.platform || state.platform)}&title=${encodeURIComponent(cur.title || '')}&artist=${encodeURIComponent(cur.artist || '')}&duration=${encodeURIComponent(cur.duration || 0)}&quality=${qQuality}&q=${qSearch}${forceYtDlpParam}${isRiffStream}&bust=${Date.now()}`;
+        const retryUrl = `http://127.0.0.1:${state.serverPort}/api/stream-info?url=${encodeURIComponent(cur.url || '')}&id=${encodeURIComponent(cur.id || '')}&platform=${encodeURIComponent(cur.platform || state.platform)}&title=${encodeURIComponent(cur.title || '')}&artist=${encodeURIComponent(cur.artist || '')}&duration=${encodeURIComponent(cur.duration || 0)}&quality=${qQuality}&q=${qSearch}${forceYtDlpParam}${isCremoStream}&bust=${Date.now()}`;
         const r = await fetch(retryUrl, { signal: AbortSignal.timeout(retryTimeoutMs) });
         d = await r.json();
         if (myToken !== state.loadToken) return;
@@ -128,7 +128,7 @@ async function recoverCurrentStreamOnce(resumePos, myToken) {
       document.body.classList.remove('is-playing');
       updatePlayPauseButton(false, false);
       setPlayPauseState(false, false);
-      window.__riffLogError?.('ERROR', `Stream failed [stage=${cur._retryCount}] id=${cur.id || ''} title="${cur.title || ''}" mediaErr=${el.nativeAudio?.error?.code || 'none'} src=${(el.nativeAudio?.getAttribute('src') || '').slice(0, 120)} apiErr=${d?.error || 'none'}`);
+      window.__cremoLogError?.('ERROR', `Stream failed [stage=${cur._retryCount}] id=${cur.id || ''} title="${cur.title || ''}" mediaErr=${el.nativeAudio?.error?.code || 'none'} src=${(el.nativeAudio?.getAttribute('src') || '').slice(0, 120)} apiErr=${d?.error || 'none'}`);
       try {
         if (el.nativeAudio) {
           el.nativeAudio.pause();
@@ -217,12 +217,12 @@ window.rememberWaveShown = window.rememberWaveShown || function(fresh) {};
     if (customArt && isHttpUrl(customArt.cover)) rpcThumb = customArt.cover;
     else if (isHttpUrl(track.thumbnail)) rpcThumb = track.thumbnail;
     else if (isHttpUrl(track.cover)) rpcThumb = track.cover;
-    const shareUrl = buildRiffShareUrl(track, '', '', 500);
+    const shareUrl = buildCremoShareUrl(track, '', '', 500);
     const curSec = (el.nativeAudio && Number.isFinite(el.nativeAudio.currentTime)) ? el.nativeAudio.currentTime : 0;
     window.electronAPI.discordRpcUpdate({
       title: track.title || 'Unknown Track',
       artist: track.artist || 'Unknown Artist',
-      artistInStatus: localStorage.getItem('riff_discord_artist_status') !== '0',
+      artistInStatus: localStorage.getItem('cremo_discord_artist_status') !== '0',
       duration: track.duration || 0,
       thumbnail: rpcThumb,
       url: shareUrl,
@@ -321,7 +321,7 @@ window.rememberWaveShown = window.rememberWaveShown || function(fresh) {};
       const rawArtist = (typeof current.artist === 'string' ? current.artist.trim() : '');
       const title = rawTitle || 'Unknown track';
       const artist = rawArtist || 'Unknown artist';
-      const album = current.album || 'Riff';
+      const album = current.album || 'Cremo';
       const thumb = (typeof getTrackThumbUrl === 'function' ? getTrackThumbUrl(current) : '') || current.thumbnail || current.cover || '';
       const artwork = getMediaArtwork(thumb);
       navigator.mediaSession.metadata = new MediaMetadata({
@@ -432,7 +432,7 @@ window.rememberWaveShown = window.rememberWaveShown || function(fresh) {};
   }, true);
 
 
-  var audioEngine = new window.RiffAudioEngine();
+  var audioEngine = new window.CremoAudioEngine();
   window.audioEngine = audioEngine;
   var hlsInstance = null;
   animationFrameId = null;
@@ -461,7 +461,7 @@ window.rememberWaveShown = window.rememberWaveShown || function(fresh) {};
   }
 
   var levelAvgDb = -120;
-  function normalizeEnabled() { return localStorage.getItem('riff_audio_normalize') === '1'; }
+  function normalizeEnabled() { return localStorage.getItem('cremo_audio_normalize') === '1'; }
   function resetLevelWatcher() { levelAvgDb = -120; if (audioEngine && audioEngine.setNormalizeGainDb) audioEngine.setNormalizeGainDb(0); }
   setInterval(() => {
     const audio = el.nativeAudio;
@@ -480,11 +480,11 @@ window.rememberWaveShown = window.rememberWaveShown || function(fresh) {};
 
 
   var lastfmState = {
-    enabled: localStorage.getItem('riff_lastfm_enabled') !== 'false',
-    sessionKey: localStorage.getItem('riff_lastfm_sk') || '',
-    username: localStorage.getItem('riff_lastfm_user') || '',
-    apiKey: localStorage.getItem('riff_lastfm_apikey') || '',
-    apiSecret: localStorage.getItem('riff_lastfm_apisecret') || '',
+    enabled: localStorage.getItem('cremo_lastfm_enabled') !== 'false',
+    sessionKey: localStorage.getItem('cremo_lastfm_sk') || '',
+    username: localStorage.getItem('cremo_lastfm_user') || '',
+    apiKey: localStorage.getItem('cremo_lastfm_apikey') || '',
+    apiSecret: localStorage.getItem('cremo_lastfm_apisecret') || '',
     currentTrackKey: '',
     startedAtUnix: 0,
     playedSeconds: 0,
@@ -659,8 +659,8 @@ window.rememberWaveShown = window.rememberWaveShown || function(fresh) {};
   async function preloadNextTrackStream() {
     if (!state.queue || state.queueIndex < 0) return;
     const nextTrack = state.queue[state.queueIndex + 1];
-    if (!nextTrack || nextTrack.isCached || nextTrack.platform === 'local' || isStaticTikTokTrack(nextTrack)) return;
-    const curQuality = localStorage.getItem('riff_audio_quality') || 'medium';
+    if (!nextTrack || nextTrack.isCached || nextTrack.platform === 'local') return;
+    const curQuality = localStorage.getItem('cremo_audio_quality') || 'medium';
     if (nextTrack._preloadedStreamUrl && nextTrack._preloadedStreamQuality === curQuality) {
       warmUpNextAudioBuffer(nextTrack._preloadedStreamUrl);
       return;
@@ -669,8 +669,8 @@ window.rememberWaveShown = window.rememberWaveShown || function(fresh) {};
       const resolvedId = nextTrack.resolvedYtId || nextTrack.id;
       const qQuality = encodeURIComponent(curQuality);
       const qFallback = encodeURIComponent(nextTrack.searchQuery || ((nextTrack.artist ? nextTrack.artist + ' - ' : '') + (nextTrack.title || '')));
-      const isRiffStream = localStorage.getItem('riff_library_streaming') === '1' ? '&riffStream=1' : '';
-      const fetchUrl = `http://127.0.0.1:${state.serverPort}/api/stream-info?id=${encodeURIComponent(resolvedId || '')}&url=${encodeURIComponent(nextTrack.url || '')}&platform=${encodeURIComponent(nextTrack.platform || 'ytmusic')}&title=${encodeURIComponent(nextTrack.title || '')}&artist=${encodeURIComponent(nextTrack.artist || '')}&duration=${encodeURIComponent(nextTrack.duration || 0)}&q=${qFallback}&quality=${qQuality}${isRiffStream}`;
+      const isCremoStream = localStorage.getItem('cremo_library_streaming') === '1' ? '&cremoStream=1' : '';
+      const fetchUrl = `http://127.0.0.1:${state.serverPort}/api/stream-info?id=${encodeURIComponent(resolvedId || '')}&url=${encodeURIComponent(nextTrack.url || '')}&platform=${encodeURIComponent(nextTrack.platform || 'ytmusic')}&title=${encodeURIComponent(nextTrack.title || '')}&artist=${encodeURIComponent(nextTrack.artist || '')}&duration=${encodeURIComponent(nextTrack.duration || 0)}&q=${qFallback}&quality=${qQuality}${isCremoStream}`;
       const res = await fetch(fetchUrl);
       const data = await res.json();
       if (data && data.success && data.streamUrl) {
@@ -697,7 +697,7 @@ window.rememberWaveShown = window.rememberWaveShown || function(fresh) {};
     if (!state.queue || state.queueIndex < 0) return;
     preloadNextTrackStream();
     const secondNext = state.queue[state.queueIndex + 2];
-    if (secondNext && !secondNext._preloadedStreamUrl && secondNext.platform !== 'local' && !isStaticTikTokTrack(secondNext)) {
+    if (secondNext && !secondNext._preloadedStreamUrl && secondNext.platform !== 'local') {
       if (typeof enqueueStreamPrefetch === 'function') {
         enqueueStreamPrefetch(secondNext);
       }
@@ -756,7 +756,7 @@ window.rememberWaveShown = window.rememberWaveShown || function(fresh) {};
   function saveLastPlaybackState() {
     if (!state.currentTrack) return;
     try {
-      localStorage.setItem('riff_last_playback_state', JSON.stringify({
+      localStorage.setItem('cremo_last_playback_state', JSON.stringify({
         track: state.currentTrack,
         currentTime: (el.nativeAudio && Number.isFinite(el.nativeAudio.currentTime)) ? el.nativeAudio.currentTime : 0,
         queue: (state.queue || []).slice(0, 40),
@@ -779,7 +779,6 @@ window.rememberWaveShown = window.rememberWaveShown || function(fresh) {};
       if (!(Number(track.duration) > 0)) {
         track._hadNoDurationOnImport = true;
       }
-      repairTikTokTrack(track);
     }
     const isLocalUrl = track && track._preloadedStreamUrl && (track._preloadedStreamUrl.includes('/api/local-track') || track._preloadedStreamUrl.startsWith('file:'));
     if (track && !isLocalUrl && (!track._preloadedAt || (Date.now() - track._preloadedAt > 180000))) {
@@ -808,7 +807,7 @@ window.rememberWaveShown = window.rememberWaveShown || function(fresh) {};
     applyTrackRenames(track);
     if (typeof queueList === "number") { startIndex = queueList; queueList = state.queue; }
     if (!track || !el.nativeAudio) return;
-    const selectedQuality = localStorage.getItem('riff_audio_quality') || 'medium';
+    const selectedQuality = localStorage.getItem('cremo_audio_quality') || 'medium';
     if (track._preloadedStreamQuality && track._preloadedStreamQuality !== selectedQuality) {
       delete track._preloadedStreamUrl;
       delete track._preloadedStreamQuality;
@@ -999,7 +998,6 @@ window.rememberWaveShown = window.rememberWaveShown || function(fresh) {};
       state._autoplayAnchorSeeds = seeds;
     }
     updateQueueBadge();
-    if (state.currentView === 'queue') renderQueueView();
     if (typeof autoplayEnabled === 'function' && autoplayEnabled()) ensureAutoplayBuffer();
 
     track.playedAt = Date.now();
@@ -1008,7 +1006,6 @@ window.rememberWaveShown = window.rememberWaveShown || function(fresh) {};
     if (state.history.length > 100) state.history.pop();
     localStorage.setItem('devsize_history', JSON.stringify(state.history));
     updateHistoryBadge();
-    if (state.currentView === 'history') renderHistoryView();
 
     updateNowPlayingUI(track);
     updatePlayPauseButton(false, true);
@@ -1030,9 +1027,8 @@ window.rememberWaveShown = window.rememberWaveShown || function(fresh) {};
     loadSyncedLyrics(track.title, track.artist, currentToken);
 
     try {
-      if ((track.isCached && (track.id || track.title)) || isStaticTikTokTrack(track) || (track.id && cachedTrackIds.has(cleanTrackId(track.id)))) {
+      if ((track.isCached && (track.id || track.title)) || (track.id && cachedTrackIds.has(cleanTrackId(track.id)))) {
         track.isCached = true;
-        repairTikTokTrack(track);
         const clean = cleanTrackId(track._cachedId || track.resolvedYtId || track.id || '');
         const localStreamUrl = `http://127.0.0.1:${state.serverPort}/api/local-track?id=${encodeURIComponent(clean)}&title=${encodeURIComponent(track.title || '')}&artist=${encodeURIComponent(track.artist || '')}`;
         if (currentToken !== state.loadToken) return;
@@ -1112,10 +1108,10 @@ window.rememberWaveShown = window.rememberWaveShown || function(fresh) {};
       let resolvedUrl = track.url;
       let resolvedId = track.resolvedYtId || track.id;
 
-      const qQuality = encodeURIComponent(localStorage.getItem('riff_audio_quality') || 'medium');
+      const qQuality = encodeURIComponent(localStorage.getItem('cremo_audio_quality') || 'medium');
       const qSearch = encodeURIComponent(track.searchQuery || ((track.artist ? track.artist + ' - ' : '') + track.title));
-      const isRiffStream = localStorage.getItem('riff_library_streaming') === '1' ? '&riffStream=1' : '';
-      const streamInfoUrl = `http://127.0.0.1:${state.serverPort}/api/stream-info?url=${encodeURIComponent(resolvedUrl || '')}&id=${encodeURIComponent(resolvedId || '')}&platform=${(state.platform === 'soundcloud' && (!track.url || !track.url.includes('youtube.com'))) ? 'soundcloud' : (track.platform || state.platform || 'ytmusic')}&title=${encodeURIComponent(track.title || '')}&artist=${encodeURIComponent(track.artist || '')}&duration=${encodeURIComponent(track.duration || 0)}&thumbnail=${encodeURIComponent(track.thumbnail || '')}&quality=${qQuality}&q=${qSearch}${isRiffStream}`;
+      const isCremoStream = localStorage.getItem('cremo_library_streaming') === '1' ? '&cremoStream=1' : '';
+      const streamInfoUrl = `http://127.0.0.1:${state.serverPort}/api/stream-info?url=${encodeURIComponent(resolvedUrl || '')}&id=${encodeURIComponent(resolvedId || '')}&platform=${(state.platform === 'soundcloud' && (!track.url || !track.url.includes('youtube.com'))) ? 'soundcloud' : (track.platform || state.platform || 'ytmusic')}&title=${encodeURIComponent(track.title || '')}&artist=${encodeURIComponent(track.artist || '')}&duration=${encodeURIComponent(track.duration || 0)}&thumbnail=${encodeURIComponent(track.thumbnail || '')}&quality=${qQuality}&q=${qSearch}${isCremoStream}`;
       let res;
       try {
         res = await fetch(streamInfoUrl, { signal });
@@ -1180,32 +1176,11 @@ window.rememberWaveShown = window.rememberWaveShown || function(fresh) {};
         throw new Error((data && data.error) || 'Failed to extract audio stream');
       }
 
-      if (!isStaticTikTokTrack(track) && data.resolvedId && /^[a-zA-Z0-9_-]{11}$/.test(data.resolvedId)) {
+      if (data.resolvedId && /^[a-zA-Z0-9_-]{11}$/.test(data.resolvedId)) {
         const prevTrackId = track.id;
         track.resolvedYtId = data.resolvedId;
         track.id = data.resolvedId;
 
-        try {
-          const pinnedList = safeJson('riff_sidebar_pinned_tracks', []);
-          if (Array.isArray(pinnedList) && pinnedList.length > 0) {
-            let updated = false;
-            const isTarget = t => (prevTrackId && t.id === prevTrackId) ||
-                                  isSameTrack(t, track) ||
-                                  (t.title && track.title && typeof getTrackNormalizedKey === 'function' &&
-                                   getTrackNormalizedKey(t.artist, t.title) === getTrackNormalizedKey(track.artist, track.title));
-            if (state.currentTrackContext === 'sidebar-pinned' || pinnedList.some(isTarget)) {
-              pinnedList.forEach(item => {
-                if (isTarget(item)) {
-                  item.id = data.resolvedId;
-                  updated = true;
-                }
-              });
-              if (updated) {
-                localStorage.setItem('riff_sidebar_pinned_tracks', JSON.stringify(pinnedList.slice(0, 50)));
-              }
-            }
-          }
-        } catch (_) {}
       }
 
       if (hlsInstance) {
@@ -1672,14 +1647,8 @@ window.rememberWaveShown = window.rememberWaveShown || function(fresh) {};
     const didPop = popFromPoolToQueue();
     if (didPop) {
       if (typeof updateQueueBadge === 'function') updateQueueBadge();
-      if (state.currentView === 'queue' && typeof renderQueueView === 'function') {
-        renderQueueView();
-      }
       if (typeof window.refreshQueuePanel === 'function') {
         window.refreshQueuePanel();
-      }
-      if (typeof currentSidebarLibFilter !== 'undefined' && currentSidebarLibFilter === 'queue' && typeof renderSidebarLibraryFeed === 'function') {
-        renderSidebarLibraryFeed(false);
       }
     }
 
@@ -1776,14 +1745,8 @@ window.rememberWaveShown = window.rememberWaveShown || function(fresh) {};
           const addedMore = popFromPoolToQueue();
           if (addedMore || didPop) {
             if (typeof updateQueueBadge === 'function') updateQueueBadge();
-            if (state.currentView === 'queue' && typeof renderQueueView === 'function') {
-              renderQueueView();
-            }
             if (typeof window.refreshQueuePanel === 'function') {
               window.refreshQueuePanel();
-            }
-            if (typeof currentSidebarLibFilter !== 'undefined' && currentSidebarLibFilter === 'queue' && typeof renderSidebarLibraryFeed === 'function') {
-              renderSidebarLibraryFeed(false);
             }
           }
         }
@@ -2135,7 +2098,7 @@ window.rememberWaveShown = window.rememberWaveShown || function(fresh) {};
       }
       if (crossfadeFadeInPending) {
         crossfadeFadeInPending = false;
-        const X = parseInt(localStorage.getItem('riff_crossfade') || '0', 10);
+        const X = parseInt(localStorage.getItem('cremo_crossfade') || '0', 10);
         if (X > 0 && audioEngine) audioEngine.fadeIn(X);
       }
       if (typeof m3cStart === 'function') m3cStart();
@@ -2281,7 +2244,7 @@ window.rememberWaveShown = window.rememberWaveShown || function(fresh) {};
       const cur = (el.nativeAudio && Number.isFinite(el.nativeAudio.currentTime)) ? el.nativeAudio.currentTime : 0;
       const dur = getReliableTrackDuration();
 
-      const X = parseInt(localStorage.getItem('riff_crossfade') || '0', 10);
+      const X = parseInt(localStorage.getItem('cremo_crossfade') || '0', 10);
       if (!state.isLoadingTrack && state.isPlaying && X > 0 && !crossfadeTriggered && !state.isRepeat && dur > Math.max(X * 2, 20) && cur >= dur - X && (!audioEngine || !audioEngine.isLiveStream(el.nativeAudio))) {
         crossfadeTriggered = true;
         crossfadeFadeInPending = true;
@@ -2356,17 +2319,17 @@ window.rememberWaveShown = window.rememberWaveShown || function(fresh) {};
   }
 
   function enqueueStreamPrefetch(track) {
-    if (!track || track.platform === 'local' || isStaticTikTokTrack(track)) return;
+    if (!track || track.platform === 'local') return;
     if (track._preloadedStreamUrl) return;
     const key = getTrackCanonicalId ? getTrackCanonicalId(track) : (track.id || track.url || (track.artist + '_' + track.title));
     if (!key || prefetchedTrackKeys.has(key)) return;
     prefetchedTrackKeys.add(key);
     streamPrefetchQueue.push({ key, run: () => {
-      const quality = localStorage.getItem('riff_audio_quality') || 'medium';
+      const quality = localStorage.getItem('cremo_audio_quality') || 'medium';
       const qQuality = encodeURIComponent(quality);
       const qSearch = encodeURIComponent(track.searchQuery || ((track.artist ? track.artist + ' - ' : '') + (track.title || '')));
-      const isRiffStream = localStorage.getItem('riff_library_streaming') === '1' ? '&riffStream=1' : '';
-      const u = `http://127.0.0.1:${state.serverPort}/api/stream-info?url=${encodeURIComponent(track.url || '')}&id=${encodeURIComponent(track.id || '')}&platform=${track.platform || state.platform}&title=${encodeURIComponent(track.title || '')}&artist=${encodeURIComponent(track.artist || '')}&duration=${encodeURIComponent(track.duration || 0)}&thumbnail=${encodeURIComponent(track.thumbnail || '')}&quality=${qQuality}&q=${qSearch}${isRiffStream}`;
+      const isCremoStream = localStorage.getItem('cremo_library_streaming') === '1' ? '&cremoStream=1' : '';
+      const u = `http://127.0.0.1:${state.serverPort}/api/stream-info?url=${encodeURIComponent(track.url || '')}&id=${encodeURIComponent(track.id || '')}&platform=${track.platform || state.platform}&title=${encodeURIComponent(track.title || '')}&artist=${encodeURIComponent(track.artist || '')}&duration=${encodeURIComponent(track.duration || 0)}&thumbnail=${encodeURIComponent(track.thumbnail || '')}&quality=${qQuality}&q=${qSearch}${isCremoStream}`;
       return fetch(u)
         .then((r) => r.json())
         .then((d) => {
@@ -2416,35 +2379,6 @@ window.rememberWaveShown = window.rememberWaveShown || function(fresh) {};
     state.queue.push(cloned);
     if (el.queueCount) el.queueCount.textContent = String(state.queue.length);
     updateQueueBadge();
-    if (state.currentView === 'queue' && el.queueTracksList) {
-      const emptyHint = el.queueTracksList.querySelector('.empty-hint');
-      if (emptyHint) emptyHint.remove();
-      const qIdx = state.queue.length - 1;
-      const currentCanonicalId = state.currentTrack ? getTrackCanonicalId(state.currentTrack) : '';
-      const row = createTrackRow(cloned, qIdx, currentCanonicalId, 'queue', state.queue, el.queueTracksList);
-      row.classList.add('track-row-adding');
-
-      const actions = row.querySelector('.track-row-actions');
-      if (actions && !actions.querySelector('.btn-remove-from-queue')) {
-        const btnRem = document.createElement('button');
-        btnRem.type = 'button';
-        btnRem.className = 'btn-icon-pill btn-remove-from-queue delete-btn';
-        btnRem.title = typeof t === 'function' ? t('Remove from queue') : 'Remove from queue';
-        btnRem.setAttribute('aria-label', 'Remove from queue');
-        btnRem.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
-        btnRem.addEventListener('click', (e) => {
-          e.stopPropagation();
-          const targetIdx = typeof row.dataset.trackIndex !== 'undefined' ? parseInt(row.dataset.trackIndex, 10) : qIdx;
-          removeTrackFromQueue(Number.isNaN(targetIdx) ? qIdx : targetIdx, row);
-        });
-        actions.appendChild(btnRem);
-      }
-
-      el.queueTracksList.appendChild(row);
-      setTimeout(() => {
-        row.classList.remove('track-row-adding');
-      }, 280);
-    }
     showToast(typeof t === 'function' ? t('Added to queue') : 'Added to queue', 'success');
   }
   window.addTrackToQueue = addTrackToQueue;
@@ -2453,10 +2387,10 @@ window.rememberWaveShown = window.rememberWaveShown || function(fresh) {};
   async function resetTrackAudioSource(track) {
     if (!track) return;
     let blockedSources = [];
-    try { blockedSources = JSON.parse(localStorage.getItem('riff_blocked_audio_sources') || '[]'); } catch (_) {}
+    try { blockedSources = JSON.parse(localStorage.getItem('cremo_blocked_audio_sources') || '[]'); } catch (_) {}
     const addBlock = (val) => {
       const s = String(val || '').trim();
-      if (s && !/^(sp_|dz_|it_|ym_|vk_|alb_|gn_|lfm_|cand_|riff-)/i.test(s) && !blockedSources.includes(s)) {
+      if (s && !/^(sp_|dz_|it_|ym_|vk_|alb_|gn_|lfm_|cand_|cremo-)/i.test(s) && !blockedSources.includes(s)) {
         blockedSources.push(s);
       }
     };
@@ -2465,7 +2399,7 @@ window.rememberWaveShown = window.rememberWaveShown || function(fresh) {};
     addBlock(track._sourceMeta?.url);
     addBlock(track.id);
     addBlock(track.url);
-    try { localStorage.setItem('riff_blocked_audio_sources', JSON.stringify(blockedSources.slice(-300))); } catch (_) {}
+    try { localStorage.setItem('cremo_blocked_audio_sources', JSON.stringify(blockedSources.slice(-300))); } catch (_) {}
 
     const prevId = track.resolvedYtId || track._sourceMeta?.id || track.id || '';
     delete track._preloadedStreamUrl;
@@ -2516,7 +2450,7 @@ window.rememberWaveShown = window.rememberWaveShown || function(fresh) {};
         const cid = String(chosen.id || chosen.videoId || '').trim();
         addBlock(cid);
         addBlock(chosen.url);
-        try { localStorage.setItem('riff_blocked_audio_sources', JSON.stringify(blockedSources.slice(-300))); } catch (_) {}
+        try { localStorage.setItem('cremo_blocked_audio_sources', JSON.stringify(blockedSources.slice(-300))); } catch (_) {}
 
         track._sourceMeta = {
           id: cid,
@@ -2565,7 +2499,6 @@ window.rememberWaveShown = window.rememberWaveShown || function(fresh) {};
 
   function updateQueueBadge() {
     setNavCount(el.queueCount, state.queue.length);
-    if (typeof renderSidebarLibraryFeed === 'function') renderSidebarLibraryFeed();
   }
 
   function removeQueueTracks(indices, sourceRow = null) {
@@ -2600,114 +2533,34 @@ window.rememberWaveShown = window.rememberWaveShown || function(fresh) {};
 
     updateQueueBadge();
 
-    if (state.currentView === 'queue' && el.queueTracksList) {
-      const allRows = Array.from(el.queueTracksList.querySelectorAll('.track-row:not(.track-row-removing)'));
-      const targetRows = new Set();
-      if (sourceRow && sourceRow.isConnected) {
-        targetRows.add(sourceRow);
-      }
-      removedIndices.forEach(idx => {
-        if (allRows[idx]) targetRows.add(allRows[idx]);
-      });
 
-      if (targetRows.size > 0) {
-        targetRows.forEach(row => row.classList.add('track-row-removing'));
-        setTimeout(() => {
-          targetRows.forEach(row => row.remove());
-          let idx = 0;
-          el.queueTracksList.querySelectorAll('.track-row:not(.track-row-removing)').forEach(row => {
-            row.dataset.trackIndex = String(idx);
-            row.style.setProperty('--row-idx', String(idx));
-            const numEl = row.querySelector('.track-row-num');
-            if (numEl) numEl.textContent = String(idx + 1);
-            idx++;
-          });
-          if (state.queue.length === 0) {
-            el.queueTracksList.innerHTML = `<div class="empty-hint">${typeof t === 'function' ? t('No tracks to show') : 'No tracks to show'}</div>`;
-          }
-          highlightPlayingRow();
-        }, 260);
-        return;
-      }
-    }
-
-    renderQueueView();
   }
 
   function removeTrackFromQueue(qIdx, sourceRow = null) {
     if (!Number.isInteger(qIdx) || qIdx < 0 || qIdx >= state.queue.length) return;
     removeQueueTracks([qIdx], sourceRow);
   }
-  var renderQueue = renderQueueView;
-  window.renderQueue = renderQueue;
   window.removeTrackFromQueue = removeTrackFromQueue;
 
-  function renderQueueView() {
-    updateQueueBadge();
-    if (!el.queueTracksList) return;
-    renderTracks(el.queueTracksList, state.queue, 'queue');
-
-    el.queueTracksList.querySelectorAll('.track-row').forEach((row, idx) => {
-      const actions = row.querySelector('.track-row-actions');
-      if (actions && !actions.querySelector('.btn-remove-from-queue')) {
-        const btnRem = document.createElement('button');
-        btnRem.type = 'button';
-        btnRem.className = 'btn-icon-pill btn-remove-from-queue delete-btn';
-        btnRem.title = typeof t === 'function' ? t('Remove from queue') : 'Remove from queue';
-        btnRem.setAttribute('aria-label', 'Remove from queue');
-        btnRem.innerHTML = '<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><line x1="18" y1="6" x2="6" y2="18"></line><line x1="6" y1="6" x2="18" y2="18"></line></svg>';
-        btnRem.addEventListener('click', (e) => {
-          e.stopPropagation();
-          const targetIdx = typeof row.dataset.trackIndex !== 'undefined' ? parseInt(row.dataset.trackIndex, 10) : idx;
-          removeTrackFromQueue(Number.isNaN(targetIdx) ? idx : targetIdx, row);
-        });
-        actions.appendChild(btnRem);
-      }
-    });
-
-    if (!el.queueTracksList._sortEnabled) {
-      el.queueTracksList._sortEnabled = true;
-      const sortFn = (typeof enableTrackSort === 'function')
-        ? enableTrackSort
-        : ((typeof window !== 'undefined' && (window.enableTrackSort || (window.TrackSort && window.TrackSort.enableTrackSort))) || null);
-      if (typeof sortFn === 'function') {
-        sortFn(el.queueTracksList, (fromIdx, toIdx) => {
-          if (fromIdx === toIdx || fromIdx < 0 || toIdx < 0 || fromIdx >= state.queue.length || toIdx >= state.queue.length) return;
-          const [moved] = state.queue.splice(fromIdx, 1);
-          state.queue.splice(toIdx, 0, moved);
-          const remapIndex = (index) => {
-            if (index === fromIdx) return toIdx;
-            if (fromIdx < toIdx && index > fromIdx && index <= toIdx) return index - 1;
-            if (fromIdx > toIdx && index >= toIdx && index < fromIdx) return index + 1;
-            return index;
-          };
-          state.queueIndex = remapIndex(state.queueIndex);
-          state.queueHistory = state.queueHistory.map(remapIndex);
-          renderQueueView();
-        });
-      }
-    }
-  }
-  window.renderQueueView = renderQueueView;
 
 
   var sliderCrossfade = document.getElementById('slider-crossfade');
   var valCrossfade = document.getElementById('val-crossfade');
   if (sliderCrossfade) {
-    const cf = parseInt(localStorage.getItem('riff_crossfade') || '0', 10);
+    const cf = parseInt(localStorage.getItem('cremo_crossfade') || '0', 10);
     sliderCrossfade.value = cf;
     if (valCrossfade) valCrossfade.textContent = cf > 0 ? `${cf}s` : 'Off';
     sliderCrossfade.addEventListener('input', (e) => {
       const v = parseInt(e.target.value, 10);
       if (valCrossfade) valCrossfade.textContent = v > 0 ? `${v}s` : 'Off';
-      localStorage.setItem('riff_crossfade', String(v));
+      localStorage.setItem('cremo_crossfade', String(v));
     });
   }
 
   if (el.btnTrEnabled) {
     el.btnTrEnabled.addEventListener('click', () => {
       state.trEnabled = !state.trEnabled;
-      localStorage.setItem('riff_tr_enabled', String(state.trEnabled));
+      localStorage.setItem('cremo_tr_enabled', String(state.trEnabled));
       updateLyricsTranslationUI();
       if (!state.trEnabled) {
         state.trActive = false;
@@ -2749,7 +2602,7 @@ window.rememberWaveShown = window.rememberWaveShown || function(fresh) {};
           e.stopPropagation();
           state.trLang = item.code;
           state.lyricsTranslationLang = item.code;
-          localStorage.setItem('riff_tr_lang', state.trLang);
+          localStorage.setItem('cremo_tr_lang', state.trLang);
           if (trLangLabel) trLangLabel.textContent = text;
           trLangMenu.querySelectorAll('.m3-dropdown-option').forEach(o => o.classList.remove('selected'));
           btn.classList.add('selected');
@@ -2823,7 +2676,7 @@ window.rememberWaveShown = window.rememberWaveShown || function(fresh) {};
   var uiLangSearch = document.getElementById('ui-lang-search');
 
   if (uiLangDropdown && uiLangTrigger && uiLangMenu) {
-    const curLang = getSupportedUiLanguage(localStorage.getItem('riff_ui_lang') || 'en');
+    const curLang = getSupportedUiLanguage(localStorage.getItem('cremo_ui_lang') || 'en');
     const foundCur = UI_TRANSLATION_LANGUAGES.find(l => l.code === curLang);
     if (foundCur && uiLangLabel) {
       uiLangLabel.setAttribute('data-i18n-fixed', 'true');
@@ -2846,7 +2699,7 @@ window.rememberWaveShown = window.rememberWaveShown || function(fresh) {};
         }
         btn.addEventListener('click', async (e) => {
           e.stopPropagation();
-          const prevLang = localStorage.getItem('riff_ui_lang') || 'en';
+          const prevLang = localStorage.getItem('cremo_ui_lang') || 'en';
           if (uiLangDropdown) uiLangDropdown.classList.remove('open');
           uiLangMenu.querySelectorAll('.m3-dropdown-option').forEach(o => o.classList.remove('selected'));
           btn.classList.add('selected');
@@ -2856,18 +2709,18 @@ window.rememberWaveShown = window.rememberWaveShown || function(fresh) {};
           }
           if (item.code === prevLang) return;
 
-          localStorage.setItem('riff_ui_lang', item.code);
-          if (window.electronAPI && window.electronAPI.storageSaveSync && window.__RIFF_STORAGE_MAP__) {
-            window.__RIFF_STORAGE_MAP__['riff_ui_lang'] = item.code;
-            window.electronAPI.storageSaveBatch(window.__RIFF_STORAGE_MAP__);
+          localStorage.setItem('cremo_ui_lang', item.code);
+          if (window.electronAPI && window.electronAPI.storageSaveSync && window.__CREMO_STORAGE_MAP__) {
+            window.__CREMO_STORAGE_MAP__['cremo_ui_lang'] = item.code;
+            window.electronAPI.storageSaveBatch(window.__CREMO_STORAGE_MAP__);
           }
           const result = await runWithI18nLoadingOverlay(() => applyI18n(item.code));
           if (item.code !== 'en' && (!result || result.ok === false)) {
-            localStorage.setItem('riff_ui_lang', prevLang);
-            if (window.__RIFF_STORAGE_MAP__) {
-              window.__RIFF_STORAGE_MAP__['riff_ui_lang'] = prevLang;
+            localStorage.setItem('cremo_ui_lang', prevLang);
+            if (window.__CREMO_STORAGE_MAP__) {
+              window.__CREMO_STORAGE_MAP__['cremo_ui_lang'] = prevLang;
               if (window.electronAPI && window.electronAPI.storageSaveBatch) {
-                window.electronAPI.storageSaveBatch(window.__RIFF_STORAGE_MAP__);
+                window.electronAPI.storageSaveBatch(window.__CREMO_STORAGE_MAP__);
               }
             }
             if (uiLangMenu) {
@@ -2935,13 +2788,13 @@ window.rememberWaveShown = window.rememberWaveShown || function(fresh) {};
 
   var inputDeeplApiKey = document.getElementById('input-deepl-api-key');
   if (inputDeeplApiKey) {
-    inputDeeplApiKey.value = localStorage.getItem('riff_deepl_api_key') || '';
+    inputDeeplApiKey.value = localStorage.getItem('cremo_deepl_api_key') || '';
     inputDeeplApiKey.addEventListener('input', (e) => {
       const val = e.target.value.trim();
       if (val) {
-        localStorage.setItem('riff_deepl_api_key', val);
+        localStorage.setItem('cremo_deepl_api_key', val);
       } else {
-        localStorage.removeItem('riff_deepl_api_key');
+        localStorage.removeItem('cremo_deepl_api_key');
       }
     });
   }
@@ -2949,7 +2802,7 @@ window.rememberWaveShown = window.rememberWaveShown || function(fresh) {};
   if (el.btnTrAuto) {
     el.btnTrAuto.addEventListener('click', () => {
       state.trAuto = !state.trAuto;
-      localStorage.setItem('riff_tr_auto', String(state.trAuto));
+      localStorage.setItem('cremo_tr_auto', String(state.trAuto));
       updateLyricsTranslationUI();
       if (state.trEnabled && state.trAuto && !state.trActive) {
         state.trActive = true;
@@ -3023,12 +2876,12 @@ window.rememberWaveShown = window.rememberWaveShown || function(fresh) {};
 
   var btnDiscordArtistStatus = document.getElementById('btn-discord-artist-status');
   if (btnDiscordArtistStatus) {
-    const on = localStorage.getItem('riff_discord_artist_status') !== '0';
+    const on = localStorage.getItem('cremo_discord_artist_status') !== '0';
     btnDiscordArtistStatus.classList.toggle('active', on);
     btnDiscordArtistStatus.addEventListener('click', () => {
       const next = !btnDiscordArtistStatus.classList.contains('active');
       btnDiscordArtistStatus.classList.toggle('active', next);
-      localStorage.setItem('riff_discord_artist_status', next ? '1' : '0');
+      localStorage.setItem('cremo_discord_artist_status', next ? '1' : '0');
       if (state.discordRpcEnabled && state.isPlaying && state.currentTrack) {
         sendDiscordRpcUpdate(state.currentTrack, true);
       }
@@ -3096,7 +2949,7 @@ window.rememberWaveShown = window.rememberWaveShown || function(fresh) {};
   if (btnLastFmToggle) {
     btnLastFmToggle.addEventListener('click', () => {
       lastfmState.enabled = !lastfmState.enabled;
-      localStorage.setItem('riff_lastfm_enabled', String(lastfmState.enabled));
+      localStorage.setItem('cremo_lastfm_enabled', String(lastfmState.enabled));
       syncLastFmUI();
     });
   }
@@ -3111,13 +2964,13 @@ window.rememberWaveShown = window.rememberWaveShown || function(fresh) {};
       if (customKey && customSecret) {
         lastfmState.apiKey = customKey;
         lastfmState.apiSecret = customSecret;
-        localStorage.setItem('riff_lastfm_apikey', customKey);
-        localStorage.setItem('riff_lastfm_apisecret', customSecret);
+        localStorage.setItem('cremo_lastfm_apikey', customKey);
+        localStorage.setItem('cremo_lastfm_apisecret', customSecret);
       } else {
         lastfmState.apiKey = '';
         lastfmState.apiSecret = '';
-        localStorage.removeItem('riff_lastfm_apikey');
-        localStorage.removeItem('riff_lastfm_apisecret');
+        localStorage.removeItem('cremo_lastfm_apikey');
+        localStorage.removeItem('cremo_lastfm_apisecret');
       }
       if (statusEl) {
         statusEl.textContent = 'Requesting Last.fm authorization...';
@@ -3165,8 +3018,8 @@ window.rememberWaveShown = window.rememberWaveShown || function(fresh) {};
               lastfmState.pollTimer = null;
               lastfmState.sessionKey = sData.sessionKey;
               lastfmState.username = sData.username;
-              localStorage.setItem('riff_lastfm_sk', sData.sessionKey);
-              localStorage.setItem('riff_lastfm_user', sData.username);
+              localStorage.setItem('cremo_lastfm_sk', sData.sessionKey);
+              localStorage.setItem('cremo_lastfm_user', sData.username);
               syncLastFmUI();
               if (typeof showToast === 'function') showToast('Connected to Last.fm as @' + sData.username, 'info');
               closeLastFmModal();
@@ -3204,11 +3057,11 @@ window.rememberWaveShown = window.rememberWaveShown || function(fresh) {};
 
       if (customKey) {
         lastfmState.apiKey = customKey;
-        localStorage.setItem('riff_lastfm_apikey', customKey);
+        localStorage.setItem('cremo_lastfm_apikey', customKey);
       }
       if (customSecret) {
         lastfmState.apiSecret = customSecret;
-        localStorage.setItem('riff_lastfm_apisecret', customSecret);
+        localStorage.setItem('cremo_lastfm_apisecret', customSecret);
       }
 
       if (statusEl) {
@@ -3232,8 +3085,8 @@ window.rememberWaveShown = window.rememberWaveShown || function(fresh) {};
         if (data.success && data.sessionKey) {
           lastfmState.sessionKey = data.sessionKey;
           lastfmState.username = data.username || username;
-          localStorage.setItem('riff_lastfm_sk', data.sessionKey);
-          localStorage.setItem('riff_lastfm_user', lastfmState.username);
+          localStorage.setItem('cremo_lastfm_sk', data.sessionKey);
+          localStorage.setItem('cremo_lastfm_user', lastfmState.username);
           if (passInp) passInp.value = '';
           if (statusEl) {
             statusEl.textContent = `Connected as @${lastfmState.username}!`;
@@ -3260,8 +3113,8 @@ window.rememberWaveShown = window.rememberWaveShown || function(fresh) {};
     btnLastFmDisconnect.addEventListener('click', () => {
       lastfmState.sessionKey = '';
       lastfmState.username = '';
-      localStorage.removeItem('riff_lastfm_sk');
-      localStorage.removeItem('riff_lastfm_user');
+      localStorage.removeItem('cremo_lastfm_sk');
+      localStorage.removeItem('cremo_lastfm_user');
       if (lastfmState.pollTimer) {
         clearInterval(lastfmState.pollTimer);
         lastfmState.pollTimer = null;
@@ -3351,7 +3204,7 @@ window.rememberWaveShown = window.rememberWaveShown || function(fresh) {};
     if (Array.isArray(state.vibeTracks)) {
       state.vibeTracks = state.vibeTracks.filter(t => !isMatch(t));
       try {
-        localStorage.setItem('riff_my_wave_cache', JSON.stringify({ ts: Date.now(), tracks: state.vibeTracks }));
+        localStorage.setItem('cremo_my_wave_cache', JSON.stringify({ ts: Date.now(), tracks: state.vibeTracks }));
       } catch (_) {}
       if (window.HomeCache) {
         window.HomeCache.set('home_vibe', state.vibeTracks);
@@ -3362,10 +3215,10 @@ window.rememberWaveShown = window.rememberWaveShown || function(fresh) {};
       myWaveCurrentTracks = myWaveCurrentTracks.filter(t => !isMatch(t));
     }
 
-    let cachedMixes = (window.HomeCache && window.HomeCache.get('daily_mixes', 24 * 3600 * 1000)) || safeJson('riff_daily_mixes', null);
+    let cachedMixes = (window.HomeCache && window.HomeCache.get('daily_mixes', 24 * 3600 * 1000)) || safeJson('cremo_daily_mixes', null);
     if (!cachedMixes) {
       try {
-        const raw = localStorage.getItem('riff_daily_mixes');
+        const raw = localStorage.getItem('cremo_daily_mixes');
         if (raw) cachedMixes = JSON.parse(raw);
       } catch (_) {}
     }
@@ -3376,7 +3229,7 @@ window.rememberWaveShown = window.rememberWaveShown || function(fresh) {};
         }
       });
       try {
-        localStorage.setItem('riff_daily_mixes', JSON.stringify(cachedMixes));
+        localStorage.setItem('cremo_daily_mixes', JSON.stringify(cachedMixes));
       } catch (_) {}
       if (window.HomeCache) {
         window.HomeCache.set('daily_mixes', cachedMixes);
@@ -3384,12 +3237,7 @@ window.rememberWaveShown = window.rememberWaveShown || function(fresh) {};
     }
 
     if (state.currentView === 'discover') {
-      const sp = (localStorage.getItem('riff_home_layout') || 'spotify') === 'spotify';
-      if (sp) {
-        if (typeof renderSpotifyHome === 'function') renderSpotifyHome();
-      } else {
-        if (typeof renderHomeCarousel === 'function') renderHomeCarousel(homeMode);
-      }
+      if (typeof renderSpotifyHome === 'function') renderSpotifyHome();
     }
   }
 
@@ -3476,7 +3324,6 @@ window.rememberWaveShown = window.rememberWaveShown || function(fresh) {};
         if (newTracks.length > 0) {
           state.queue.push(...newTracks);
           updateQueueBadge();
-          renderQueueView();
           return true;
         }
       }
@@ -3542,13 +3389,6 @@ window.rememberWaveShown = window.rememberWaveShown || function(fresh) {};
         state.queue.push(...fresh);
         if (typeof rememberWaveShown === 'function') rememberWaveShown(fresh);
         if (el.queueCount) el.queueCount.textContent = String(state.queue.length);
-        if (state.currentView === 'queue' && el.queueTracksList) {
-          el.queueTracksList.querySelector('.empty-hint')?.remove();
-          fresh.forEach((tr, i) => {
-            const qIdx = startIdx + i;
-            el.queueTracksList.appendChild(createTrackRow(tr, qIdx, state.currentTrack ? getTrackCanonicalId(state.currentTrack) : '', 'queue', state.queue, el.queueTracksList));
-          });
-        }
         return true;
       }
     } catch (_) {} finally { state._waveReplenishBusy = false; }
@@ -3627,47 +3467,8 @@ window.rememberWaveShown = window.rememberWaveShown || function(fresh) {};
     }
   }
 
-  var btnPlayMyWave = document.getElementById('btn-play-my-wave');
-  if (btnPlayMyWave) {
-    btnPlayMyWave.addEventListener('click', playMyWave);
-  }
+  window.playMyWave = playMyWave;
 
-  if (el.btnRefreshVibe) {
-    el.btnRefreshVibe.addEventListener('click', async () => {
-      const btn = el.btnRefreshVibe;
-      if (btn.classList.contains('loading')) return;
-
-      const wrapper = document.querySelector('#section-my-wave .my-wave-carousel-wrapper');
-      btn.classList.add('loading');
-      if (wrapper) wrapper.classList.add('loading');
-
-      let spinner = wrapper ? wrapper.querySelector('.my-wave-carousel-spinner') : null;
-      if (!spinner && wrapper) {
-        spinner = document.createElement('div');
-        spinner.className = 'my-wave-carousel-spinner';
-        spinner.innerHTML = `
-          <div class="m3-spinner-container">
-            <span class="riff-dots-loader lg" aria-hidden="true"><i></i><i></i><i></i></span>
-          </div>
-        `;
-        wrapper.appendChild(spinner);
-      }
-      if (spinner) spinner.style.display = 'flex';
-
-      try {
-        const ok = await fetchPersonalVibe(true);
-        if (!ok) {
-          showToast('Could not refresh', 'error');
-        }
-      } catch (err) {
-        showToast('Could not refresh', 'error');
-      } finally {
-        btn.classList.remove('loading');
-        if (wrapper) wrapper.classList.remove('loading');
-        if (spinner) spinner.style.display = 'none';
-      }
-    });
-  }
 
 
   function initQueuePanel() {
@@ -3836,12 +3637,6 @@ window.rememberWaveShown = window.rememberWaveShown || function(fresh) {};
           const tail = (state.queue || []).slice(state.queueIndex + 1).filter(t => !t || t._isAutoplay !== true);
           state.queue = [...head, ...tail];
           if (typeof updateQueueBadge === 'function') updateQueueBadge();
-          if (state.currentView === 'queue' && typeof renderQueueView === 'function') {
-            renderQueueView();
-          }
-          if (typeof currentSidebarLibFilter !== 'undefined' && currentSidebarLibFilter === 'queue' && typeof renderSidebarLibraryFeed === 'function') {
-            renderSidebarLibraryFeed(false);
-          }
           signature = '';
           render(false);
         } else {
@@ -3851,14 +3646,8 @@ window.rememberWaveShown = window.rememberWaveShown || function(fresh) {};
           state._autoplayAnchorSeeds = null;
           if (typeof ensureAutoplayBuffer === 'function') ensureAutoplayBuffer();
           if (typeof updateQueueBadge === 'function') updateQueueBadge();
-          if (state.currentView === 'queue' && typeof renderQueueView === 'function') {
-            renderQueueView();
-          }
           if (typeof window.refreshQueuePanel === 'function') {
             window.refreshQueuePanel();
-          }
-          if (typeof currentSidebarLibFilter !== 'undefined' && currentSidebarLibFilter === 'queue' && typeof renderSidebarLibraryFeed === 'function') {
-            renderSidebarLibraryFeed(false);
           }
           signature = '';
           render(false);
@@ -3881,7 +3670,7 @@ window.rememberWaveShown = window.rememberWaveShown || function(fresh) {};
     const setOpen = (open) => {
       panel.classList.toggle('open', open);
       btn.classList.toggle('active', open);
-      localStorage.setItem('riff_queue_panel_open', open ? '1' : '0');
+      localStorage.setItem('cremo_queue_panel_open', open ? '1' : '0');
       signature = '';
       syncAutoplaySwitch();
       refresh(false);
@@ -3902,7 +3691,7 @@ window.rememberWaveShown = window.rememberWaveShown || function(fresh) {};
     });
     window.addEventListener('resize', updateTabLine);
     setInterval(() => refresh(false), 700);
-    localStorage.removeItem('riff_queue_panel_open');
+    localStorage.removeItem('cremo_queue_panel_open');
   }
 
 
@@ -3916,6 +3705,5 @@ window.togglePlayPause = togglePlayPause;
 window.playNext = playNext;
 window.playPrev = playPrev;
 window.addTrackToQueue = addTrackToQueue;
-window.renderQueue = renderQueue;
 window.getSmoothAudioTime = getSmoothAudioTime;
 

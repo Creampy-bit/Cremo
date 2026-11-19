@@ -6,10 +6,10 @@ window.customThemes = customThemes;
 var currentWaveFocusedIndex = window.currentWaveFocusedIndex || 0;
 window.currentWaveFocusedIndex = currentWaveFocusedIndex;
 
-  var savedRowH = parseInt(localStorage.getItem('riff_track_row_height') || '64', 10);
+  var savedRowH = parseInt(localStorage.getItem('cremo_track_row_height') || '64', 10);
   if (savedRowH && Number.isFinite(savedRowH)) {
-    document.documentElement.style.setProperty('--riff-track-row-height', `${savedRowH}px`);
-    document.documentElement.style.setProperty('--riff-track-cover-size', `${Math.round(savedRowH * 0.72)}px`);
+    document.documentElement.style.setProperty('--cremo-track-row-height', `${savedRowH}px`);
+    document.documentElement.style.setProperty('--cremo-track-cover-size', `${Math.round(savedRowH * 0.72)}px`);
   }
 
   function hexToRgb(hex) {
@@ -45,13 +45,13 @@ window.currentWaveFocusedIndex = currentWaveFocusedIndex;
   }
 
   function getAdv(name, defaultVal = true) {
-    const val = localStorage.getItem(`riff_adv_${name}`);
+    const val = localStorage.getItem(`cremo_adv_${name}`);
     if (val === null) return defaultVal;
     return val === 'true';
   }
 
   function setAdv(name, boolVal) {
-    localStorage.setItem(`riff_adv_${name}`, boolVal ? 'true' : 'false');
+    localStorage.setItem(`cremo_adv_${name}`, boolVal ? 'true' : 'false');
   }
 
   function systemPrefersReducedMotion() {
@@ -799,15 +799,15 @@ window.currentWaveFocusedIndex = currentWaveFocusedIndex;
       if (mode === 'light') {
         const now = currentUiAlpha();
         if (now < 100) {
-          localStorage.setItem('riff_ui_alpha_light_prev', String(now));
-          localStorage.setItem('riff_ui_alpha_light_auto', '100');
+          localStorage.setItem('cremo_ui_alpha_light_prev', String(now));
+          localStorage.setItem('cremo_ui_alpha_light_auto', '100');
           setUiAlphaViaSlider(100);
         }
       } else if (lastEffectiveMode === 'light') {
-        const auto = localStorage.getItem('riff_ui_alpha_light_auto'), prev = localStorage.getItem('riff_ui_alpha_light_prev');
+        const auto = localStorage.getItem('cremo_ui_alpha_light_auto'), prev = localStorage.getItem('cremo_ui_alpha_light_prev');
         if (auto !== null && prev !== null && currentUiAlpha() === Number(auto)) setUiAlphaViaSlider(Number(prev));
-        localStorage.removeItem('riff_ui_alpha_light_auto');
-        localStorage.removeItem('riff_ui_alpha_light_prev');
+        localStorage.removeItem('cremo_ui_alpha_light_auto');
+        localStorage.removeItem('cremo_ui_alpha_light_prev');
       }
       lastEffectiveMode = mode;
     }
@@ -1077,9 +1077,9 @@ window.currentWaveFocusedIndex = currentWaveFocusedIndex;
   window.SF_FONT_STACK = SF_FONT_STACK;
 
   function ensureInterFontLoaded() {
-    if (!document.getElementById('riff-font-inter')) {
+    if (!document.getElementById('cremo-font-inter')) {
       const link = document.createElement('link');
-      link.id = 'riff-font-inter';
+      link.id = 'cremo-font-inter';
       link.rel = 'stylesheet';
       link.href = 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap';
       document.head.appendChild(link);
@@ -1087,9 +1087,9 @@ window.currentWaveFocusedIndex = currentWaveFocusedIndex;
   }
 
   function ensureSfFontLoaded() {
-    if (!document.getElementById('riff-font-sf-pro')) {
+    if (!document.getElementById('cremo-font-sf-pro')) {
       const link = document.createElement('link');
-      link.id = 'riff-font-sf-pro';
+      link.id = 'cremo-font-sf-pro';
       link.rel = 'stylesheet';
       link.href = 'https://fonts.cdnfonts.com/css/sf-pro-display';
       document.head.appendChild(link);
@@ -1097,9 +1097,9 @@ window.currentWaveFocusedIndex = currentWaveFocusedIndex;
   }
 
   function applyFont(font) {
-    const f = (typeof font === 'string' && font) ? font : (localStorage.getItem('riff_font') || 'google');
+    const f = (typeof font === 'string' && font) ? font : (localStorage.getItem('cremo_font') || 'google');
     if (typeof state !== 'undefined' && state) {
-      state.riffFont = f;
+      state.cremoFont = f;
     }
     if (f === 'inter') {
       ensureInterFontLoaded();
@@ -1123,10 +1123,10 @@ window.currentWaveFocusedIndex = currentWaveFocusedIndex;
   }
   window.applyFont = applyFont;
 
-  var savedBannerBlur = parseInt(localStorage.getItem('riff_banner_blur') || '3', 10);
-  var savedBannerOpacity = parseInt(localStorage.getItem('riff_banner_opacity') || '100', 10);
-  var savedBannerFade = parseInt(localStorage.getItem('riff_banner_fade') || '100', 10);
-  var savedBannerFit = localStorage.getItem('riff_banner_fit') || 'zoom';
+  var savedBannerBlur = parseInt(localStorage.getItem('cremo_banner_blur') || '3', 10);
+  var savedBannerOpacity = parseInt(localStorage.getItem('cremo_banner_opacity') || '100', 10);
+  var savedBannerFade = parseInt(localStorage.getItem('cremo_banner_fade') || '100', 10);
+  var savedBannerFit = localStorage.getItem('cremo_banner_fit') || 'zoom';
 
   document.documentElement.style.setProperty('--banner-blur', `${savedBannerBlur}px`);
   document.documentElement.style.setProperty('--banner-opacity', `${savedBannerOpacity / 100}`);
@@ -1135,7 +1135,7 @@ window.currentWaveFocusedIndex = currentWaveFocusedIndex;
   applyBannerFit(savedBannerFit);
 
   function applyUiOpacity() {
-    const rawUi = parseInt(localStorage.getItem('riff_ui_alpha') || '100', 10);
+    const rawUi = parseInt(localStorage.getItem('cremo_ui_alpha') || '100', 10);
     const uiAlpha = Math.max(20, Math.min(100, isNaN(rawUi) ? 100 : rawUi));
 
     document.documentElement.style.setProperty('--ui-alpha', `${uiAlpha}%`);
@@ -1144,7 +1144,7 @@ window.currentWaveFocusedIndex = currentWaveFocusedIndex;
     if (el.sliderUiAlpha) el.sliderUiAlpha.value = uiAlpha;
     if (el.valUiAlpha) el.valUiAlpha.textContent = `${uiAlpha}%`;
 
-    const rawBlur = parseInt(localStorage.getItem('riff_panel_blur') ?? '24', 10);
+    const rawBlur = parseInt(localStorage.getItem('cremo_panel_blur') ?? '24', 10);
     const panelBlur = Math.max(0, Math.min(48, isNaN(rawBlur) ? 24 : rawBlur));
     document.documentElement.style.setProperty('--panel-blur', `${panelBlur}px`);
     document.body.style.setProperty('--panel-blur', `${panelBlur}px`);
@@ -1152,11 +1152,11 @@ window.currentWaveFocusedIndex = currentWaveFocusedIndex;
     if (el.sliderPanelBlur) el.sliderPanelBlur.value = panelBlur;
     if (el.valPanelBlur) el.valPanelBlur.textContent = `${panelBlur}px`;
 
-    const savedPlayBtnBg = localStorage.getItem('riff_play_btn_bg') !== 'false';
+    const savedPlayBtnBg = localStorage.getItem('cremo_play_btn_bg') !== 'false';
     document.body.classList.toggle('play-btn-nobg', !savedPlayBtnBg);
     if (el.btnPlayBtnBg) el.btnPlayBtnBg.classList.toggle('active', savedPlayBtnBg);
 
-    const isHomeNext = localStorage.getItem('riff_home_next_to_search') !== '0';
+    const isHomeNext = localStorage.getItem('cremo_home_next_to_search') !== '0';
     document.body.classList.toggle('home-next-to-search', isHomeNext);
     const btnHomeNext = document.getElementById('btn-home-next-to-search');
     if (btnHomeNext) btnHomeNext.classList.toggle('active', isHomeNext);
@@ -1237,7 +1237,7 @@ window.currentWaveFocusedIndex = currentWaveFocusedIndex;
       const v = parseInt(e.target.value, 10);
       state.monoBrightness = v;
       if (valDisplay) valDisplay.textContent = v + '%';
-      localStorage.setItem('riff_theme_mono_brightness', v.toString());
+      localStorage.setItem('cremo_theme_mono_brightness', v.toString());
       updateThemeFromState();
     };
     input.addEventListener('input', onMonoChange);
@@ -1269,7 +1269,7 @@ window.currentWaveFocusedIndex = currentWaveFocusedIndex;
       const val = parseInt(e.target.value, 10);
       if (el.valFontScale) el.valFontScale.textContent = `${val}%`;
       document.documentElement.style.setProperty('--font-scale', ((val / 100) * 0.95 * 1.25).toString());
-      localStorage.setItem('riff_font_scale', val.toString());
+      localStorage.setItem('cremo_font_scale', val.toString());
       requestAnimationFrame(updateEngineWidthVar);
     });
   }
@@ -1295,7 +1295,7 @@ window.currentWaveFocusedIndex = currentWaveFocusedIndex;
   if (fontOptGoogle) {
     fontOptGoogle.innerHTML = googleIconSvg + 'Google Sans';
     fontOptGoogle.onclick = () => {
-      localStorage.setItem('riff_font', 'google');
+      localStorage.setItem('cremo_font', 'google');
       applyFont('google');
       if (typeof syncAllThemeToggleIndicators === 'function') requestAnimationFrame(syncAllThemeToggleIndicators);
     };
@@ -1303,7 +1303,7 @@ window.currentWaveFocusedIndex = currentWaveFocusedIndex;
   if (fontOptSf) {
     fontOptSf.innerHTML = appleIconSvg + 'SF Pro';
     fontOptSf.onclick = () => {
-      localStorage.setItem('riff_font', 'sf');
+      localStorage.setItem('cremo_font', 'sf');
       applyFont('sf');
       if (typeof syncAllThemeToggleIndicators === 'function') requestAnimationFrame(syncAllThemeToggleIndicators);
     };
@@ -1311,7 +1311,7 @@ window.currentWaveFocusedIndex = currentWaveFocusedIndex;
   if (fontOptSystem) {
     fontOptSystem.innerHTML = systemIconSvg + 'System';
     fontOptSystem.onclick = () => {
-      localStorage.setItem('riff_font', 'system');
+      localStorage.setItem('cremo_font', 'system');
       applyFont('system');
       if (typeof syncAllThemeToggleIndicators === 'function') requestAnimationFrame(syncAllThemeToggleIndicators);
     };
@@ -1319,12 +1319,12 @@ window.currentWaveFocusedIndex = currentWaveFocusedIndex;
   if (fontOptInter) {
     fontOptInter.innerHTML = '<span style="font-weight:700;margin-right:6px;">I</span>Inter';
     fontOptInter.onclick = () => {
-      localStorage.setItem('riff_font', 'inter');
+      localStorage.setItem('cremo_font', 'inter');
       applyFont('inter');
       if (typeof syncAllThemeToggleIndicators === 'function') requestAnimationFrame(syncAllThemeToggleIndicators);
     };
   }
-  applyFont(localStorage.getItem('riff_font') || 'google');
+  applyFont(localStorage.getItem('cremo_font') || 'google');
 
   var classicItem = document.getElementById('btn-classic-track-rows')?.closest('.setting-item');
   if (classicItem) classicItem.remove();
@@ -1332,7 +1332,7 @@ window.currentWaveFocusedIndex = currentWaveFocusedIndex;
   var artFontDesc = document.querySelector('#setting-art-font-row .setting-item-top div span:nth-child(2)');
   if (artFontDesc) artFontDesc.remove();
 
-  document.querySelectorAll('#setting-riff-library .riff-beta-badge, #setting-riff-library-streaming .riff-beta-badge').forEach(b => b.remove());
+  document.querySelectorAll('#setting-cremo-library .cremo-beta-badge, #setting-cremo-library-streaming .cremo-beta-badge').forEach(b => b.remove());
 
 
   function syncBgVideoPlayback() {
@@ -1345,9 +1345,9 @@ window.currentWaveFocusedIndex = currentWaveFocusedIndex;
   if (window.electronAPI && window.electronAPI.onWindowVisibility) window.electronAPI.onWindowVisibility(() => syncBgVideoPlayback());
 
   function updateCustomBg() {
-    const bgUrl = localStorage.getItem('riff_bg_url') || '';
-    const opacityVal = parseInt(localStorage.getItem('riff_bg_opacity') ?? '100', 10);
-    const blurVal = parseInt(localStorage.getItem('riff_bg_blur') ?? '0', 10);
+    const bgUrl = localStorage.getItem('cremo_bg_url') || '';
+    const opacityVal = parseInt(localStorage.getItem('cremo_bg_opacity') ?? '100', 10);
+    const blurVal = parseInt(localStorage.getItem('cremo_bg_blur') ?? '0', 10);
     const isVideo = /\.(mp4|webm)($|\?)/i.test(bgUrl);
     document.body.classList.toggle('has-video-bg', isVideo && !!bgUrl);
     document.body.classList.toggle('has-custom-bg', !!bgUrl);
@@ -1418,18 +1418,18 @@ window.currentWaveFocusedIndex = currentWaveFocusedIndex;
 
   function currentUiAlpha() { return Number(document.getElementById('slider-ui-alpha').value); }
   function setUiAlphaViaSlider(v) { const s = document.getElementById('slider-ui-alpha'); if (!s) return; s.value = v; s.dispatchEvent(new Event('input', { bubbles: true })); }
-  function backgroundActive() { return !!localStorage.getItem('riff_bg_url') || getAdv('cover_bg', false); }
+  function backgroundActive() { return !!localStorage.getItem('cremo_bg_url') || getAdv('cover_bg', false); }
   function onBackgroundChanged(kind, enabled) {
     if (kind === 'cover') return;
     if (document.body.classList.contains('light') || document.body.getAttribute('data-theme') === 'light') return;
     if (!getAdv('ui_alpha_auto', true)) return;
     if (enabled) {
       const now = currentUiAlpha();
-      if (now > 50) { localStorage.setItem('riff_ui_alpha_prev', String(now)); setUiAlphaViaSlider(50); localStorage.setItem('riff_ui_alpha_auto', '50'); }
+      if (now > 50) { localStorage.setItem('cremo_ui_alpha_prev', String(now)); setUiAlphaViaSlider(50); localStorage.setItem('cremo_ui_alpha_auto', '50'); }
     } else if (!backgroundActive()) {
-      const auto = localStorage.getItem('riff_ui_alpha_auto'), prev = localStorage.getItem('riff_ui_alpha_prev');
+      const auto = localStorage.getItem('cremo_ui_alpha_auto'), prev = localStorage.getItem('cremo_ui_alpha_prev');
       if (auto !== null && prev !== null && currentUiAlpha() === Number(auto)) setUiAlphaViaSlider(Number(prev));
-      localStorage.removeItem('riff_ui_alpha_auto'); localStorage.removeItem('riff_ui_alpha_prev');
+      localStorage.removeItem('cremo_ui_alpha_auto'); localStorage.removeItem('cremo_ui_alpha_prev');
     }
   }
 
@@ -1446,7 +1446,7 @@ window.currentWaveFocusedIndex = currentWaveFocusedIndex;
       if (window.electronAPI && window.electronAPI.pickMedia) {
         const url = await window.electronAPI.pickMedia();
         if (url) {
-          localStorage.setItem('riff_bg_url', url);
+          localStorage.setItem('cremo_bg_url', url);
           updateCustomBg();
           onBackgroundChanged('custom', true);
         }
@@ -1456,7 +1456,7 @@ window.currentWaveFocusedIndex = currentWaveFocusedIndex;
 
   if (btnRemoveCustomBg) {
     btnRemoveCustomBg.addEventListener('click', () => {
-      localStorage.removeItem('riff_bg_url');
+      localStorage.removeItem('cremo_bg_url');
       updateCustomBg();
       onBackgroundChanged('custom', false);
     });
@@ -1470,7 +1470,7 @@ window.currentWaveFocusedIndex = currentWaveFocusedIndex;
     sliderBgOpacity.addEventListener('change', (e) => {
       const v = parseInt(e.target.value, 10);
       if (valBgOpacity) valBgOpacity.textContent = `${v}%`;
-      localStorage.setItem('riff_bg_opacity', String(v));
+      localStorage.setItem('cremo_bg_opacity', String(v));
       const customBg = document.getElementById('custom-bg');
       if (customBg) customBg.style.opacity = (v / 100).toString();
     });
@@ -1484,7 +1484,7 @@ window.currentWaveFocusedIndex = currentWaveFocusedIndex;
     sliderBgBlur.addEventListener('change', (e) => {
       const v = parseInt(e.target.value, 10);
       if (valBgBlur) valBgBlur.textContent = `${v}px`;
-      localStorage.setItem('riff_bg_blur', String(v));
+      localStorage.setItem('cremo_bg_blur', String(v));
       const customBg = document.getElementById('custom-bg');
       if (customBg) {
         customBg.style.filter = 'none';
@@ -1506,7 +1506,7 @@ window.currentWaveFocusedIndex = currentWaveFocusedIndex;
   var sliderCoverBgBrightness = document.getElementById('slider-cover-bg-brightness');
   var valCoverBgBrightness = document.getElementById('val-cover-bg-brightness');
   if (sliderCoverBgBrightness) {
-    const savedBrightness = parseInt(localStorage.getItem('riff_cover_bg_brightness') ?? '45', 10);
+    const savedBrightness = parseInt(localStorage.getItem('cremo_cover_bg_brightness') ?? '45', 10);
     sliderCoverBgBrightness.value = savedBrightness;
     if (valCoverBgBrightness) valCoverBgBrightness.textContent = `${savedBrightness}%`;
     document.documentElement.style.setProperty('--cover-bg-brightness', (savedBrightness / 100).toString());
@@ -1518,14 +1518,14 @@ window.currentWaveFocusedIndex = currentWaveFocusedIndex;
     sliderCoverBgBrightness.addEventListener('change', (e) => {
       const v = parseInt(e.target.value, 10);
       if (valCoverBgBrightness) valCoverBgBrightness.textContent = `${v}%`;
-      localStorage.setItem('riff_cover_bg_brightness', String(v));
+      localStorage.setItem('cremo_cover_bg_brightness', String(v));
       document.documentElement.style.setProperty('--cover-bg-brightness', (v / 100).toString());
     });
   }
 
-  var savedCoverDrift = localStorage.getItem('riff_cover_bg_drift') !== 'false';
+  var savedCoverDrift = localStorage.getItem('cremo_cover_bg_drift') !== 'false';
   document.body.classList.toggle('cover-bg-drift', savedCoverDrift);
-  var savedCoverBgSpeed = parseInt(localStorage.getItem('riff_cover_bg_speed') || '24', 10);
+  var savedCoverBgSpeed = parseInt(localStorage.getItem('cremo_cover_bg_speed') || '24', 10);
   document.documentElement.style.setProperty('--cover-bg-speed', `${savedCoverBgSpeed}s`);
 
   function ensureCoverBgSettingsDOM() {
@@ -1534,8 +1534,8 @@ window.currentWaveFocusedIndex = currentWaveFocusedIndex;
     const refItem = refInput ? refInput.closest('.setting-item') : null;
     if (!refItem || !refItem.parentNode) return;
 
-    const isDrift = localStorage.getItem('riff_cover_bg_drift') !== 'false';
-    const speed = parseInt(localStorage.getItem('riff_cover_bg_speed') || '24', 10);
+    const isDrift = localStorage.getItem('cremo_cover_bg_drift') !== 'false';
+    const speed = parseInt(localStorage.getItem('cremo_cover_bg_speed') || '24', 10);
 
     const driftItem = document.createElement('div');
     driftItem.className = 'setting-item';
@@ -1570,7 +1570,7 @@ window.currentWaveFocusedIndex = currentWaveFocusedIndex;
       btnDrift.onclick = () => {
         const next = !btnDrift.classList.contains('active');
         btnDrift.classList.toggle('active', next);
-        localStorage.setItem('riff_cover_bg_drift', String(next));
+        localStorage.setItem('cremo_cover_bg_drift', String(next));
         document.body.classList.toggle('cover-bg-drift', next);
       };
     }
@@ -1585,7 +1585,7 @@ window.currentWaveFocusedIndex = currentWaveFocusedIndex;
       };
       slSpeed.onchange = (e) => {
         const v = parseInt(e.target.value, 10);
-        localStorage.setItem('riff_cover_bg_speed', String(v));
+        localStorage.setItem('cremo_cover_bg_speed', String(v));
         document.documentElement.style.setProperty('--cover-bg-speed', `${v}s`);
       };
     }
@@ -1595,7 +1595,6 @@ window.currentWaveFocusedIndex = currentWaveFocusedIndex;
 
   updateActiveCoverBg();
 
-  registerFx(document.getElementById('home-ambient'), 'ambient', document.getElementById('view-discover'));
   document.body.classList.toggle('no-clip-fx', !getAdv('clip_fx', false));
   document.body.classList.toggle('no-page-glow', !getAdv('page_glow_gradients', true));
   applyFxClip();
@@ -1613,7 +1612,7 @@ window.currentWaveFocusedIndex = currentWaveFocusedIndex;
       const v = parseInt(e.target.value, 10);
       state.meshBrightness = v;
       if (valMeshBrightness) valMeshBrightness.textContent = `${v}%`;
-      localStorage.setItem('riff_mesh_brightness', v.toString());
+      localStorage.setItem('cremo_mesh_brightness', v.toString());
       updateThemeFromState();
     });
   }
@@ -1627,7 +1626,7 @@ window.currentWaveFocusedIndex = currentWaveFocusedIndex;
 
   var meshCfg = { ...DEFAULT_MESH_CFG };
   try {
-    const raw = localStorage.getItem('riff_mesh_cfg');
+    const raw = localStorage.getItem('cremo_mesh_cfg');
     if (raw) {
       const parsed = JSON.parse(raw);
       if (parsed && parsed.p1 && parsed.p2) {
@@ -1674,7 +1673,7 @@ window.currentWaveFocusedIndex = currentWaveFocusedIndex;
     if (vlBlur) vlBlur.textContent = `${cfg.blur}px`;
 
     if (save) {
-      localStorage.setItem('riff_mesh_cfg', JSON.stringify(cfg));
+      localStorage.setItem('cremo_mesh_cfg', JSON.stringify(cfg));
     }
   }
 
@@ -1821,7 +1820,7 @@ window.currentWaveFocusedIndex = currentWaveFocusedIndex;
         e.stopPropagation();
         const val = opt.dataset.value;
         state.paletteStyle = val;
-        localStorage.setItem('riff_palette_style', state.paletteStyle);
+        localStorage.setItem('cremo_palette_style', state.paletteStyle);
         if (paletteLabel) paletteLabel.textContent = opt.textContent;
         paletteMenu.querySelectorAll('.m3-dropdown-option').forEach(o => o.classList.remove('selected'));
         opt.classList.add('selected');
@@ -1838,7 +1837,7 @@ window.currentWaveFocusedIndex = currentWaveFocusedIndex;
   var btnToggleAdv = document.getElementById('btn-toggle-adv-section');
   var advWrapper = document.getElementById('adv-collapsible-wrapper');
   if (btnToggleAdv && advWrapper) {
-    const isAdvOpen = localStorage.getItem('riff_adv_open') === 'true';
+    const isAdvOpen = localStorage.getItem('cremo_adv_open') === 'true';
     if (isAdvOpen) {
       btnToggleAdv.classList.add('is-open');
       advWrapper.classList.add('is-open');
@@ -1846,7 +1845,7 @@ window.currentWaveFocusedIndex = currentWaveFocusedIndex;
     btnToggleAdv.addEventListener('click', () => {
       const nowOpen = advWrapper.classList.toggle('is-open');
       btnToggleAdv.classList.toggle('is-open', nowOpen);
-      localStorage.setItem('riff_adv_open', nowOpen ? 'true' : 'false');
+      localStorage.setItem('cremo_adv_open', nowOpen ? 'true' : 'false');
     });
   }
 
@@ -1864,12 +1863,6 @@ window.currentWaveFocusedIndex = currentWaveFocusedIndex;
 
       if (key === 'reduce_motion') {
         applyReducedMotionSetting();
-      } else if (key === 'classic_sidebar') {
-        document.body.classList.toggle('classic-sidebar', !!newVal);
-        setTimeout(() => {
-          if (typeof updateNavIndicator === 'function') updateNavIndicator(false);
-          if (typeof resizeCanvases === 'function') resizeCanvases();
-        }, 260);
       } else if (key === 'hide_titlebar') {
         document.body.classList.toggle('hide-titlebar', !!newVal);
       } else if (key === 'autohide_timestamps') {
@@ -1899,16 +1892,8 @@ window.currentWaveFocusedIndex = currentWaveFocusedIndex;
           switchView(target);
         }
       } else if (key === 'my_wave' || key === 'jump_back' || key === 'fav_artists') {
-        initHomeHero();
         if (newVal) loadHomePage();
         applyHomeLayout();
-      } else if (key === 'my_wave_ambient') {
-        const homeAmb = document.getElementById('home-ambient');
-        if (homeAmb) homeAmb.style.display = newVal ? '' : 'none';
-        const ambientEl = document.getElementById('my-wave-ambient-light');
-        if (ambientEl) ambientEl.style.display = newVal ? '' : 'none';
-        const jumpAmbient = document.getElementById('jump-ambient-light');
-        if (jumpAmbient) jumpAmbient.style.display = newVal ? '' : 'none';
       } else if (key === 'banners' || key === 'track_banners') {
         const bannerR = document.getElementById('right-panel-banner');
         const bannerP = document.getElementById('playlist-header-banner');
@@ -1942,42 +1927,42 @@ window.currentWaveFocusedIndex = currentWaveFocusedIndex;
 
   var btnSearchArtists = document.getElementById('btn-search-artists');
   if (btnSearchArtists) {
-    btnSearchArtists.classList.toggle('active', localStorage.getItem('riff_search_artists') !== '0');
+    btnSearchArtists.classList.toggle('active', localStorage.getItem('cremo_search_artists') !== '0');
     btnSearchArtists.addEventListener('click', () => {
       const v = !btnSearchArtists.classList.contains('active');
       btnSearchArtists.classList.toggle('active', v);
-      localStorage.setItem('riff_search_artists', v ? '1' : '0');
+      localStorage.setItem('cremo_search_artists', v ? '1' : '0');
     });
   }
 
   var btnClassicTrackRows = document.getElementById('btn-classic-track-rows');
   if (btnClassicTrackRows) {
-    const isClassic = localStorage.getItem('riff_classic_track_rows') === '1';
+    const isClassic = localStorage.getItem('cremo_classic_track_rows') === '1';
     btnClassicTrackRows.classList.toggle('active', isClassic);
     document.body.classList.toggle('classic-track-rows', isClassic);
     btnClassicTrackRows.addEventListener('click', () => {
       const on = !document.body.classList.contains('classic-track-rows');
       document.body.classList.toggle('classic-track-rows', on);
       btnClassicTrackRows.classList.toggle('active', on);
-      localStorage.setItem('riff_classic_track_rows', on ? '1' : '0');
+      localStorage.setItem('cremo_classic_track_rows', on ? '1' : '0');
     });
   }
 
   var btnSpTableCols = document.getElementById('btn-sp-table-cols');
   if (btnSpTableCols) {
-    const isColsOn = localStorage.getItem('riff_sp_table_cols') !== '0';
+    const isColsOn = localStorage.getItem('cremo_sp_table_cols') !== '0';
     btnSpTableCols.classList.toggle('active', isColsOn);
     document.body.classList.toggle('hide-sp-table-cols', !isColsOn);
     btnSpTableCols.addEventListener('click', () => {
       const on = !btnSpTableCols.classList.contains('active');
       btnSpTableCols.classList.toggle('active', on);
       document.body.classList.toggle('hide-sp-table-cols', !on);
-      localStorage.setItem('riff_sp_table_cols', on ? '1' : '0');
+      localStorage.setItem('cremo_sp_table_cols', on ? '1' : '0');
     });
   }
 
   var btnShowSourceLogo = document.getElementById('btn-show-source-logo');
-  var showSourceLogo = localStorage.getItem('riff_show_source_logo') === '1';
+  var showSourceLogo = localStorage.getItem('cremo_show_source_logo') === '1';
   document.body.classList.toggle('show-source-logo', showSourceLogo);
   if (btnShowSourceLogo) {
     btnShowSourceLogo.classList.toggle('active', showSourceLogo);
@@ -1985,7 +1970,7 @@ window.currentWaveFocusedIndex = currentWaveFocusedIndex;
       const next = !document.body.classList.contains('show-source-logo');
       document.body.classList.toggle('show-source-logo', next);
       btnShowSourceLogo.classList.toggle('active', next);
-      localStorage.setItem('riff_show_source_logo', next ? '1' : '0');
+      localStorage.setItem('cremo_show_source_logo', next ? '1' : '0');
     });
   }
 
@@ -1996,7 +1981,7 @@ window.currentWaveFocusedIndex = currentWaveFocusedIndex;
     btnLyricsFullscreenOnly.addEventListener('click', () => {
       const next = !btnLyricsFullscreenOnly.classList.contains('active');
       btnLyricsFullscreenOnly.classList.toggle('active', next);
-      localStorage.setItem('riff_lyrics_fullscreen_only', next ? '1' : '0');
+      localStorage.setItem('cremo_lyrics_fullscreen_only', next ? '1' : '0');
       document.body.classList.toggle('lyrics-fullscreen-only', next);
       updateRightPanelCredits(state.currentTrack);
     });
@@ -2004,11 +1989,11 @@ window.currentWaveFocusedIndex = currentWaveFocusedIndex;
 
   var btnSmooth = document.getElementById('btn-smooth-presets');
   if (btnSmooth) {
-    btnSmooth.classList.toggle('active', localStorage.getItem('riff_smooth_presets') !== 'false');
+    btnSmooth.classList.toggle('active', localStorage.getItem('cremo_smooth_presets') !== 'false');
     btnSmooth.addEventListener('click', () => {
       const v = !btnSmooth.classList.contains('active');
       btnSmooth.classList.toggle('active', v);
-      localStorage.setItem('riff_smooth_presets', String(v));
+      localStorage.setItem('cremo_smooth_presets', String(v));
     });
   }
   var sidebarEl = document.getElementById('sidebar') || (el && el.sidebar);
@@ -2025,8 +2010,8 @@ window.currentWaveFocusedIndex = currentWaveFocusedIndex;
 
   function setDisableAnimations(on, showFeedback = false) {
     isDisableAnimations = !!on;
-    localStorage.setItem('riff_disable_animations', on ? '1' : '0');
-    localStorage.setItem('riff_perf_mode', on ? '1' : '0');
+    localStorage.setItem('cremo_disable_animations', on ? '1' : '0');
+    localStorage.setItem('cremo_perf_mode', on ? '1' : '0');
     document.body.classList.toggle('perf', !!on);
     document.documentElement.classList.toggle('force-reduced-motion', !!on);
     if (typeof applyPerfMode === 'function') applyPerfMode(on);
@@ -2094,9 +2079,9 @@ window.currentWaveFocusedIndex = currentWaveFocusedIndex;
 
   if (btnWavyProgress) {
     btnWavyProgress.addEventListener('click', () => {
-      const isWavy = localStorage.getItem('riff_wavy_progress') === 'true';
+      const isWavy = localStorage.getItem('cremo_wavy_progress') === 'true';
       const next = !isWavy;
-      localStorage.setItem('riff_wavy_progress', next ? 'true' : 'false');
+      localStorage.setItem('cremo_wavy_progress', next ? 'true' : 'false');
       updateWavyProgressUI();
       hasDrawnPausedFrame = false;
     });
@@ -2104,9 +2089,9 @@ window.currentWaveFocusedIndex = currentWaveFocusedIndex;
 
   if (btnProgressKnob) {
     btnProgressKnob.addEventListener('click', () => {
-      const isKnob = localStorage.getItem('riff_progress_knob') === 'true';
+      const isKnob = localStorage.getItem('cremo_progress_knob') === 'true';
       const next = !isKnob;
-      localStorage.setItem('riff_progress_knob', next ? 'true' : 'false');
+      localStorage.setItem('cremo_progress_knob', next ? 'true' : 'false');
       updateProgressKnobUI();
       hasDrawnPausedFrame = false;
       if (!animationFrameId && typeof startVisualizers === 'function') startVisualizers();
@@ -2115,9 +2100,9 @@ window.currentWaveFocusedIndex = currentWaveFocusedIndex;
 
   if (btnProgressBg) {
     btnProgressBg.addEventListener('click', () => {
-      const isBg = localStorage.getItem('riff_progress_bg') !== 'false';
+      const isBg = localStorage.getItem('cremo_progress_bg') !== 'false';
       const next = !isBg;
-      localStorage.setItem('riff_progress_bg', next ? 'true' : 'false');
+      localStorage.setItem('cremo_progress_bg', next ? 'true' : 'false');
       updateProgressBgUI();
       hasDrawnPausedFrame = false;
       if (!animationFrameId && typeof startVisualizers === 'function') startVisualizers();
@@ -2129,7 +2114,7 @@ window.currentWaveFocusedIndex = currentWaveFocusedIndex;
   if (typeof updateProgressBgUI === 'function') updateProgressBgUI();
 
   var btnTrayOnClose = document.getElementById('btn-tray-on-close');
-  var storedTrayOnClose = localStorage.getItem('riff_tray_on_close');
+  var storedTrayOnClose = localStorage.getItem('cremo_tray_on_close');
   var savedTrayOnClose = storedTrayOnClose !== null
     ? storedTrayOnClose === 'true'
     : /Windows|Mac/.test(navigator.userAgent);
@@ -2138,7 +2123,7 @@ window.currentWaveFocusedIndex = currentWaveFocusedIndex;
     btnTrayOnClose.addEventListener('click', () => {
       const next = !btnTrayOnClose.classList.contains('active');
       btnTrayOnClose.classList.toggle('active', next);
-      localStorage.setItem('riff_tray_on_close', next ? 'true' : 'false');
+      localStorage.setItem('cremo_tray_on_close', next ? 'true' : 'false');
       if (window.electronAPI && window.electronAPI.setTrayOnClose) {
         window.electronAPI.setTrayOnClose(next);
       }
@@ -2171,18 +2156,18 @@ window.currentWaveFocusedIndex = currentWaveFocusedIndex;
 
 
   function applyCustomStyles() {
-    document.querySelectorAll('style[data-riff-custom]').forEach((n) => n.remove());
+    document.querySelectorAll('style[data-cremo-custom]').forEach((n) => n.remove());
     customThemes.filter((t) => t.enabled).forEach((t) => {
       const s = document.createElement('style');
-      s.dataset.riffCustom = 'theme';
+      s.dataset.cremoCustom = 'theme';
       s.dataset.themeId = t.id;
       s.textContent = t.css;
       document.head.appendChild(s);
     });
-    const userCss = localStorage.getItem('riff_custom_css') || '';
+    const userCss = localStorage.getItem('cremo_custom_css') || '';
     if (userCss.trim()) {
       const s = document.createElement('style');
-      s.dataset.riffCustom = 'user';
+      s.dataset.cremoCustom = 'user';
       s.textContent = userCss;
       document.head.appendChild(s);
     }
@@ -2190,9 +2175,9 @@ window.currentWaveFocusedIndex = currentWaveFocusedIndex;
   }
 
   function resetCustomStyling() {
-    const userCss = localStorage.getItem('riff_custom_css') || '';
-    if (userCss.trim()) localStorage.setItem('riff_custom_css_backup', userCss);
-    localStorage.removeItem('riff_custom_css');
+    const userCss = localStorage.getItem('cremo_custom_css') || '';
+    if (userCss.trim()) localStorage.setItem('cremo_custom_css_backup', userCss);
+    localStorage.removeItem('cremo_custom_css');
     customThemes.forEach((t) => { t.enabled = false; });
     if (window.electronAPI && window.electronAPI.disableAllThemes) window.electronAPI.disableAllThemes();
     if (typeof cssEditorInstance !== 'undefined' && cssEditorInstance) cssEditorInstance.setValue('');
@@ -2302,70 +2287,8 @@ window.currentWaveFocusedIndex = currentWaveFocusedIndex;
   var pluginListeners = [];
   var shuffleProvider = null;
 
-  async function setHomeAmbient(url) {
-    const box = document.getElementById('home-ambient');
-    if (!box) return;
-    const layers = box.querySelectorAll('.home-ambient-layer');
-    if (!url) {
-      currentAmbientUrl = null;
-      layers.forEach(l => {
-        l.classList.remove('on');
-        l.style.background = '';
-      });
-      return;
-    }
-    currentAmbientUrl = url;
-    try {
-      const [c1, c2] = await getCoverDominantColors(url);
-      if (currentAmbientUrl !== url) return;
-      const next = layers[ambientIdx ^ 1];
-      const prev = layers[ambientIdx];
-      const gradient = `radial-gradient(circle 550px at 28% 35%, ${c1} 0%, transparent 68%), radial-gradient(circle 550px at 72% 65%, ${c2} 0%, transparent 68%)`;
-      if (next) {
-        next.style.backgroundImage = 'none';
-        next.style.background = gradient;
-        next.classList.add('on');
-      }
-      if (prev) {
-        prev.classList.remove('on');
-      }
-      ambientIdx ^= 1;
-    } catch (e) {
-      console.warn('Ambient error:', e);
-    }
-  }
 
-  function syncHomeAmbientVisibility() {
-    const ambient = document.getElementById('home-ambient');
-    if (!ambient) return;
-    const isDiscoverActive = state.currentView === 'discover' && el.viewDiscover && el.viewDiscover.classList.contains('active');
-    const isSearchShowing = el.searchResultsContainer && !el.searchResultsContainer.classList.contains('hidden');
-    const isDiscoverEmptyShowing = el.discoverEmpty && !el.discoverEmpty.classList.contains('hidden');
-    const hasModes = typeof availableModes === 'function' ? availableModes().length > 0 : true;
-    const isAmbientEnabled = getAdv('my_wave_ambient', true);
 
-    const shouldShow = isDiscoverActive && !isSearchShowing && isDiscoverEmptyShowing && hasModes && isAmbientEnabled;
-    ambient.classList.toggle('ambient-hidden', !shouldShow);
-    ambient.style.display = shouldShow ? '' : 'none';
-  }
-
-  async function updateAmbientLight(ambientEl, thumbnailUrl) {
-    let url = '';
-    if (typeof thumbnailUrl === 'string') {
-      url = thumbnailUrl;
-    } else if (typeof ambientEl === 'string') {
-      if (ambientEl === 'my-wave-ambient-light' || ambientEl === 'jump-ambient-light') {
-        url = typeof thumbnailUrl === 'string' ? thumbnailUrl : '';
-      } else {
-        url = ambientEl;
-      }
-    } else if (ambientEl && typeof ambientEl === 'object' && typeof thumbnailUrl === 'string') {
-      url = thumbnailUrl;
-    }
-
-    syncHomeAmbientVisibility();
-    setHomeAmbient(url);
-  }
 
   var currentWaveFocusedIndex = 0;
 

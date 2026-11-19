@@ -1,7 +1,7 @@
 
 'use strict';
 
-(function initRiffDiskStorageDaemon() {
+(function initCremoDiskStorageDaemon() {
 if (!window.electronAPI || typeof window.electronAPI.storageInitSync !== 'function') return;
 const origGet = Storage.prototype.getItem;
 const origSet = Storage.prototype.setItem;
@@ -36,7 +36,7 @@ migrated = true;
 }
 
 try { origClear.call(window.localStorage); } catch (_) {}
-window.__RIFF_STORAGE_MAP__ = diskMap;
+window.__CREMO_STORAGE_MAP__ = diskMap;
 
 if (migrated) {
 window.electronAPI.storageSaveSync(diskMap);
@@ -95,7 +95,7 @@ origRemove.call(this, key);
 Storage.prototype.clear = function() {
 if (this === window.localStorage) {
 diskMap = {};
-window.__RIFF_STORAGE_MAP__ = diskMap;
+window.__CREMO_STORAGE_MAP__ = diskMap;
 flushAsync();
 return;
 }
@@ -125,10 +125,7 @@ try { window.electronAPI.storageSaveSync(diskMap); } catch (_) {}
 });
 })();
 
-  var currentSidebarLibFilter = 'playlists';
-  var SIDEBAR_PINNED_TRACKS_KEY = 'riff_sidebar_pinned_tracks';
-  var SIDEBAR_LIBRARY_TRACKS_KEY = 'riff_sidebar_library_tracks';
-  var PINNED_PLAYLISTS_KEY = 'riff_pinned_playlists';
+  var PINNED_PLAYLISTS_KEY = 'cremo_pinned_playlists';
   var playlistRecsCache = new Map();
   var manualLyricsOffset = 0, manualLyricsTargetOffset = 0, wheelRafId = 0, wheelReturnTimer = null;
   var cachedActiveGapEl = null, cachedTvkScrubber = null, cachedLyricsValidLines = null, cachedLyricsRef = null;
@@ -155,22 +152,21 @@ try { window.electronAPI.storageSaveSync(diskMap); } catch (_) {}
   window.maybeShowYtAuthSheet = maybeShowYtAuthSheet;
   window.beginBusy = window.beginBusy || function() {};
   window.endBusy = window.endBusy || function() {};
-  try { localStorage.removeItem('riff_stats'); } catch (e) {}
 
 
 (async () => {
   try {
     if (window.HomeCache && typeof window.HomeCache.init === 'function') {
       await window.HomeCache.init();
-      const cachedVibe = window.HomeCache.get('home_vibe') || safeJson('riff_my_wave_cache', []);
+      const cachedVibe = window.HomeCache.get('home_vibe') || safeJson('cremo_my_wave_cache', []);
       if (cachedVibe && cachedVibe.length > 0) {
         state.vibeTracks = cachedVibe;
         myWaveCurrentTracks = cachedVibe;
       }
-      const cachedMixes = window.HomeCache.get('daily_mixes', 24 * 3600 * 1000) || safeJson('riff_daily_mixes', null);
+      const cachedMixes = window.HomeCache.get('daily_mixes', 24 * 3600 * 1000) || safeJson('cremo_daily_mixes', null);
       if (cachedMixes && Array.isArray(cachedMixes.mixes) && cachedMixes.mixes.length > 0) {
         try {
-          localStorage.setItem('riff_daily_mixes', JSON.stringify(cachedMixes));
+          localStorage.setItem('cremo_daily_mixes', JSON.stringify(cachedMixes));
         } catch (_) {}
       }
     }
@@ -254,12 +250,12 @@ window.normalizePreset = normalizePreset;
 window.safeJson = safeJson;
 window.safeArray = safeArray;
 
-  var savedVolumeRaw = parseFloat(localStorage.getItem('riff_volume'));
+  var savedVolumeRaw = parseFloat(localStorage.getItem('cremo_volume'));
   var savedVolume = Number.isFinite(savedVolumeRaw) ? Math.max(0, Math.min(1, savedVolumeRaw)) : 0.85;
 
   var DEFAULT_AUDIO_SETTINGS = { speed: 1.0, speedPitch: 1.0, pitch: 0, reverb: 0, distortion: 0, volume: 1.0, echo: 0, eq: { low: 0, mid: 0, high: 0 }, eqBands: [0, 0, 0, 0, 0, 0, 0, 0, 0, 0] };
   var DEFAULT_HQ_SETTINGS = { engine: 'hqmusic-3', preset: 'studio', vocal: 0, air: 0, bass: 0 };
-  var soundPersistenceEnabled = localStorage.getItem('riff_persist_sound_settings') === '1';
+  var soundPersistenceEnabled = localStorage.getItem('cremo_persist_sound_settings') === '1';
 
   function loadSoundSettings() {
     if (!soundPersistenceEnabled) {
@@ -269,8 +265,8 @@ window.safeArray = safeArray;
         hqSettings: { ...DEFAULT_HQ_SETTINGS }
       };
     }
-    const savedAudio = safeJson('riff_audio_settings', null);
-    const savedHq = safeJson('riff_hq_settings', null);
+    const savedAudio = safeJson('cremo_audio_settings', null);
+    const savedHq = safeJson('cremo_hq_settings', null);
     const audioObj = savedAudio && typeof savedAudio === 'object' ? savedAudio : {};
     const hqObj = savedHq && typeof savedHq === 'object' ? savedHq : {};
     return {
@@ -280,7 +276,7 @@ window.safeArray = safeArray;
         eq: { ...DEFAULT_AUDIO_SETTINGS.eq, ...(audioObj.eq && typeof audioObj.eq === 'object' ? audioObj.eq : {}) },
         eqBands: Array.isArray(audioObj.eqBands) && audioObj.eqBands.length === 10 ? audioObj.eqBands.map(v => typeof v === 'number' ? v : 0) : [...DEFAULT_AUDIO_SETTINGS.eqBands]
       },
-      hqEnabled: localStorage.getItem('riff_hq_enabled') === '1',
+      hqEnabled: localStorage.getItem('cremo_hq_enabled') === '1',
       hqSettings: { ...DEFAULT_HQ_SETTINGS, ...hqObj }
     };
   }
@@ -303,10 +299,7 @@ window.safeArray = safeArray;
                           navActiveIndicator: document.getElementById('nav-active-indicator'),
                           navDiscover: document.getElementById('nav-discover'),
                           navFavorites: document.getElementById('nav-favorites'),
-                          navAlbums: document.getElementById('nav-albums'),
                           navLocal: document.getElementById('nav-local'),
-                          navHistory: document.getElementById('nav-history'),
-                          navQueue: document.getElementById('nav-queue'),
                           navSettings: document.getElementById('nav-settings'),
                           favoritesCount: document.getElementById('favorites-count'),
                           albumsCount: document.getElementById('albums-count'),
@@ -331,11 +324,7 @@ window.safeArray = safeArray;
 
                           viewDiscover: document.getElementById('view-discover'),
                           viewFavorites: document.getElementById('view-favorites'),
-                          viewAlbums: document.getElementById('view-albums'),
-                          savedAlbumsGrid: document.getElementById('saved-albums-grid'),
                           viewLocal: document.getElementById('view-local'),
-                          viewHistory: document.getElementById('view-history'),
-                          viewQueue: document.getElementById('view-queue'),
                           viewPlaylistDetail: document.getElementById('view-playlist-detail'),
                           viewAlbum: document.getElementById('view-album'),
                           viewArtist: document.getElementById('view-artist'),
@@ -385,10 +374,6 @@ window.safeArray = safeArray;
                           btnAddLocalFolder: document.getElementById('btn-add-local-folder'),
                           btnAddLocalFilesEmpty: document.getElementById('btn-add-local-files-empty'),
                           localAlbumsRow: document.getElementById('local-albums-row'),
-                          historyTracksList: document.getElementById('history-tracks-list'),
-                          btnClearHistory: document.getElementById('btn-clear-history'),
-                          queueTracksList: document.getElementById('queue-tracks-list'),
-                          btnClearQueue: document.getElementById('btn-clear-queue'),
                           playlistTracksList: document.getElementById('playlist-tracks-list'),
                           playlistDetailTitle: document.getElementById('playlist-detail-title'),
                           btnEditPlaylistTitle: document.getElementById('btn-edit-playlist-title'),
@@ -583,9 +568,7 @@ window.safeArray = safeArray;
                           renameAlbumInput: document.getElementById('rename-track-album'),
                           renameUrlInput: document.getElementById('rename-track-url'),
                           btnCancelRenameTrack: document.getElementById('btn-cancel-rename-track'),
-                          btnConfirmRenameTrack: document.getElementById('btn-confirm-rename-track'),
-
-                          btnRefreshVibe: document.getElementById('btn-refresh-vibe')
+                          btnConfirmRenameTrack: document.getElementById('btn-confirm-rename-track')
   };
 
 
@@ -611,11 +594,11 @@ window.pluginListeners = pluginListeners;
 var activeStreamRecovery = null;
 window.activeStreamRecovery = activeStreamRecovery;
 
-var audioEngine = window.audioEngine || (window.RiffAudioEngine ? new window.RiffAudioEngine() : null);
+var audioEngine = window.audioEngine || (window.CremoAudioEngine ? new window.CremoAudioEngine() : null);
 window.audioEngine = audioEngine;
 
 
-var selectedFormat = localStorage.getItem('riff_download_format') || 'mp3';
+var selectedFormat = localStorage.getItem('cremo_download_format') || 'mp3';
 window.selectedFormat = selectedFormat;
 var downloadBatch = null;
 window.downloadBatch = downloadBatch;
@@ -651,7 +634,7 @@ window.trackToDownload = trackToDownload;
 var trimDraft = null;
 window.trimDraft = trimDraft;
 
-var currentAudioOutputDeviceId = localStorage.getItem('riff_audio_output_device') || 'default';
+var currentAudioOutputDeviceId = localStorage.getItem('cremo_audio_output_device') || 'default';
 window.currentAudioOutputDeviceId = currentAudioOutputDeviceId;
 
 var currentWaveFocusedIndex = 0;
@@ -693,7 +676,7 @@ window.smoothFadeToken = smoothFadeToken;
 var isAppClosing = false;
 window.isAppClosing = isAppClosing;
 
-var isDisableAnimations = localStorage.getItem('riff_disable_animations') === '1';
+var isDisableAnimations = localStorage.getItem('cremo_disable_animations') === '1';
 window.isDisableAnimations = isDisableAnimations;
 
 var scrubProgress = 0;

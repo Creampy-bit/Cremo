@@ -35,10 +35,10 @@
     soundSettingsSaveTimer = setTimeout(() => {
       soundSettingsSaveTimer = null;
       try {
-        localStorage.setItem('riff_hq_enabled', state.hqEnabled ? '1' : '0');
-        localStorage.setItem('riff_hq_settings', JSON.stringify(state.hqSettings));
-        localStorage.setItem('riff_audio_settings', JSON.stringify(state.audioSettings));
-        localStorage.setItem('riff_active_preset', state.activePresetId || '');
+        localStorage.setItem('cremo_hq_enabled', state.hqEnabled ? '1' : '0');
+        localStorage.setItem('cremo_hq_settings', JSON.stringify(state.hqSettings));
+        localStorage.setItem('cremo_audio_settings', JSON.stringify(state.audioSettings));
+        localStorage.setItem('cremo_active_preset', state.activePresetId || '');
       } catch (e) {
         console.warn('Failed to save sound settings', e);
       }
@@ -92,7 +92,7 @@
   }
 
   function isSpeedLinkedToPitch() {
-    return localStorage.getItem('riff_link_speed_pitch') !== '0';
+    return localStorage.getItem('cremo_link_speed_pitch') !== '0';
   }
 
   function getEffectiveSpeed(s = state.audioSettings) {
@@ -369,12 +369,12 @@
     initAudioContext();
     renderPresets();
     if (Math.abs((normalized.settings.speedPitch ?? 1.0) - 1.0) > 0.001) {
-      localStorage.setItem('riff_link_speed_pitch', '1');
+      localStorage.setItem('cremo_link_speed_pitch', '1');
     } else if (Math.abs((normalized.settings.speed ?? 1.0) - 1.0) > 0.001) {
-      localStorage.setItem('riff_link_speed_pitch', '0');
+      localStorage.setItem('cremo_link_speed_pitch', '0');
     }
     if (activeTweenRaf) { cancelAnimationFrame(activeTweenRaf); activeTweenRaf = null; }
-    if (localStorage.getItem('riff_smooth_presets') === 'false') {
+    if (localStorage.getItem('cremo_smooth_presets') === 'false') {
       state.audioSettings = { ...normalized.settings };
       syncSettingsSlidersToState();
       applyAudioSettings();
@@ -683,7 +683,7 @@
     btnLinkSpeedPitch.classList.toggle('active', isSpeedLinkedToPitch());
     btnLinkSpeedPitch.addEventListener('click', () => {
       const next = !isSpeedLinkedToPitch();
-      localStorage.setItem('riff_link_speed_pitch', next ? '1' : '0');
+      localStorage.setItem('cremo_link_speed_pitch', next ? '1' : '0');
       btnLinkSpeedPitch.classList.toggle('active', next);
       setUnifiedSpeed(getEffectiveSpeed());
     });
@@ -745,7 +745,7 @@
     const linkBtn = e.target.closest('#btn-link-speed-pitch');
     if (linkBtn) {
       const next = !isSpeedLinkedToPitch();
-      localStorage.setItem('riff_link_speed_pitch', next ? '1' : '0');
+      localStorage.setItem('cremo_link_speed_pitch', next ? '1' : '0');
       linkBtn.classList.toggle('active', next);
       setUnifiedSpeed(getEffectiveSpeed());
       return;
@@ -1205,13 +1205,13 @@
     settingWinMediaKeys.style.display = isWindows ? '' : 'none';
   }
 
-  var savedWinMediaKeys = localStorage.getItem('riff_win_global_media_keys') === 'true';
+  var savedWinMediaKeys = localStorage.getItem('cremo_win_global_media_keys') === 'true';
   if (btnWinMediaKeys) {
     btnWinMediaKeys.classList.toggle('active', savedWinMediaKeys);
     btnWinMediaKeys.addEventListener('click', () => {
       const next = !btnWinMediaKeys.classList.contains('active');
       btnWinMediaKeys.classList.toggle('active', next);
-      localStorage.setItem('riff_win_global_media_keys', next ? 'true' : 'false');
+      localStorage.setItem('cremo_win_global_media_keys', next ? 'true' : 'false');
       if (window.electronAPI && window.electronAPI.setMediaKeys) {
         window.electronAPI.setMediaKeys(next);
       }

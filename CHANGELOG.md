@@ -12,6 +12,9 @@ Cada versión nueva se apunta aquí arriba. Cremo usa `MAYOR.MENOR.PARCHE`:
 - **Música independiente de Audius:** tendencias de la semana en Explorar.
 - **Búsqueda:** además de canciones, ahora muestra emisoras, podcasts y música de Audius.
 - La fuente de audio indica Radio en vivo, Podcast o Audius.
+- **Saltar partes sin música:** en vídeos de YouTube, Cremo salta solo las intros habladas, patrocinios y finales sin música que marca la comunidad de SponsorBlock.
+- **Saltar silencios:** quita el silencio al principio y al final de las canciones y los huecos de 8 segundos o más. Si mueves la barra dentro de un silencio, Cremo lo respeta.
+- Las dos opciones están en **Ajustes → Canciones y audio**, debajo de Fundido cruzado.
 
 ## 0.0.1
 

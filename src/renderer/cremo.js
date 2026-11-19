@@ -1,8 +1,18 @@
-// Cremo additions on top of the Riff renderer:
+// Cremo additions on top of the upstream renderer:
 //  1. The sidebar logo takes you back to the home view.
 //  2. A hand-written Spanish dictionary that also covers UI drawn after
-//     startup (Riff only translates the DOM once, at boot).
+//     startup (upstream only translates the DOM once, at boot).
 'use strict';
+
+// Settings left behind by upstream features Cremo removed (the lottie library cache
+// alone was ~300 KB of storage.json).
+(function cremoDropObsoleteKeys() {
+  ['cremo_lottie_lib_cache', 'cremo_spotify_promo_dismissed', 'cremo_sb_promo_dismissed_v1',
+    'cremo_sidebar_pinned_tracks', 'cremo_sidebar_library_tracks', 'cremo_sidebar_default_wide_v2',
+    'cremo_sb_lib_sort', 'cremo_home_layout', 'cremo_show_albums'].forEach((k) => {
+    try { if (localStorage.getItem(k) !== null) localStorage.removeItem(k); } catch (_) {}
+  });
+})();
 
 (function cremoLogoHome() {
   const logo = document.getElementById('cremo-home-logo');
@@ -18,7 +28,7 @@
 })();
 
 (function cremoSpanish() {
-  if ((localStorage.getItem('riff_ui_lang') || 'en') !== 'es') return;
+  if ((localStorage.getItem('cremo_ui_lang') || 'en') !== 'es') return;
 
   // Exact UI strings -> Spanish. Only whole strings are replaced, never song
   // titles or artist names (those are never exact matches of these keys).
@@ -102,7 +112,7 @@
     'Favorite': 'Me gusta',
     'Unfavorite': 'Quitar de Me gusta',
     'Remove from favorites': 'Quitar de Me gusta',
-    'Remove from Riff': 'Quitar de Cremo',
+    'Remove from Cremo': 'Quitar de Cremo',
     'Add to library': 'Añadir a la biblioteca',
     'Remove from library': 'Quitar de la biblioteca',
     'Pin to sidebar': 'Fijar en la barra lateral',
@@ -142,7 +152,7 @@
   // "2 songs", "1 song", "12 tracks"
   const COUNT_RE = /^(\d[\d.,]*)\s+(songs?|tracks?)$/i;
 
-  // Share with Riff's own translator so t() and its boot pass use these too.
+  // Share with upstream's own translator so t() and its boot pass use these too.
   try {
     const dict = window.BUILTIN_UI_DICT || (window.BUILTIN_UI_DICT = {});
     dict.es = Object.assign(dict.es || {}, ES);
@@ -226,24 +236,12 @@
   if (!sidebar) return;
   const body = document.body;
 
-  // The expanded "Tu biblioteca" panel is gone: keep the rail collapsed.
-  const keepCollapsed = () => {
-    if (body.classList.contains('sidebar-expanded') && typeof window.applySidebarWidth === 'function') {
-      window.applySidebarWidth(84, true);
-    }
-  };
-  new MutationObserver(keepCollapsed).observe(body, { attributes: true, attributeFilter: ['class'] });
-  keepCollapsed();
-  window.addEventListener('load', keepCollapsed);
-
-  const isEs = (localStorage.getItem('riff_ui_lang') || 'en') === 'es';
+  const isEs = (localStorage.getItem('cremo_ui_lang') || 'en') === 'es';
   const LABELS = isEs ? {
     'cremo-home-logo': 'Inicio',
     'nav-discover': 'Explorar',
     'nav-favorites': 'Me gusta',
-    'nav-albums': 'Álbumes',
     'nav-local': 'Biblioteca',
-    'nav-queue': 'Cola',
     'nav-settings': 'Ajustes',
     'btn-toggle-presets-drawer': 'Ajustes de sonido',
     'btn-toggle-playlists-drawer': 'Playlists',
@@ -403,7 +401,7 @@
 (function cremoThemes() {
   const KEY = 'cremo_theme_accent';
   const DEFAULT = '#e2475d';
-  const isEs = (localStorage.getItem('riff_ui_lang') || 'en') === 'es';
+  const isEs = (localStorage.getItem('cremo_ui_lang') || 'en') === 'es';
   const PRESETS = [
     { name: isEs ? 'Carmesí' : 'Crimson', color: '#e2475d' },
     { name: isEs ? 'Rosa' : 'Pink', color: '#ec4899' },
@@ -442,8 +440,6 @@
     if (persist) {
       try {
         localStorage.setItem(KEY, color);
-        // Keep Riff's own accent (visualizer, generated covers) in step.
-        localStorage.setItem('riff_theme_accent', color);
         if (window.state) window.state.themeAccent = color;
       } catch (_) {}
     }
@@ -526,7 +522,7 @@
   };
   const click = (id) => { const b = document.getElementById(id); if (b) b.click(); };
   const ACTIONS = [
-    { key: 'radio', label: 'Radio para ti', primary: true, run: () => click('btn-play-my-wave') },
+    { key: 'radio', label: 'Radio para ti', primary: true, run: () => { if (typeof window.playMyWave === 'function') window.playMyWave(); } },
     { key: 'shuffle', label: 'Mezclar Me gusta', run: () => click('btn-shuffle-favorites') },
     { key: 'heart', label: 'Me gusta', run: () => click('nav-favorites') },
     { key: 'stats', label: 'Tu resumen', run: () => { if (window.cremoOpenSummary) window.cremoOpenSummary(); } },
@@ -603,11 +599,11 @@
 
 /* ---------- Settings: Cremo's own organisation ----------
    Moves existing setting rows (keeping their listeners) into three new
-   categories, hides Riff-only / duplicated rows and fixes labels.
+   categories, hides upstream-only / duplicated rows and fixes labels.
    Idempotent: runs at startup and every time a settings category opens. */
 (function cremoSettings() {
   'use strict';
-  const ES = (localStorage.getItem('riff_ui_lang') || 'en') === 'es';
+  const ES = (localStorage.getItem('cremo_ui_lang') || 'en') === 'es';
   const t = (es, en) => (ES ? es : en);
 
   const ICON = {
@@ -628,19 +624,19 @@
       [t('Letras', 'Lyrics'), ['#btn-lyrics-fullscreen-only', '#btn-lyrics-warnings', '[data-adv="online_lyrics"]', '[data-adv="karaoke_words"]', '[data-adv="lyrics_autoscroll"]', '#lyrics-source-dropdown', '#word-source-dropdown', '#lyrics-wordstyle-dropdown', '#lyrics-ease-dropdown', '#val-lyrics-speed', '#val-lyrics-tightness', '#btn-tr-enabled', '#select-tr-lang', '#btn-tr-auto']]
     ]],
     ['explore', t('Explorar', 'Explore'), [
-      [t('Secciones', 'Sections'), ['[data-adv="my_wave"]', '[data-adv="jump_back"]', '[data-adv="fav_artists"]', '[data-adv="my_wave_ambient"]', '#btn-reset-sidebar-order']],
+      [t('Secciones', 'Sections'), ['[data-adv="my_wave"]', '[data-adv="jump_back"]', '[data-adv="fav_artists"]', '#btn-reset-sidebar-order']],
       [t('Recomendaciones', 'Recommendations'), ['#btn-reset-recommendations']]
     ]]
   ];
 
-  // Rows that only made sense in Riff, or that are duplicated elsewhere.
+  // Rows that only made sense in upstream, or that are duplicated elsewhere.
   const HIDE = [
-    '#account-promocode-input',                       // Riff's promo codes
+    '#account-promocode-input',                       // Upstream's promo codes
     '#btn-acc-export-rfacc', '#btn-acc-import-rfacc', // also in Almacenamiento
     '[data-adv="classic_sidebar"]',                   // breaks Cremo's rail
     '#btn-show-local', '#btn-show-albums',            // tabs Cremo's rail replaces
     '[data-adv="albums"]',
-    '#btn-toggle-riff-home'                           // old Riff home layout (hides Explorar)
+    '#btn-toggle-cremo-home'                           // old upstream home layout (hides Explorar)
   ];
 
   // Mesh gradient rows live in Avanzado; Tema already has the mesh brightness.
@@ -648,9 +644,9 @@
 
   const NAMES = ES ? {
     '#btn-disable-animations': 'Desactivar animaciones',
-    '#btn-setting-riff-home-icon': 'Logo de Cremo en el botón Inicio',
-    '#btn-riff-library': 'Búsqueda combinada',
-    '#btn-riff-library-streaming': 'Reproducción híbrida (búsqueda combinada)',
+    '#btn-setting-cremo-home-icon': 'Logo de Cremo en el botón Inicio',
+    '#btn-cremo-library': 'Búsqueda combinada',
+    '#btn-cremo-library-streaming': 'Reproducción híbrida (búsqueda combinada)',
     '#select-engine-api': 'Motor de búsqueda',
     '#settings-val-scale': 'Escala de la interfaz',
     '#val-panel-blur': 'Desenfoque de paneles flotantes',
@@ -678,18 +674,17 @@
     '[data-adv="my_wave"]': 'Para ti',
     '[data-adv="jump_back"]': 'Inicio (escuchado recientemente)',
     '[data-adv="fav_artists"]': 'Artistas favoritos',
-    '[data-adv="my_wave_ambient"]': 'Luz ambiental',
     '[data-adv="mesh_follow_intensity"]': 'La malla sigue la intensidad del tema',
     '[data-adv="mesh_cover_color"]': 'Color de la malla según la portada',
     '[data-adv="ui_alpha_auto"]': 'Menor opacidad de la interfaz con fondos'
   } : {
-    '#btn-setting-riff-home-icon': 'Cremo logo on Home button',
-    '#btn-riff-library': 'Combined search',
-    '#btn-riff-library-streaming': 'Hybrid streaming (combined search)'
+    '#btn-setting-cremo-home-icon': 'Cremo logo on Home button',
+    '#btn-cremo-library': 'Combined search',
+    '#btn-cremo-library-streaming': 'Hybrid streaming (combined search)'
   };
   const HINTS = ES ? {
     '#btn-disable-animations': 'Consume menos CPU y GPU y responde más rápido, pero sin animaciones suaves.',
-    '#btn-riff-library': 'Junta YouTube Music y SoundCloud en una sola fuente de búsqueda'
+    '#btn-cremo-library': 'Junta YouTube Music y SoundCloud en una sola fuente de búsqueda'
   } : {};
   const NAV = ES ? { banners: 'Fondos y banners', tracks: 'Canciones y audio' } : { tracks: 'Tracks & audio' };
 
@@ -783,8 +778,13 @@
       const s = document.querySelector('#settings-nav .settings-nav-btn[data-cat="' + cat + '"] span');
       if (s && s.textContent !== label) s.textContent = label;
     });
+    // The machine translation turned "Search settings..." into "Configuración de búsqueda".
+    const search = document.getElementById('settings-search-input');
+    const ph = t('Buscar ajustes', 'Search settings');
+    if (search && search.placeholder !== ph) search.placeholder = ph;
+    if (typeof window.reorderSettingsNav === 'function') window.reorderSettingsNav();
 
-    // The sidebar-order column lists Riff's old rail buttons (Álbumes, Cola,
+    // The sidebar-order column lists upstream's old rail buttons (Álbumes, Cola,
     // Historial...), which Cremo's rail replaces: keep only the Explorar column.
     const custom = document.getElementById('setting-sidebar-home-customizer');
     if (custom) {
@@ -814,7 +814,7 @@ const cremoLS = {
   set(k, v) { try { localStorage.setItem(k, v); } catch (_) {} }
 };
 
-/* Small helper: a settings row with a segmented choice, styled like Riff's own. */
+/* Small helper: a settings row with a segmented choice, styled like upstream's own. */
 function cremoChoiceRow(id, name, hint, options, current, onPick, icon) {
   const row = document.createElement('div');
   row.className = 'setting-item' + (icon ? ' cr-has-icon' : '');
@@ -1285,7 +1285,7 @@ function cremoChoiceRow(id, name, hint, options, current, onPick, icon) {
     sec.className = 'sp-section cr-src-sec';
     sec.id = id;
     sec.innerHTML = '<h2>' + icon + '<span>' + cremoEsc(title) + '</span></h2>' + (extraHead || '') + '<div class="sp-row"></div>';
-    // Riff makes every Explorar header open its own "show all" page; ours have none.
+    // Upstream makes every Explorar header open its own "show all" page; ours have none.
     sec.addEventListener('click', (e) => { if (e.target.closest('.sp-sec-head, h2')) e.stopPropagation(); }, true);
     const row = sec.querySelector('.sp-row');
     if (typeof window.bindHorizontalWheel === 'function') window.bindHorizontalWheel(row);
@@ -1387,7 +1387,7 @@ function cremoChoiceRow(id, name, hint, options, current, onPick, icon) {
   }
   window.cremoOpenPodcast = openPodcast;
 
-  /* ---- Search: extra sections under Riff's results ---- */
+  /* ---- Search: extra sections under upstream's results ---- */
   function searchSection(title, note, items, render) {
     const sec = document.createElement('div');
     sec.className = 'search-albums-section cr-src-search';
@@ -1430,7 +1430,7 @@ function cremoChoiceRow(id, name, hint, options, current, onPick, icon) {
 
   function start() {
     buildSections();
-    // Riff may rebuild parts of Explorar; put the sections back if they go missing.
+    // Upstream may rebuild parts of Explorar; put the sections back if they go missing.
     setInterval(() => { if (st().currentView === 'discover') buildSections(); onSearch(); }, 500);
     const chips = document.getElementById('search-filter-chips');
     if (chips) chips.addEventListener('click', (e) => {

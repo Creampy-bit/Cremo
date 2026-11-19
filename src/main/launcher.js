@@ -82,7 +82,7 @@ function installLinux() {
       try {
         const binDir = path.join(os.homedir(), '.local', 'bin');
         fs.mkdirSync(binDir, { recursive: true });
-        const symlinkPath = path.join(binDir, 'riff-appimage');
+        const symlinkPath = path.join(binDir, 'cremo-appimage');
         try { fs.unlinkSync(symlinkPath); } catch (_) {}
         fs.symlinkSync(image, symlinkPath);
       } catch (_) {}

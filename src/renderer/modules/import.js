@@ -109,7 +109,7 @@
     }
     const toast = document.createElement('div');
     const spinnerSvg = '<svg class="g-spinner" style="width:18px;height:18px;" viewBox="0 0 48 48"><circle cx="24" cy="24" r="20"/></svg>';
-    toast.className = 'riff-toast info wide';
+    toast.className = 'cremo-toast info wide';
     toast.innerHTML = `<div class="toast-row info"><span class="toast-icon">${spinnerSvg}</span><span class="toast-text">${escapeHtml(msg)}</span></div>`;
     container.appendChild(toast);
     activeImportToast = toast;
@@ -160,7 +160,7 @@
         if (textSpan) textSpan.textContent = `Importing ${escapeHtml(playlistName)}... (0/${total})`;
       } else if (container) {
         toast = document.createElement('div');
-        toast.className = 'riff-toast info wide';
+        toast.className = 'cremo-toast info wide';
         toast.innerHTML = `<div class="toast-row info"><span class="toast-icon">${spinnerSvg}</span><span class="toast-text">Importing ${escapeHtml(playlistName)}... (0/${total})</span></div>`;
         container.appendChild(toast);
         textSpan = toast.querySelector('.toast-text');
@@ -177,20 +177,6 @@
       const chunk = list.slice(i, i + chunkSize);
       for (const t of chunk) {
         if (!t) continue;
-        if (isStaticTikTokTrack(t)) {
-          const tid = String(t.id || '').startsWith('tt_') ? String(t.id) : ('tt_' + String(t.id || Date.now()));
-          converted.push({
-            ...t,
-            id: tid,
-            isCached: true,
-            isTikTok: true,
-            staticAudio: true,
-            platform: 'tiktok',
-            url: 'http://127.0.0.1:' + state.serverPort + '/api/local-track?id=' + encodeURIComponent(cleanTrackId(tid)),
-            addedAt: Date.now()
-          });
-          continue;
-        }
         if (!t.title && t.name) t.title = t.name;
         if (!t.artist && t.artists) t.artist = t.artists;
         const title = String(t.title || t.name || '').trim();
@@ -271,7 +257,7 @@
     };
 
     if (toast && !isSilent) {
-      toast.className = 'riff-toast success wide';
+      toast.className = 'cremo-toast success wide';
       const row = toast.querySelector('.toast-row');
       if (row) row.className = 'toast-row success';
       if (iconSpan) iconSpan.innerHTML = checkmarkSvg;
@@ -320,7 +306,7 @@
   var parsedSpotifyExport = { likes: [], playlists: [] };
   var spLoginPollTimer = null;
   var spotifyConnected = false;
-  var spotifyHeaders = { 'X-Riff-Token': window.electronAPI?.serverToken || '' };
+  var spotifyHeaders = { 'X-Cremo-Token': window.electronAPI?.serverToken || '' };
 
   async function checkSpotifyAuthStatus() {
     try {
@@ -453,14 +439,14 @@
   }
 
   if (spClientIdInput) {
-    const savedId = localStorage.getItem('riff_spotify_client_id') || '';
+    const savedId = localStorage.getItem('cremo_spotify_client_id') || '';
     spClientIdInput.value = savedId;
     if (btnSpLogin) {
       btnSpLogin.disabled = !/^[a-f0-9]{32}$/i.test(savedId.trim());
     }
     spClientIdInput.addEventListener('input', () => {
       const val = spClientIdInput.value.trim();
-      localStorage.setItem('riff_spotify_client_id', val);
+      localStorage.setItem('cremo_spotify_client_id', val);
       if (btnSpLogin) {
         btnSpLogin.disabled = !/^[a-f0-9]{32}$/i.test(val);
       }
@@ -654,7 +640,7 @@
     if (spChkLikes2) { spChkLikes2.checked = true; spChkLikes2.disabled = false; }
     if (spChkPlaylists2) { spChkPlaylists2.checked = true; spChkPlaylists2.disabled = false; }
     if (btnSpPickFiles) btnSpPickFiles.disabled = false;
-    const savedId = localStorage.getItem('riff_spotify_client_id') || '';
+    const savedId = localStorage.getItem('cremo_spotify_client_id') || '';
     if (spClientIdInput) spClientIdInput.value = savedId;
     if (btnSpLogin) btnSpLogin.disabled = !/^[a-f0-9]{32}$/i.test(savedId.trim());
     if (spRedirectUri) spRedirectUri.textContent = `http://127.0.0.1:${state.serverPort || 38472}/api/spotify-callback`;
@@ -1899,29 +1885,15 @@
       if (platform === 'youtube') titleEl.textContent = 'Import from YouTube';
       else if (platform === 'ytmusic') titleEl.textContent = 'Import from YouTube Music';
       else if (platform === 'soundcloud') titleEl.textContent = 'Import from SoundCloud';
-      else if (platform === 'yandex') titleEl.textContent = 'Import from Yandex Music';
       else if (platform === 'deezer') titleEl.textContent = 'Import from Deezer';
-      else if (platform === 'tiktok') titleEl.textContent = 'Import from TikTok';
-      else if (platform === 'vk') titleEl.textContent = 'Import from VK Music';
       else titleEl.textContent = 'Import from link';
     }
 
     if (linkModesContainer) {
-      if (platform === 'soundcloud' || platform === 'yandex' || platform === 'deezer' || platform === 'tiktok' || platform === 'vk') {
+      if (platform === 'soundcloud' || platform === 'deezer') {
         linkModesContainer.classList.add('hidden');
       } else {
         linkModesContainer.classList.remove('hidden');
-      }
-    }
-
-    const vkTextEl = document.getElementById('vk-import-text');
-    if (vkTextEl) {
-      if (platform === 'vk') {
-        vkTextEl.classList.remove('hidden');
-        vkTextEl.value = '';
-      } else {
-        vkTextEl.classList.add('hidden');
-        vkTextEl.value = '';
       }
     }
 
@@ -1936,16 +1908,10 @@
         linkImportUrl.placeholder = 'Paste a YouTube Music link';
       } else if (platform === 'soundcloud') {
         linkImportUrl.placeholder = 'Paste a SoundCloud playlist or track link';
-      } else if (platform === 'yandex') {
-        linkImportUrl.placeholder = 'Paste a Yandex Music playlist, album or track link';
       } else if (platform === 'deezer') {
         linkImportUrl.placeholder = 'Paste a Deezer public playlist link';
-      } else if (platform === 'tiktok') {
-        linkImportUrl.placeholder = 'Paste a TikTok video or sound link';
-      } else if (platform === 'vk') {
-        linkImportUrl.placeholder = 'Paste a public VK playlist link (optional)';
       } else {
-        linkImportUrl.placeholder = 'Paste a YouTube, YouTube Music, SoundCloud, Yandex Music or Deezer link';
+        linkImportUrl.placeholder = 'Paste a YouTube, YouTube Music, SoundCloud or Deezer link';
       }
     }
 
@@ -2003,8 +1969,7 @@
 
     clearImportError(linkImportError);
     const url = linkImportUrl ? linkImportUrl.value.trim() : '';
-    const vkText = (document.getElementById('vk-import-text')?.value || '').trim();
-    if (!url && !(currentLinkImportPlatform === 'vk' && vkText)) {
+    if (!url) {
       const errInfo = classifyImportError('link', 404, 'unsupported link');
       showImportError(linkImportError, errInfo);
       return;
@@ -2013,225 +1978,6 @@
     const doSync = !!document.getElementById('chk-link-sync-playlist')?.checked;
     closeLinkImportModal();
     showImportSpinnerToast('Importing playlist...');
-
-    if (currentLinkImportPlatform === 'tiktok' || url.includes('tiktok.com')) {
-      const hasBusy = typeof beginBusy === 'function';
-      if (hasBusy) beginBusy('import');
-
-      try {
-        const res = await fetch(`http://127.0.0.1:${state.serverPort}/api/tiktok-import?url=${encodeURIComponent(url)}`);
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok || !data.success || !Array.isArray(data.tracks) || data.tracks.length === 0) {
-          dismissImportSpinnerToast();
-          const errInfo = classifyImportError('link', res.status, data);
-          showToast(errInfo.userMessage || 'Failed to import TikTok track', 'error');
-          return;
-        }
-
-        const foundTracks = await matchSpotifyTracks(data.tracks, data.name || 'TikTok Track', null, { playlistCover: data.cover || '' });
-
-        const targetSel = document.getElementById('link-import-target');
-        const targetPlId = targetSel ? targetSel.value : '__new__';
-        if (targetPlId === '__favorites__') {
-          const existingMap = new Set(state.favorites.map(f => getTrackCanonicalId(f) || f.id));
-          const newFavs = foundTracks.filter(t => !existingMap.has(getTrackCanonicalId(t) || t.id));
-          state.favorites.push(...newFavs.map(stampAddedAt));
-          localStorage.setItem('devsize_favorites', JSON.stringify(state.favorites));
-          if (typeof updateFavoritesBadge === 'function') updateFavoritesBadge();
-          if (typeof updateFavoriteIcon === 'function') updateFavoriteIcon();
-          if (state.currentView === 'favorites' && typeof renderFavoritesView === 'function') renderFavoritesView();
-          hydrateMissingPlaylistCovers(state.favorites);
-        } else if (targetPlId !== '__new__' && targetPlId !== 'new') {
-          const targetPl = state.playlists.find(p => p.id === targetPlId);
-          if (targetPl) {
-            if (!targetPl.cover && data.cover) targetPl.cover = data.cover;
-            const existingIds = new Set(targetPl.tracks.map(t => t.id));
-            const newTracks = foundTracks.filter(t => !existingIds.has(t.id));
-            targetPl.tracks.push(...newTracks.map(stampAddedAt));
-            localStorage.setItem('devsize_playlists', JSON.stringify(state.playlists));
-            renderPlaylistsList();
-            if (state.currentView === 'playlist-detail' && state.currentPlaylistId === targetPlId) {
-              openPlaylistDetail(targetPlId);
-            }
-            hydrateMissingPlaylistCovers(targetPl);
-          } else {
-            createPlaylist(data.name || 'TikTok Track', foundTracks, data.cover || '', {
-              syncEnabled: doSync,
-              syncUrl: doSync ? url : '',
-              syncPlatform: doSync ? 'tiktok' : '',
-              importedPlatform: 'tiktok',
-              importedAt: Date.now(),
-              lastSyncedAt: doSync ? Date.now() : 0
-            });
-          }
-        } else {
-          createPlaylist(data.name || 'TikTok Track', foundTracks, data.cover || '', {
-            syncEnabled: doSync,
-            syncUrl: doSync ? url : '',
-            syncPlatform: doSync ? 'tiktok' : '',
-            importedPlatform: 'tiktok',
-            importedAt: Date.now(),
-            lastSyncedAt: doSync ? Date.now() : 0
-          });
-        }
-      } catch (err) {
-        dismissImportSpinnerToast();
-        const errInfo = classifyImportError('link', err, err.message);
-        showToast(errInfo.userMessage || 'Failed to import TikTok track', 'error');
-      } finally {
-        if (hasBusy && typeof endBusy === 'function') {
-          endBusy('import');
-        }
-      }
-      return;
-    }
-
-    if (currentLinkImportPlatform === 'vk' || url.includes('vk.com')) {
-      const hasBusy = typeof beginBusy === 'function';
-      if (hasBusy) beginBusy('import');
-
-      try {
-        const res = await fetch(`http://127.0.0.1:${state.serverPort}/api/vk-import`, {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ url, text: vkText })
-        });
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok || !data.success || !Array.isArray(data.tracks) || data.tracks.length === 0) {
-          dismissImportSpinnerToast();
-          const errInfo = classifyImportError('link', res.status, data);
-          showToast(errInfo.userMessage || 'Failed to import VK Music', 'error');
-          return;
-        }
-
-        const foundTracks = await matchSpotifyTracks(data.tracks, data.name || 'VK Music', null, { playlistCover: data.cover || '' });
-
-        const targetSel = document.getElementById('link-import-target');
-        const targetPlId = targetSel ? targetSel.value : '__new__';
-        if (targetPlId === '__favorites__') {
-          const existingMap = new Set(state.favorites.map(f => getTrackCanonicalId(f) || f.id));
-          const newFavs = foundTracks.filter(t => !existingMap.has(getTrackCanonicalId(t) || t.id));
-          state.favorites.push(...newFavs.map(stampAddedAt));
-          localStorage.setItem('devsize_favorites', JSON.stringify(state.favorites));
-          if (typeof updateFavoritesBadge === 'function') updateFavoritesBadge();
-          if (typeof updateFavoriteIcon === 'function') updateFavoriteIcon();
-          if (state.currentView === 'favorites' && typeof renderFavoritesView === 'function') renderFavoritesView();
-          hydrateMissingPlaylistCovers(state.favorites);
-        } else if (targetPlId !== '__new__' && targetPlId !== 'new') {
-          const targetPl = state.playlists.find(p => p.id === targetPlId);
-          if (targetPl) {
-            if (!targetPl.cover && data.cover) targetPl.cover = data.cover;
-            const existingIds = new Set(targetPl.tracks.map(t => t.id));
-            const newTracks = foundTracks.filter(t => !existingIds.has(t.id));
-            targetPl.tracks.push(...newTracks.map(stampAddedAt));
-            localStorage.setItem('devsize_playlists', JSON.stringify(state.playlists));
-            renderPlaylistsList();
-            if (state.currentView === 'playlist-detail' && state.currentPlaylistId === targetPlId) {
-              openPlaylistDetail(targetPlId);
-            }
-            hydrateMissingPlaylistCovers(targetPl);
-          } else {
-            createPlaylist(data.name || 'VK Music', foundTracks, data.cover || '', {
-              syncUrl: url,
-              syncPlatform: 'vk',
-              importedPlatform: 'vk',
-              importedAt: Date.now()
-            });
-          }
-        } else {
-          createPlaylist(data.name || 'VK Music', foundTracks, data.cover || '', {
-            syncUrl: url,
-            syncPlatform: 'vk',
-            importedPlatform: 'vk',
-            importedAt: Date.now()
-          });
-        }
-      } catch (err) {
-        dismissImportSpinnerToast();
-        const errInfo = classifyImportError('link', err, err.message);
-        showToast(errInfo.userMessage || 'Failed to import VK Music', 'error');
-      } finally {
-        if (hasBusy && typeof endBusy === 'function') {
-          endBusy('import');
-        }
-      }
-      return;
-    }
-
-    if (currentLinkImportPlatform === 'yandex' || url.includes('music.yandex.') || url.includes('yandex.')) {
-      const hasBusy = typeof beginBusy === 'function';
-      if (hasBusy) beginBusy('import');
-
-      try {
-        const res = await fetch(`http://127.0.0.1:${state.serverPort}/api/yandex-import?url=${encodeURIComponent(url)}`);
-        const data = await res.json().catch(() => ({}));
-        if (!res.ok || !data.success || !Array.isArray(data.tracks) || data.tracks.length === 0) {
-          dismissImportSpinnerToast();
-          const errInfo = classifyImportError('link', res.status, data);
-          showToast(errInfo.userMessage || 'Failed to import playlist', 'error');
-          return;
-        }
-
-        const tracks = data.tracks;
-        const total = tracks.length;
-
-        const foundTracks = await matchSpotifyTracks(tracks, data.name || 'Yandex Music Playlist', null, { playlistCover: '' });
-
-        const targetSel = document.getElementById('link-import-target');
-        const targetPlId = targetSel ? targetSel.value : '__new__';
-        if (targetPlId === '__favorites__') {
-          const existingMap = new Set(state.favorites.map(f => getTrackCanonicalId(f) || f.id));
-          const newFavs = foundTracks.filter(t => !existingMap.has(getTrackCanonicalId(t) || t.id));
-          state.favorites.push(...newFavs.map(stampAddedAt));
-          localStorage.setItem('devsize_favorites', JSON.stringify(state.favorites));
-          if (typeof updateFavoritesBadge === 'function') updateFavoritesBadge();
-          if (typeof updateFavoriteIcon === 'function') updateFavoriteIcon();
-          if (state.currentView === 'favorites' && typeof renderFavoritesView === 'function') renderFavoritesView();
-          hydrateMissingPlaylistCovers(state.favorites);
-        } else if (targetPlId !== '__new__' && targetPlId !== 'new') {
-          const targetPl = state.playlists.find(p => p.id === targetPlId);
-          if (targetPl) {
-            if (!targetPl.cover && data.cover) targetPl.cover = data.cover;
-            const existingIds = new Set(targetPl.tracks.map(t => t.id));
-            const newTracks = foundTracks.filter(t => !existingIds.has(t.id));
-            targetPl.tracks.push(...newTracks.map(stampAddedAt));
-            localStorage.setItem('devsize_playlists', JSON.stringify(state.playlists));
-            renderPlaylistsList();
-            if (state.currentView === 'playlist-detail' && state.currentPlaylistId === targetPlId) {
-              openPlaylistDetail(targetPlId);
-            }
-            hydrateMissingPlaylistCovers(targetPl);
-          } else {
-            createPlaylist(data.name || 'Yandex Music Playlist', foundTracks, data.cover || '', {
-              syncEnabled: doSync,
-              syncUrl: doSync ? url : '',
-              syncPlatform: doSync ? 'yandex' : '',
-              importedPlatform: 'yandex',
-              importedAt: Date.now(),
-              lastSyncedAt: doSync ? Date.now() : 0
-            });
-          }
-        } else {
-          createPlaylist(data.name || 'Yandex Music Playlist', foundTracks, data.cover || '', {
-            syncEnabled: doSync,
-            syncUrl: doSync ? url : '',
-            syncPlatform: doSync ? 'yandex' : '',
-            importedPlatform: 'yandex',
-            importedAt: Date.now(),
-            lastSyncedAt: doSync ? Date.now() : 0
-          });
-        }
-      } catch (err) {
-        dismissImportSpinnerToast();
-        const errInfo = classifyImportError('link', err, err.message);
-        showToast(errInfo.userMessage || 'Failed to import playlist', 'error');
-      } finally {
-        if (hasBusy && typeof endBusy === 'function') {
-          endBusy('import');
-        }
-      }
-      return;
-    }
 
     if (url.includes('soundcloud.com')) setPlatform('soundcloud', false);
     else if (url.includes('music.youtube.com')) setPlatform('ytmusic', false);
@@ -2424,7 +2170,7 @@
         const iconSpan = toast.querySelector('.toast-icon');
         const textSpan = toast.querySelector('.toast-text');
         const checkmarkSvg = '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round"><polyline points="5 12.5 10 17.5 19 7.5"/></svg>';
-        toast.className = 'riff-toast success wide';
+        toast.className = 'cremo-toast success wide';
         const row = toast.querySelector('.toast-row');
         if (row) row.className = 'toast-row success';
         if (iconSpan) iconSpan.innerHTML = checkmarkSvg;
@@ -2495,7 +2241,7 @@
     } catch (e) {}
 
     const payload = {
-      app: 'Riff',
+      app: 'Cremo',
       appVersion: appVer,
       exportedAt: new Date().toISOString(),
       playlists: valid.map(pl => ({
@@ -2527,7 +2273,7 @@
   }
 
   async function exportAllPlaylists() {
-    await exportPlaylistsAsJson(state.playlists, 'riff-playlists.json');
+    await exportPlaylistsAsJson(state.playlists, 'cremo-playlists.json');
   }
 
   var btnExportPl = document.getElementById('btn-export-playlist');
@@ -2973,7 +2719,7 @@
     btnImportJsonPlaylists.addEventListener('click', triggerJsonPlaylistImport);
   }
 
-  function confirmChain({ title = 'Import Riff account', message = 'Importing an account will replace your existing playlists, favorites, custom styles, and settings. Riff will restart immediately.', confirmLabel = 'Import & Restart', seconds = 3 } = {}) {
+  function confirmChain({ title = 'Import Cremo account', message = 'Importing an account will replace your existing playlists, favorites, custom styles, and settings. Cremo will restart immediately.', confirmLabel = 'Import & Restart', seconds = 3 } = {}) {
     return new Promise((resolve) => {
       let modal = document.getElementById('confirm-chain-modal');
       if (!modal) {
@@ -3044,7 +2790,7 @@
         }
       } catch (_) {}
       const payload = {
-        app: 'Riff',
+        app: 'Cremo',
         version: '1.0',
         exportedAt: Date.now(),
         localStorage: dump
@@ -3064,8 +2810,8 @@
   if (btnImportAccount) {
     btnImportAccount.onclick = async () => {
       const confirmed = await confirmChain({
-        title: 'Import Riff account',
-        message: 'Importing an account will replace your existing playlists, favorites, custom styles, and settings. Riff will restart immediately.',
+        title: 'Import Cremo account',
+        message: 'Importing an account will replace your existing playlists, favorites, custom styles, and settings. Cremo will restart immediately.',
         confirmLabel: 'Import & Restart',
         seconds: 3
       });
@@ -3089,8 +2835,8 @@
             } catch (_) {}
           }
         }
-        if (window.electronAPI.storageSaveSync && window.__RIFF_STORAGE_MAP__) {
-          try { window.electronAPI.storageSaveSync(window.__RIFF_STORAGE_MAP__); } catch (_) {}
+        if (window.electronAPI.storageSaveSync && window.__CREMO_STORAGE_MAP__) {
+          try { window.electronAPI.storageSaveSync(window.__CREMO_STORAGE_MAP__); } catch (_) {}
         }
       }
       showToast('Account imported! Restarting...', 'success');

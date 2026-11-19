@@ -670,7 +670,7 @@
             <div class="row" title="Show the My files tab for music stored on your computer">
               <div class="row-icon"><svg viewBox="0 0 24 24"><path d="M10 4H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2h-8l-2-2z"/></svg></div>
               <div class="row-text"><div class="row-title" data-i18n>Local library</div></div>
-              <button class="sw on" role="switch" aria-checked="true" data-key="riff_show_local"></button>
+              <button class="sw on" role="switch" aria-checked="true" data-key="cremo_show_local"></button>
             </div>
 
             <div class="row" title="Use your own image or video behind the app">
@@ -682,19 +682,19 @@
               <button class="btn small icon secondary is-hidden" id="bgPickBtn" title="Choose file">
                 <svg viewBox="0 0 24 24"><path d="M20 6h-8l-2-2H4c-1.1 0-1.99.9-1.99 2L2 18c0 1.1.9 2 2 2h16c1.1 0 2-.9 2-2V8c0-1.1-.9-2-2-2zm0 12H4V8h16v10z"/></svg>
               </button>
-              <button class="sw" role="switch" aria-checked="false" data-key="riff_custom_bg_enabled"></button>
+              <button class="sw" role="switch" aria-checked="false" data-key="cremo_custom_bg_enabled"></button>
             </div>
 
             <div class="row" title="Keep the normal arrow instead of the hand on buttons">
               <div class="row-icon"><svg viewBox="0 0 24 24"><path d="M21 3L3 10.53v.98l6.84 2.65L12.49 21h.98L21 3z"/></svg></div>
               <div class="row-text"><div class="row-title" data-i18n>Arrow cursor</div></div>
-              <button class="sw" role="switch" aria-checked="false" data-key="riff_no_hand_cursor"></button>
+              <button class="sw" role="switch" aria-checked="false" data-key="cremo_no_hand_cursor"></button>
             </div>
 
             <div class="row" title="Turn off blur and heavy animations on slower computers">
               <div class="row-icon"><svg viewBox="0 0 24 24"><path d="M20.38 8.57l-1.23 1.85a8 8 0 0 1-.22 7.58H5.07A8 8 0 0 1 15.58 6.85l1.85-1.23A10 10 0 0 0 3.35 19a2 2 0 0 0 1.72 1h13.85a2 2 0 0 0 1.74-1 10 10 0 0 0-.27-10.44zm-9.79 6.84a2 2 0 0 0 2.83 0l5.66-8.49-8.49 5.66a2 2 0 0 0 0 2.83z"/></svg></div>
               <div class="row-text"><div class="row-title" data-i18n>Performance mode</div></div>
-              <button class="sw" role="switch" aria-checked="false" data-key="riff_perf_mode"></button>
+              <button class="sw" role="switch" aria-checked="false" data-key="cremo_perf_mode"></button>
             </div>
           </div>
         </div>
@@ -711,7 +711,7 @@
 
           <div class="rows">
             <div class="row">
-              <div class="launcher-tile"><img src="../../assets/riff.svg" alt="" onerror="this.onerror=null; this.style.display='none';"></div>
+              <div class="launcher-tile"><img src="../../assets/cremo.svg" alt="" onerror="this.onerror=null; this.style.display='none';"></div>
               <div class="row-text">
                 <div class="row-title">Cremo</div>
                 <div class="row-sub" data-i18n>Music player</div>
@@ -856,7 +856,7 @@
         if (!port) return { success: false, error: 'Cremo server is not available here' };
         try {
           const res = await fetch(`http://127.0.0.1:${port}/api/spotify-import?url=${encodeURIComponent(url)}`, {
-            headers: { 'X-Riff-Token': this.api?.serverToken || '' }
+            headers: { 'X-Cremo-Token': this.api?.serverToken || '' }
           });
           return await res.json();
         } catch (e) {
@@ -1040,8 +1040,8 @@
       toggles[key] = on;
       bridge.set(key, on ? '1' : '0');
 
-      if (key === 'riff_no_hand_cursor') document.body.classList.toggle('no-hand-cursor', on);
-      if (key === 'riff_custom_bg_enabled') bgPickBtn.classList.toggle('is-hidden', !on);
+      if (key === 'cremo_no_hand_cursor') document.body.classList.toggle('no-hand-cursor', on);
+      if (key === 'cremo_custom_bg_enabled') bgPickBtn.classList.toggle('is-hidden', !on);
     }
 
     document.querySelectorAll('.sw[data-key]').forEach((sw) => {
@@ -1057,7 +1057,7 @@
       const picked = await bridge.pickMedia();
       if (!picked) return;
       bgUrl = picked;
-      bridge.set('riff_welcome_bg', bgUrl);
+      bridge.set('cremo_welcome_bg', bgUrl);
       bgSub.textContent = bgDisplayName(bgUrl);
     });
 
@@ -1080,7 +1080,7 @@
       discordOn = discordSwitch.classList.toggle('on');
       discordSwitch.setAttribute('aria-checked', discordOn ? 'true' : 'false');
       bridge.discordSetEnabled(discordOn);
-      bridge.set('riff_discord_rpc', discordOn ? '1' : '0');
+      bridge.set('cremo_discord_rpc', discordOn ? '1' : '0');
       refreshDiscord();
       if (discordOn) setTimeout(refreshDiscord, 1800);
     });
@@ -1204,12 +1204,12 @@
         spotify: pendingImport
       };
 
-      bridge.set('riff_welcome_theme', JSON.stringify(detail.theme));
-      bridge.set('riff_welcome_done', '1');
+      bridge.set('cremo_welcome_theme', JSON.stringify(detail.theme));
+      bridge.set('cremo_welcome_done', '1');
 
       setTimeout(() => {
         card.classList.add('closing');
-        window.dispatchEvent(new CustomEvent('riff:welcome-done', { detail }));
+        window.dispatchEvent(new CustomEvent('cremo:welcome-done', { detail }));
         setTimeout(() => bridge.finish(detail), 400);
       }, 600);
     }
@@ -1370,7 +1370,7 @@
     ];
 
     async function translateWelcome(lang) {
-      bridge.set('riff_ui_lang', lang);
+      bridge.set('cremo_ui_lang', lang);
       const found = TRANSLATION_LANGUAGES.find(l => l.code === lang);
       const langBtnLabel = document.getElementById('langBtnLabel');
       if (langBtnLabel) {
@@ -1418,7 +1418,7 @@
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
-            'X-Riff-Token': token
+            'X-Cremo-Token': token
           },
           body: JSON.stringify({ target: lang, texts })
         });
@@ -1450,7 +1450,7 @@
     const langSearch = document.getElementById('langSearch');
     const langList = document.getElementById('langList');
 
-    const curLang = bridge.get('riff_ui_lang', 'en');
+    const curLang = bridge.get('cremo_ui_lang', 'en');
     const foundCur = TRANSLATION_LANGUAGES.find(l => l.code === curLang);
     const langBtnLabelInit = document.getElementById('langBtnLabel');
     if (foundCur && langBtnLabelInit) {

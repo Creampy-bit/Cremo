@@ -142,7 +142,7 @@ window.updateLyricsBadge = updateLyricsBadge;
   }
 
   async function fetchAndUpgradeWords(title, artist, trackId, token) {
-    const wordSource = localStorage.getItem('riff_word_source') || 'auto';
+    const wordSource = localStorage.getItem('cremo_word_source') || 'auto';
     if (wordSource === 'estimate') return;
 
     const cachedWords = wordsSessionCache.get(trackId);
@@ -345,7 +345,7 @@ window.updateLyricsBadge = updateLyricsBadge;
     if (panel && warnEl.parentElement !== panel) {
       panel.appendChild(warnEl);
     }
-    if (localStorage.getItem('riff_show_lyrics_warnings') === '0' || !warnEl || !msg) {
+    if (localStorage.getItem('cremo_show_lyrics_warnings') === '0' || !warnEl || !msg) {
       warnEl.classList.add('hidden');
       warnEl.classList.remove('warn-animate');
       return;
@@ -441,7 +441,7 @@ window.updateLyricsBadge = updateLyricsBadge;
     if (typeof renderMiniLyrics === 'function') renderMiniLyrics();
 
     try {
-      const source = localStorage.getItem('riff_lyrics_source') || 'auto';
+      const source = localStorage.getItem('cremo_lyrics_source') || 'auto';
       const trackId = (state.currentTrack && state.currentTrack.id) || `${artist}:${title}`;
       const lyricsCacheKey = `${trackId}:${source}`;
 
@@ -713,7 +713,7 @@ window.updateLyricsBadge = updateLyricsBadge;
     }
   }
 
-  function getLyricsWordStyle() { return localStorage.getItem('riff_lyrics_word_style') === 'words' ? 'words' : 'gradient'; }
+  function getLyricsWordStyle() { return localStorage.getItem('cremo_lyrics_word_style') === 'words' ? 'words' : 'gradient'; }
   function isGradientMode() { return state.lyricsMode === 'word' && getAdv('karaoke_words', true) && getLyricsWordStyle() === 'gradient'; }
 
   var LYRIC_STOP_WORDS = new Set([
@@ -1247,7 +1247,7 @@ window.updateLyricsBadge = updateLyricsBadge;
     '[data-i18n]',
     '.setting-name',
     '.setting-hint',
-    '.setting-item-top div > span:not(.setting-name):not(.riff-beta-badge)',
+    '.setting-item-top div > span:not(.setting-name):not(.cremo-beta-badge)',
     '.setting-item > div:not([class]):not(:has(*))',
     '.setting-hints > span',
     '.customizer-box > div:first-child',
@@ -1290,12 +1290,12 @@ window.updateLyricsBadge = updateLyricsBadge;
     '#my-wave-focused-title', '#my-wave-focused-artist', '#jump-focused-title', '#jump-focused-artist',
     '#favorites-subtitle', '#local-subtitle', '.setting-value', '.time-label',
     '.track-row', '.sp-card', '.sb-lib-row', '.np-queue-row', '#lyrics-container',
-    '.riff-hero-title', '.settings-version-tag', '#about-version'
+    '.cremo-hero-title', '.settings-version-tag', '#about-version'
   ].join(', ');
 
   var PROTECTED_BRAND_TEXTS = new Set([
-    'riff', 'youtube', 'youtube music', 'soundcloud', 'spotify', 'apple music',
-    'deezer', 'yandex music', 'discord rpc', 'last.fm', 'lrclib', 'musixmatch',
+    'cremo', 'youtube', 'youtube music', 'soundcloud', 'spotify', 'apple music',
+    'deezer', 'discord rpc', 'last.fm', 'lrclib', 'musixmatch',
     'kugou lrc', 'netease', 'genius', 'google sans', 'sf pro', 'lucide crisp',
     'solar duotone', 'yt-dlp', 'ffmpeg', 'beta', 'new', 'mp3', 'flac', 'm4a', 'opus', 'wav'
   ]);
@@ -1378,9 +1378,9 @@ window.updateLyricsBadge = updateLyricsBadge;
       'Display composer, lyricist, producer, and audio source in right panel': 'Отображать композитора, автора текста, продюсера и источник аудио в правой панели',
       'Show track source logo next to artist': 'Показывать логотип источника рядом с артистом',
       'Show platform badge next to artist in track lists and player bar': 'Показывать значок платформы рядом с артистом в списках треков и плеере',
-      'Riff Library': 'Библиотека Riff',
+      'Cremo Library': 'Библиотека Cremo',
       'Combines YouTube Music and SoundCloud into a single unified search source': 'Объединяет YouTube Music и SoundCloud в единый источник поиска',
-      'Riff Library hybrid streaming': 'Гибридный стриминг Riff Library',
+      'Cremo Library hybrid streaming': 'Гибридный стриминг Cremo Library',
       'Cross-fallback and race YouTube Music and SoundCloud streams during playback': 'Перекрёстный фолбэк и параллельный запрос потоков YouTube Music и SoundCloud при воспроизведении',
       'Audio source': 'Источник аудио',
       'Performed by': 'Исполнитель',
@@ -1411,12 +1411,11 @@ window.updateLyricsBadge = updateLyricsBadge;
       'Display name': 'Отображаемое имя',
       'Reset avatar': 'Сбросить аватар',
       'Account backup (.rfacc)': 'Резервная копия аккаунта (.rfacc)',
-      'Export Riff account (.rfacc)': 'Экспорт аккаунта Riff (.rfacc)',
-      'Import Riff account (.rfacc)': 'Импорт аккаунта Riff (.rfacc)',
+      'Export Cremo account (.rfacc)': 'Экспорт аккаунта Cremo (.rfacc)',
+      'Import Cremo account (.rfacc)': 'Импорт аккаунта Cremo (.rfacc)',
       'Save your profile, playlists, favorites, history, and settings to a file': 'Сохраните профиль, плейлисты, избранное, историю и настройки в файл',
-      'Restore your entire Riff account from a .rfacc backup file': 'Восстановите весь аккаунт Riff из файла резервной копии .rfacc',
+      'Restore your entire Cremo account from a .rfacc backup file': 'Восстановите весь аккаунт Cremo из файла резервной копии .rfacc',
       'Connected services & integrations': 'Подключённые сервисы и интеграции',
-      'Manage Spotify, YouTube, Last.fm, Yandex Music, and Discord RPC': 'Управление Spotify, YouTube, Last.fm, Яндекс Музыкой и Discord RPC',
       'Open Integrations': 'Открыть интеграции',
       'Interface language': 'Язык интерфейса',
       'Hide top titlebar': 'Скрыть верхнюю панель окна',
@@ -1541,7 +1540,7 @@ window.updateLyricsBadge = updateLyricsBadge;
       'Show visualizer in Now Playing panel': 'Визуализатор в панели Now Playing',
       'Remove from playlist': 'Удалить из плейлиста',
       'Remove from queue': 'Удалить из очереди',
-      'Remove from Riff': 'Удалить из Riff',
+      'Remove from Cremo': 'Удалить из Cremo',
       'Favorite': 'В избранное',
       'Remove from Favorites': 'Удалить из избранного',
       'Pin to top': 'Закрепить наверху',
@@ -1610,9 +1609,9 @@ window.updateLyricsBadge = updateLyricsBadge;
       'Block': 'Заблокувати',
       'Blocked': 'Заблоковано',
       'About the artist': 'Про виконавця',
-      'Riff Library': 'Бібліотека Riff',
+      'Cremo Library': 'Бібліотека Cremo',
       'Combines YouTube Music and SoundCloud into a single unified search source': 'Об’єднує YouTube Music та SoundCloud в єдине джерело пошуку',
-      'Riff Library hybrid streaming': 'Гібридний стрімінг Riff Library',
+      'Cremo Library hybrid streaming': 'Гібридний стрімінг Cremo Library',
       'Cross-fallback and race YouTube Music and SoundCloud streams during playback': 'Перехресний фолбек і паралельний запит потоків YouTube Music та SoundCloud при відтворенні',
       'Play': 'Слухати',
       'Download all': 'Завантажити все',
@@ -1635,12 +1634,11 @@ window.updateLyricsBadge = updateLyricsBadge;
       'Display name': 'Імʼя користувача',
       'Reset avatar': 'Скинути аватар',
       'Account backup (.rfacc)': 'Резервна копія акаунту (.rfacc)',
-      'Export Riff account (.rfacc)': 'Експорт акаунту Riff (.rfacc)',
-      'Import Riff account (.rfacc)': 'Імпорт акаунту Riff (.rfacc)',
+      'Export Cremo account (.rfacc)': 'Експорт акаунту Cremo (.rfacc)',
+      'Import Cremo account (.rfacc)': 'Імпорт акаунту Cremo (.rfacc)',
       'Save your profile, playlists, favorites, history, and settings to a file': 'Збережіть профіль, плейлісти, улюблене, історію та налаштування у файл',
-      'Restore your entire Riff account from a .rfacc backup file': 'Відновіть увесь акаунт Riff з файлу резервної копії .rfacc',
+      'Restore your entire Cremo account from a .rfacc backup file': 'Відновіть увесь акаунт Cremo з файлу резервної копії .rfacc',
       'Connected services & integrations': 'Підключені сервіси та інтеграції',
-      'Manage Spotify, YouTube, Last.fm, Yandex Music, and Discord RPC': 'Керування Spotify, YouTube, Last.fm, Яндекс Музикою та Discord RPC',
       'Open Integrations': 'Відкрити інтеграції',
       'Interface language': 'Мова інтерфейсу',
       'Hide top titlebar': 'Приховати верхню панель вікна',
@@ -1687,7 +1685,7 @@ window.updateLyricsBadge = updateLyricsBadge;
       'Recommendations reset': 'Рекомендації скинуто',
       'Remove from playlist': 'Видалити з плейлиста',
       'Remove from queue': 'Видалити з черги',
-      'Remove from Riff': 'Видалити з Riff',
+      'Remove from Cremo': 'Видалити з Cremo',
       'Favorite': 'В обране',
       'Remove from Favorites': 'Видалити з обраного',
       'Pin to top': 'Закріпити вгорі',
@@ -1756,7 +1754,7 @@ window.updateLyricsBadge = updateLyricsBadge;
 
     const texts = state.syncedLyrics.map(l => l.text);
     try {
-      const deeplKey = localStorage.getItem('riff_deepl_api_key') || '';
+      const deeplKey = localStorage.getItem('cremo_deepl_api_key') || '';
       const res = await fetch(`http://127.0.0.1:${state.serverPort}/api/translate`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
@@ -1870,11 +1868,11 @@ window.updateLyricsBadge = updateLyricsBadge;
     linear: { css: 'linear', fn: (t) => t }
   };
   function getLyricsEase() {
-    const v = localStorage.getItem('riff_lyrics_ease');
+    const v = localStorage.getItem('cremo_lyrics_ease');
     return LYRIC_EASINGS[v] ? v : 'inout';
   }
   function getLyricsSpeed() {
-    const v = parseFloat(localStorage.getItem('riff_lyrics_speed'));
+    const v = parseFloat(localStorage.getItem('cremo_lyrics_speed'));
     return (v >= 0.5 && v <= 2.5) ? v : 1.0;
   }
   function applyLyricsEase() {
@@ -1885,7 +1883,7 @@ window.updateLyricsBadge = updateLyricsBadge;
     document.documentElement.style.setProperty('--lyric-duration', `${(baseDuration / speed).toFixed(2)}s`);
   }
   function getLyricsGradientTightness() {
-    const v = parseInt(localStorage.getItem('riff_lyrics_gradient_tightness') || localStorage.getItem('riff_gradient_tight'), 10);
+    const v = parseInt(localStorage.getItem('cremo_lyrics_gradient_tightness') || localStorage.getItem('cremo_gradient_tight'), 10);
     return (v >= 0 && v <= 40) ? v : 2;
   }
   function applyLyricsGradientTightness() {
@@ -2971,7 +2969,7 @@ window.updateLyricsBadge = updateLyricsBadge;
   document.addEventListener('visibilitychange', syncTvkAmbientPlayback);
 
   function getTvkLyricsStatusText() {
-    const lang = localStorage.getItem('riff_ui_lang') || 'en';
+    const lang = localStorage.getItem('cremo_ui_lang') || 'en';
     const isRu = lang === 'ru';
     if (state.isLoadingLyrics || !state.lyricsLoaded) {
       return '';
@@ -3383,15 +3381,15 @@ window.updateLyricsBadge = updateLyricsBadge;
   var btnTvkCoverMode = document.getElementById('btn-tvk-cover-mode');
   if (btnTvkCoverMode && el.tvKaraoke) {
     const applyCoverMode = () => {
-      const on = localStorage.getItem('riff_tvk_cover_mode') === '1';
+      const on = localStorage.getItem('cremo_tvk_cover_mode') === '1';
       el.tvKaraoke.classList.toggle('tv-cover-mode', on);
       btnTvkCoverMode.classList.toggle('active', on);
     };
     applyCoverMode();
     btnTvkCoverMode.addEventListener('click', (e) => {
       e.stopPropagation();
-      const on = localStorage.getItem('riff_tvk_cover_mode') !== '1';
-      localStorage.setItem('riff_tvk_cover_mode', on ? '1' : '0');
+      const on = localStorage.getItem('cremo_tvk_cover_mode') !== '1';
+      localStorage.setItem('cremo_tvk_cover_mode', on ? '1' : '0');
       applyCoverMode();
       resetTvIdleTimer();
     });
@@ -3530,7 +3528,7 @@ window.updateLyricsBadge = updateLyricsBadge;
 
   function getTvk() {
     try {
-      const raw = localStorage.getItem('riff_tvk');
+      const raw = localStorage.getItem('cremo_tvk');
       if (raw) {
         const parsed = JSON.parse(raw);
         let font = parsed.font || 'Google Sans';
@@ -3555,13 +3553,13 @@ window.updateLyricsBadge = updateLyricsBadge;
 
   function saveTvk(settings) {
     try {
-      localStorage.setItem('riff_tvk', JSON.stringify(settings));
+      localStorage.setItem('cremo_tvk', JSON.stringify(settings));
     } catch (_) {}
   }
 
   function updateTvkVisualizerSetting(enabled) {
     const on = enabled !== false && enabled !== 'false';
-    localStorage.setItem('riff_tvk_visualizer', on ? 'true' : 'false');
+    localStorage.setItem('cremo_tvk_visualizer', on ? 'true' : 'false');
     const tv = document.getElementById('tv-karaoke');
     if (tv) {
       tv.classList.toggle('no-tvk-visualizer', !on);
@@ -3578,7 +3576,7 @@ window.updateLyricsBadge = updateLyricsBadge;
 
   function updateTvkVisualizerLyricsSetting(enabled) {
     const on = enabled !== false && enabled !== 'false';
-    localStorage.setItem('riff_tvk_visualizer_lyrics', on ? 'true' : 'false');
+    localStorage.setItem('cremo_tvk_visualizer_lyrics', on ? 'true' : 'false');
     const tv = document.getElementById('tv-karaoke');
     if (tv) {
       tv.classList.toggle('tvk-show-lyrics-visualizer', on);
@@ -3597,7 +3595,7 @@ window.updateLyricsBadge = updateLyricsBadge;
     let val = parseInt(opacityVal, 10);
     if (isNaN(val)) val = 85;
     val = Math.max(10, Math.min(100, val));
-    localStorage.setItem('riff_tvk_visualizer_opacity', val.toString());
+    localStorage.setItem('cremo_tvk_visualizer_opacity', val.toString());
 
     const norm = (val / 100).toFixed(2);
     const tv = document.getElementById('tv-karaoke');
@@ -3650,13 +3648,13 @@ window.updateLyricsBadge = updateLyricsBadge;
     tv.setAttribute('data-tvk-anim', anim);
     tv.setAttribute('data-tvk-align', align);
 
-    const tvkVisOn = localStorage.getItem('riff_tvk_visualizer') !== 'false';
+    const tvkVisOn = localStorage.getItem('cremo_tvk_visualizer') !== 'false';
     tv.classList.toggle('no-tvk-visualizer', !tvkVisOn);
-    const tvkVisLyricsOn = localStorage.getItem('riff_tvk_visualizer_lyrics') !== 'false';
+    const tvkVisLyricsOn = localStorage.getItem('cremo_tvk_visualizer_lyrics') !== 'false';
     tv.classList.toggle('tvk-show-lyrics-visualizer', tvkVisLyricsOn);
-    const visOpacity = parseInt(localStorage.getItem('riff_tvk_visualizer_opacity') || '85', 10);
+    const visOpacity = parseInt(localStorage.getItem('cremo_tvk_visualizer_opacity') || '85', 10);
     tv.style.setProperty('--tvk-vis-opacity', (Math.max(10, Math.min(100, visOpacity)) / 100).toFixed(2));
-    const bgBlur = parseInt(localStorage.getItem('riff_tvk_bg_blur') || '22', 10);
+    const bgBlur = parseInt(localStorage.getItem('cremo_tvk_bg_blur') || '22', 10);
     tv.style.setProperty('--tvk-bg-blur', `${Math.max(0, Math.min(60, bgBlur))}px`);
     tv.classList.toggle('no-bg-blur', bgBlur <= 1);
     syncTvkAmbientBg();
@@ -3729,13 +3727,13 @@ window.updateLyricsBadge = updateLyricsBadge;
     if (sliderViscosity) { sliderViscosity.value = viscVal; updateRangeProg(sliderViscosity); }
     if (valViscosity) valViscosity.textContent = `${(viscVal / 1000).toFixed(2)}s`;
 
-    const tvkVisOn = localStorage.getItem('riff_tvk_visualizer') !== 'false';
+    const tvkVisOn = localStorage.getItem('cremo_tvk_visualizer') !== 'false';
     const btnTvkVis = document.getElementById('btn-tvk-visualizer');
     if (btnTvkVis) btnTvkVis.classList.toggle('active', tvkVisOn);
     const btnTvkVisSetting = document.getElementById('btn-tvk-visualizer-setting');
     if (btnTvkVisSetting) btnTvkVisSetting.classList.toggle('active', tvkVisOn);
 
-    const tvkVisLyricsOn = localStorage.getItem('riff_tvk_visualizer_lyrics') !== 'false';
+    const tvkVisLyricsOn = localStorage.getItem('cremo_tvk_visualizer_lyrics') !== 'false';
     const btnTvkVisLyrics = document.getElementById('btn-tvk-visualizer-lyrics');
     if (btnTvkVisLyrics) btnTvkVisLyrics.classList.toggle('active', tvkVisLyricsOn);
     const btnTvkVisLyricsSetting = document.getElementById('btn-tvk-visualizer-lyrics-setting');
@@ -3744,7 +3742,7 @@ window.updateLyricsBadge = updateLyricsBadge;
     const tvkVizStyleDropEl = document.getElementById('tvk-viz-style-dropdown');
     if (tvkVizStyleDropEl) tvkVizStyleDropEl.value = getVizStyle();
 
-    const visOpacity = parseInt(localStorage.getItem('riff_tvk_visualizer_opacity') || '85', 10);
+    const visOpacity = parseInt(localStorage.getItem('cremo_tvk_visualizer_opacity') || '85', 10);
     const sliderTvkVisOpacity = document.getElementById('tvk-vis-opacity');
     if (sliderTvkVisOpacity) { sliderTvkVisOpacity.value = visOpacity; updateRangeProg(sliderTvkVisOpacity); }
     const valTvkVisOpacity = document.getElementById('val-tvk-vis-opacity');
@@ -3755,7 +3753,7 @@ window.updateLyricsBadge = updateLyricsBadge;
     const valTvkVisOpacitySetting = document.getElementById('val-tvk-vis-opacity-setting');
     if (valTvkVisOpacitySetting) valTvkVisOpacitySetting.textContent = `${visOpacity}%`;
 
-    const bgBlur = parseInt(localStorage.getItem('riff_tvk_bg_blur') || '22', 10);
+    const bgBlur = parseInt(localStorage.getItem('cremo_tvk_bg_blur') || '22', 10);
     const sliderTvkBgBlur = document.getElementById('tvk-bg-blur');
     if (sliderTvkBgBlur) { sliderTvkBgBlur.value = bgBlur; updateRangeProg(sliderTvkBgBlur); }
     const valTvkBgBlur = document.getElementById('val-tvk-bg-blur');
@@ -3768,9 +3766,9 @@ window.updateLyricsBadge = updateLyricsBadge;
   }
 
   function initTvk() {
-    if (localStorage.getItem('riff_tvk_blur_reset_v1') !== '1') {
-      localStorage.setItem('riff_tvk_blur_reset_v1', '1');
-      localStorage.setItem('riff_tvk_bg_blur', '22');
+    if (localStorage.getItem('cremo_tvk_blur_reset_v1') !== '1') {
+      localStorage.setItem('cremo_tvk_blur_reset_v1', '1');
+      localStorage.setItem('cremo_tvk_bg_blur', '22');
     }
 
     const btnSettings = document.getElementById('btn-tvk-settings');
@@ -3989,14 +3987,14 @@ window.updateLyricsBadge = updateLyricsBadge;
     const btnTvkVis = document.getElementById('btn-tvk-visualizer');
     if (btnTvkVis) {
       btnTvkVis.addEventListener('click', () => {
-        const cur = localStorage.getItem('riff_tvk_visualizer') !== 'false';
+        const cur = localStorage.getItem('cremo_tvk_visualizer') !== 'false';
         updateTvkVisualizerSetting(!cur);
       });
     }
     const btnTvkVisSetting = document.getElementById('btn-tvk-visualizer-setting');
     if (btnTvkVisSetting) {
       btnTvkVisSetting.addEventListener('click', () => {
-        const cur = localStorage.getItem('riff_tvk_visualizer') !== 'false';
+        const cur = localStorage.getItem('cremo_tvk_visualizer') !== 'false';
         updateTvkVisualizerSetting(!cur);
       });
     }
@@ -4004,14 +4002,14 @@ window.updateLyricsBadge = updateLyricsBadge;
     const btnTvkVisLyrics = document.getElementById('btn-tvk-visualizer-lyrics');
     if (btnTvkVisLyrics) {
       btnTvkVisLyrics.addEventListener('click', () => {
-        const cur = localStorage.getItem('riff_tvk_visualizer_lyrics') !== 'false';
+        const cur = localStorage.getItem('cremo_tvk_visualizer_lyrics') !== 'false';
         updateTvkVisualizerLyricsSetting(!cur);
       });
     }
     const btnTvkVisLyricsSetting = document.getElementById('btn-tvk-visualizer-lyrics-setting');
     if (btnTvkVisLyricsSetting) {
       btnTvkVisLyricsSetting.addEventListener('click', () => {
-        const cur = localStorage.getItem('riff_tvk_visualizer_lyrics') !== 'false';
+        const cur = localStorage.getItem('cremo_tvk_visualizer_lyrics') !== 'false';
         updateTvkVisualizerLyricsSetting(!cur);
       });
     }
@@ -4050,7 +4048,7 @@ window.updateLyricsBadge = updateLyricsBadge;
     let tvkBlurDebounceTimer = null;
     const updateTvkBgBlur = (v, immediate = false) => {
       const val = Math.max(0, Math.min(60, parseInt(v, 10) || 0));
-      localStorage.setItem('riff_tvk_bg_blur', String(val));
+      localStorage.setItem('cremo_tvk_bg_blur', String(val));
       syncTvkBgBlurUI(val);
       applyTvk();
       if (immediate) {
@@ -4063,7 +4061,7 @@ window.updateLyricsBadge = updateLyricsBadge;
         }, 40);
       }
     };
-    syncTvkBgBlurUI(parseInt(localStorage.getItem('riff_tvk_bg_blur') || '22', 10));
+    syncTvkBgBlurUI(parseInt(localStorage.getItem('cremo_tvk_bg_blur') || '22', 10));
     [sliderTvkBgBlur, sliderTvkBgBlurSetting].forEach(s => {
       if (!s) return;
       s.addEventListener('input', (e) => updateTvkBgBlur(e.target.value, false));
@@ -4074,7 +4072,7 @@ window.updateLyricsBadge = updateLyricsBadge;
     const valVizSmooth = document.getElementById('val-viz-smooth');
     const sliderBarVizSmooth = document.getElementById('slider-bar-viz-smooth');
     const valBarVizSmooth = document.getElementById('val-bar-viz-smooth');
-    const initialVizSmooth = localStorage.getItem('riff_viz_smooth') || '55';
+    const initialVizSmooth = localStorage.getItem('cremo_viz_smooth') || '55';
     function syncSmooth(v) {
       if (sliderVizSmooth) sliderVizSmooth.value = v;
       if (valVizSmooth) valVizSmooth.textContent = `${v}%`;
@@ -4084,7 +4082,7 @@ window.updateLyricsBadge = updateLyricsBadge;
     syncSmooth(initialVizSmooth);
     const onSmoothInput = (e) => {
       const v = e.target.value;
-      localStorage.setItem('riff_viz_smooth', v);
+      localStorage.setItem('cremo_viz_smooth', v);
       syncSmooth(v);
     };
     if (sliderVizSmooth) {
@@ -4100,7 +4098,7 @@ window.updateLyricsBadge = updateLyricsBadge;
     const valVizSens = document.getElementById('val-viz-sens');
     const sliderBarVizSens = document.getElementById('slider-bar-viz-sens');
     const valBarVizSens = document.getElementById('val-bar-viz-sens');
-    const initialVizSens = localStorage.getItem('riff_viz_sens') || '100';
+    const initialVizSens = localStorage.getItem('cremo_viz_sens') || '100';
     function syncSens(v) {
       if (sliderVizSens) sliderVizSens.value = v;
       if (valVizSens) valVizSens.textContent = `${v}%`;
@@ -4110,7 +4108,7 @@ window.updateLyricsBadge = updateLyricsBadge;
     syncSens(initialVizSens);
     const onSensInput = (e) => {
       const v = e.target.value;
-      localStorage.setItem('riff_viz_sens', v);
+      localStorage.setItem('cremo_viz_sens', v);
       syncSens(v);
     };
     if (sliderVizSens) {
@@ -4495,8 +4493,8 @@ window.updateLyricsBadge = updateLyricsBadge;
   window.positionLyricsCallout = positionLyricsCallout;
 
   function syncOnboardingCallouts() {
-    const lyrDone = localStorage.getItem('riff_lyrics_callout_dismissed_v1') === '1';
-    const audDone = localStorage.getItem('riff_audio_callout_dismissed_v1') === '1';
+    const lyrDone = localStorage.getItem('cremo_lyrics_callout_dismissed_v1') === '1';
+    const audDone = localStorage.getItem('cremo_audio_callout_dismissed_v1') === '1';
     const lyrEl = document.getElementById('lyrics-here-callout');
     const audEl = document.getElementById('audio-editor-callout');
 
@@ -4522,7 +4520,7 @@ window.updateLyricsBadge = updateLyricsBadge;
     const dismissLyrics = (e) => {
       if (e && e.stopPropagation) e.stopPropagation();
       try {
-        localStorage.setItem('riff_lyrics_callout_dismissed_v1', '1');
+        localStorage.setItem('cremo_lyrics_callout_dismissed_v1', '1');
         if (typeof flushAsync === 'function') flushAsync();
         else if (typeof flushSync === 'function') flushSync();
       } catch (_) {}
@@ -4532,7 +4530,7 @@ window.updateLyricsBadge = updateLyricsBadge;
     const dismissAudio = (e) => {
       if (e && e.stopPropagation) e.stopPropagation();
       try {
-        localStorage.setItem('riff_audio_callout_dismissed_v1', '1');
+        localStorage.setItem('cremo_audio_callout_dismissed_v1', '1');
         if (typeof flushAsync === 'function') flushAsync();
         else if (typeof flushSync === 'function') flushSync();
       } catch (_) {}
@@ -4550,11 +4548,11 @@ window.updateLyricsBadge = updateLyricsBadge;
   function initLyricsWarningsSetting() {
     const btn = document.getElementById('btn-lyrics-warnings');
     if (!btn) return;
-    const isEnabled = localStorage.getItem('riff_show_lyrics_warnings') !== '0';
+    const isEnabled = localStorage.getItem('cremo_show_lyrics_warnings') !== '0';
     btn.classList.toggle('active', isEnabled);
     btn.addEventListener('click', () => {
       const next = btn.classList.toggle('active');
-      localStorage.setItem('riff_show_lyrics_warnings', next ? '1' : '0');
+      localStorage.setItem('cremo_show_lyrics_warnings', next ? '1' : '0');
       if (state.currentTrack) {
         loadSyncedLyrics(state.currentTrack.title, state.currentTrack.artist, state.loadToken);
       } else {

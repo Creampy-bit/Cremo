@@ -11,7 +11,7 @@ function dismissBootSkeleton() {
 }
 setTimeout(dismissBootSkeleton, 600);
 
-var homeNextToSearch = localStorage.getItem('riff_home_next_to_search') !== '0';
+var homeNextToSearch = localStorage.getItem('cremo_home_next_to_search') !== '0';
 document.body.classList.toggle('home-next-to-search', homeNextToSearch);
 
 document.addEventListener('DOMContentLoaded', async () => {
@@ -29,18 +29,18 @@ document.addEventListener('DOMContentLoaded', async () => {
     if (typeof checkToolsStatus === 'function') checkToolsStatus(false);
   };
 
-  if (window.__riffSplashDone) {
+  if (window.__cremoSplashDone) {
     setTimeout(runDeferredStartup, 50);
   } else {
-    window.addEventListener('riff-splash-done', () => setTimeout(runDeferredStartup, 40), { once: true });
+    window.addEventListener('cremo-splash-done', () => setTimeout(runDeferredStartup, 40), { once: true });
     setTimeout(runDeferredStartup, 1000);
   }
 
   requestAnimationFrame(() => {
     document.body.classList.remove('app-skeleton-boot');
     dismissBootSkeleton();
-    window.__riffSplashDone = true;
-    window.dispatchEvent(new CustomEvent('riff-splash-done'));
+    window.__cremoSplashDone = true;
+    window.dispatchEvent(new CustomEvent('cremo-splash-done'));
   });
 });
 

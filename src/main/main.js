@@ -17,14 +17,47 @@ const {
   refreshAccessToken
 } = require('./google-oauth');
 const { fetchYouTubeLibrary } = require('./youtube-data');
-const RFACC_KEY = crypto.createHash('sha256').update('riff-account-key-v1').digest();
+// Key for .rfacc account backups (kept as raw bytes so older backups still import).
+const RFACC_KEY = Buffer.from('5b3ce24719518f01c949f34af3ab1acf7dd3918aa4b424571ced1f74576e1fd1', 'hex');
 const APP_ID = 'local.cremo.player';
 const IS_MAC = process.platform === 'darwin';
 
-// Cremo keeps its own profile (%APPDATA%\Cremo), separate from Riff's.
+// Cremo keeps its own profile (%APPDATA%\Cremo).
 app.setPath('userData', path.join(app.getPath('appData'), 'Cremo'));
 app.setName('Cremo');
 if (process.platform === 'win32') app.setAppUserModelId(APP_ID);
+
+// Profiles from before the rename still use the old app name in setting keys and in the
+// Google sign-in session folder. LEGACY_NAME is the only place that old name is kept.
+const LEGACY_NAME = /riff/i;
+const toCremoName = (s) => s.replace(new RegExp(LEGACY_NAME.source, 'gi'),
+  (m) => (m === m.toUpperCase() ? 'CREMO' : m[0] === m[0].toUpperCase() ? 'Cremo' : 'cremo'));
+try {
+  const partitions = path.join(app.getPath('userData'), 'Partitions');
+  const oldGoogle = fs.readdirSync(partitions).find((d) => LEGACY_NAME.test(d) && toCremoName(d) === 'cremo-google');
+  if (oldGoogle && !fs.existsSync(path.join(partitions, 'cremo-google'))) {
+    fs.renameSync(path.join(partitions, oldGoogle), path.join(partitions, 'cremo-google'));
+  }
+} catch (_) {}
+
+// Renames old setting keys in place (an existing Cremo key wins). Returns true if anything changed.
+function migrateLegacyStorage(data) {
+  if (!data || typeof data !== 'object') return false;
+  let changed = false;
+  for (const key of Object.keys(data)) {
+    if (!LEGACY_NAME.test(key)) continue;
+    const next = toCremoName(key);
+    let value = data[key];
+    delete data[key];
+    changed = true;
+    // The old stats key held upstream's stats; Cremo keeps its own under cremo_stats.
+    if (next === 'cremo_stats' || Object.prototype.hasOwnProperty.call(data, next)) continue;
+    // Cached UI translations contain the old app name inside their text.
+    if (next.includes('_i18n_') && typeof value === 'string') value = value.replace(new RegExp('\\b' + LEGACY_NAME.source + '\\b', 'gi'), 'Cremo');
+    data[next] = value;
+  }
+  return changed;
+}
 
 function encryptAccount(dataObj) {
   const jsonStr = typeof dataObj === 'string' ? dataObj : JSON.stringify(dataObj);
@@ -86,7 +119,7 @@ if (process.platform === 'linux') {
   app.commandLine.appendSwitch('ozone-platform-hint', 'auto');
   app.commandLine.appendSwitch('disable-features', 'Vulkan,AudioServiceOutOfProcess,MediaRouter,OptimizationGuideModelDownloading,Translate');
 
-  if (process.env.RIFF_SKIP_GPU_BUFFER_FLAGS !== '1') {
+  if (process.env.CREMO_SKIP_GPU_BUFFER_FLAGS !== '1') {
     app.commandLine.appendSwitch('disable-gpu-memory-buffer-video-frames');
   }
 }
@@ -121,18 +154,18 @@ function performAppMemoryTrim() {
 
 setInterval(performAppMemoryTrim, 180000);
 app.on('ready', () => {
-  const cleanUA = (app.userAgentFallback || '').replace(/\s*Electron\/[^\s]+/gi, '').replace(/\s*riff\/[^\s]+/gi, '');
+  const cleanUA = (app.userAgentFallback || '').replace(/\s*Electron\/[^\s]+/gi, '').replace(/\s*cremo\/[^\s]+/gi, '');
   if (cleanUA) app.userAgentFallback = cleanUA;
 });
 
-const extraFlags = (process.env.RIFF_FLAGS || '').split(';').map((s) => s.trim()).filter(Boolean);
+const extraFlags = (process.env.CREMO_FLAGS || '').split(';').map((s) => s.trim()).filter(Boolean);
 for (const flag of extraFlags) {
   const eq = flag.indexOf('=');
   if (eq > 0) app.commandLine.appendSwitch(flag.slice(0, eq), flag.slice(eq + 1));
   else app.commandLine.appendSwitch(flag);
 }
 
-if (process.env.RIFF_DEBUG === '1') {
+if (process.env.CREMO_DEBUG === '1') {
   app.whenReady().then(async () => {
     console.log('[gpu] features', JSON.stringify(app.getGPUFeatureStatus()));
     try {
@@ -208,7 +241,7 @@ function runGUI() {
         }
       }
     } catch (e) {
-      console.warn('[riff] storage.json read warning:', e.message);
+      console.warn('[cremo] storage.json read warning:', e.message);
     }
     return null;
   }
@@ -233,7 +266,9 @@ function runGUI() {
   let cremoStorageLocked = false; // Cremo: set while restoring a backup
 
   ipcMain.on('storage-get-all-sync', (event) => {
-    event.returnValue = latestStorageSnapshot || readStorageDiskSync();
+    const data = latestStorageSnapshot || readStorageDiskSync();
+    if (migrateLegacyStorage(data)) writeStorageDiskSync(data);
+    event.returnValue = data;
   });
 
   ipcMain.on('storage-save-batch', (event, data) => {
@@ -497,7 +532,7 @@ function runGUI() {
                                    useContentSize: true,
                                    webPreferences: {
                                      preload: path.join(__dirname, 'preload.js'),
-                                   additionalArguments: [`--riff-token=${getServerToken()}`],
+                                   additionalArguments: [`--cremo-token=${getServerToken()}`],
                                    nodeIntegration: false,
                                    contextIsolation: true,
                                    webSecurity: false,
@@ -789,7 +824,7 @@ function runGUI() {
             ? { proxyRules: clean, proxyBypassRules: '<local>,127.0.0.1,localhost' }
             : { mode: 'direct' };
           await session.defaultSession.setProxy(config);
-          const googleSess = session.fromPartition('persist:riff-google');
+          const googleSess = session.fromPartition('persist:cremo-google');
           if (googleSess) await googleSess.setProxy(config);
           return { success: true };
         } catch (e) {
@@ -1441,7 +1476,7 @@ function runGUI() {
       let mediaKeysWanted = true;
       let mediaKeysActive = false;
       const sendMedia = (cmd) => {
-        if (process.env.RIFF_DEBUG === '1') console.log('[media] globalShortcut', cmd);
+        if (process.env.CREMO_DEBUG === '1') console.log('[media] globalShortcut', cmd);
         if (mainWindow && !mainWindow.isDestroyed()) mainWindow.webContents.send('media-command', cmd);
       };
       function unregisterMediaKeys() {
@@ -1586,8 +1621,8 @@ function runGUI() {
           const win = BrowserWindow.fromWebContents(event.sender) || mainWindow;
           const r = await dialog.showSaveDialog(win, {
             title: 'Export Cremo account',
-            defaultPath: 'riff-account.rfacc',
-            filters: [{ name: 'Riff Account (.rfacc)', extensions: ['rfacc'] }]
+            defaultPath: 'cremo-account.rfacc',
+            filters: [{ name: 'Cremo Account (.rfacc)', extensions: ['rfacc'] }]
           });
           if (r.canceled || !r.filePath) return { canceled: true };
           const buffer = encryptAccount(payload || {});
@@ -1604,7 +1639,7 @@ function runGUI() {
           const r = await dialog.showOpenDialog(win, {
             title: 'Import Cremo account',
             properties: ['openFile'],
-            filters: [{ name: 'Riff Account (.rfacc)', extensions: ['rfacc'] }]
+            filters: [{ name: 'Cremo Account (.rfacc)', extensions: ['rfacc'] }]
           });
           if (r.canceled || !r.filePaths || !r.filePaths.length) return { canceled: true };
           const buffer = await fs.promises.readFile(r.filePaths[0]);
@@ -1691,7 +1726,7 @@ function runGUI() {
 
       async function fetchYoutubeUserProfile() {
         try {
-          const s = session.fromPartition('persist:riff-google');
+          const s = session.fromPartition('persist:cremo-google');
           const cookies = await s.cookies.get({});
           const sapisidCookie = Array.isArray(cookies) ? (
             cookies.find(c => c && c.name === 'SAPISID' && c.value) ||
@@ -1769,7 +1804,7 @@ function runGUI() {
         if (youtubeCookieImportPromise) return youtubeCookieImportPromise;
         youtubeCookieImportPromise = (async () => {
           const txt = fs.readFileSync(YT_COOKIES_FILE, 'utf8');
-          const googleSession = session.fromPartition('persist:riff-google');
+          const googleSession = session.fromPartition('persist:cremo-google');
           await googleSession.clearStorageData({ storages: ['cookies'] });
           const rows = txt.split(/\r?\n/);
           for (const row of rows) {
@@ -1815,7 +1850,7 @@ function runGUI() {
       }
 
       async function saveYoutubePlaybackCookies() {
-        const googleSession = session.fromPartition('persist:riff-google');
+        const googleSession = session.fromPartition('persist:cremo-google');
         const cookies = await googleSession.cookies.get({});
         const youtubeCookies = cookies.filter(cookie => {
           const domain = String(cookie.domain || '').replace(/^\./, '').toLowerCase();
@@ -1907,7 +1942,7 @@ function runGUI() {
           });
         }
 
-        const googleSession = session.fromPartition('persist:riff-google');
+        const googleSession = session.fromPartition('persist:cremo-google');
         ensureCleanGoogleSession(googleSession);
 
         return new Promise((resolve) => {
@@ -2017,7 +2052,7 @@ function runGUI() {
           fs.mkdirSync(DATA_DIR, { recursive: true });
           await fs.promises.writeFile(YT_LOGOUT_FLAG, '1', 'utf8');
           await fs.promises.rm(YT_COOKIES_FILE, { force: true });
-          await session.fromPartition('persist:riff-google').clearStorageData({ storages: ['cookies'] });
+          await session.fromPartition('persist:cremo-google').clearStorageData({ storages: ['cookies'] });
           return { success: true, loggedIn: false };
         } catch (error) {
           return { success: false, error: error && error.message ? error.message : 'Could not sign out of YouTube.' };
@@ -2125,14 +2160,14 @@ function runGUI() {
               const actual = Buffer.from(returnedState);
               if (actual.length !== expected.length || !crypto.timingSafeEqual(actual, expected)) {
                 res.writeHead(400, { 'Content-Type': 'text/plain; charset=utf-8' });
-                res.end('Authorization could not be verified. Return to Riff and try again.');
+                res.end('Authorization could not be verified. Return to Cremo and try again.');
                 finish(new Error('Google authorization state did not match'));
                 return;
               }
               const providerError = requestUrl.searchParams.get('error');
               if (providerError) {
                 res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' });
-                res.end('<!doctype html><title>Riff</title><p>Google sign-in was cancelled. You can close this tab and return to Riff.</p>');
+                res.end('<!doctype html><title>Cremo</title><p>Google sign-in was cancelled. You can close this tab and return to Cremo.</p>');
                 finish(new Error(providerError === 'access_denied'
                   ? 'Google sign-in was cancelled'
                   : `Google authorization failed: ${providerError}`));
@@ -2141,12 +2176,12 @@ function runGUI() {
               const code = requestUrl.searchParams.get('code');
               if (!code) {
                 res.writeHead(400, { 'Content-Type': 'text/plain; charset=utf-8' });
-                res.end('Google did not return an authorization code. Return to Riff and try again.');
+                res.end('Google did not return an authorization code. Return to Cremo and try again.');
                 finish(new Error('Google did not return an authorization code'));
                 return;
               }
               res.writeHead(200, { 'Content-Type': 'text/html; charset=utf-8', 'Cache-Control': 'no-store' });
-              res.end('<!doctype html><title>Riff</title><p>Google account connected. You can close this tab and return to Riff.</p>');
+              res.end('<!doctype html><title>Cremo</title><p>Google account connected. You can close this tab and return to Cremo.</p>');
               finish(null, { code });
             };
             server.on('request', onRequest);
@@ -2159,7 +2194,7 @@ function runGUI() {
             codeVerifier
           });
           if (!tokens.refresh_token) {
-            throw new Error('Google did not provide a refresh token. Revoke Riff access in your Google account and try again.');
+            throw new Error('Google did not provide a refresh token. Revoke Cremo access in your Google account and try again.');
           }
           writeGoogleOAuthData({
             accessToken: tokens.access_token,
@@ -2211,7 +2246,7 @@ function runGUI() {
           if (fs.existsSync(GOOGLE_OAUTH_FILE)) fs.unlinkSync(GOOGLE_OAUTH_FILE);
           if (fs.existsSync(YT_COOKIES_FILE)) fs.unlinkSync(YT_COOKIES_FILE);
           if (fs.existsSync(YT_PROFILE_FILE)) fs.unlinkSync(YT_PROFILE_FILE);
-          const s = session.fromPartition('persist:riff-google');
+          const s = session.fromPartition('persist:cremo-google');
           await s.clearStorageData();
         } catch (e) {
           return { success: false, error: e && e.message ? e.message : 'Logout failed' };
@@ -2245,7 +2280,7 @@ function runGUI() {
           await importYoutubeCookiesToSession().catch(() => {});
         }
 
-        const s = session.fromPartition('persist:riff-google');
+        const s = session.fromPartition('persist:cremo-google');
         const cookies = await s.cookies.get({});
         const sapisidCookie = Array.isArray(cookies) ? (
           cookies.find(c => c && c.name === 'SAPISID' && c.value) ||
@@ -2614,7 +2649,7 @@ function runGUI() {
 
       app.whenReady().then(() => {
         if (!fs.existsSync(YT_LOGOUT_FLAG)) exportYoutubeCookiesToDisk().catch(() => {});
-        global.riffSessionFetch = (urlStr, opts) => session.defaultSession.fetch(urlStr, opts);
+        global.cremoSessionFetch = (urlStr, opts) => session.defaultSession.fetch(urlStr, opts);
         if (process.platform === 'darwin' && app.dock) {
           try {
             const dockIcon = nativeImage.createFromPath(path.join(__dirname, '../../assets', 'icon.png'));
@@ -2665,8 +2700,7 @@ function runGUI() {
                 '*://*.spotifycdn.com/*',
                 '*://*.mzstatic.com/*',
                 '*://*.sndcdn.com/*',
-                '*://*.dzcdn.net/*',
-                '*://*.yandex.net/*'
+                '*://*.dzcdn.net/*'
               ]
             },
             (details, callback) => {

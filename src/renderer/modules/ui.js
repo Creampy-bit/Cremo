@@ -148,9 +148,9 @@ window.customThemes = customThemes;
   }
 
   function applyFont(font) {
-    const f = (typeof font === 'string' && font) ? font : (localStorage.getItem('riff_font') || 'google');
+    const f = (typeof font === 'string' && font) ? font : (localStorage.getItem('cremo_font') || 'google');
     if (typeof state !== 'undefined' && state) {
-      state.riffFont = f;
+      state.cremoFont = f;
     }
     if (f === 'inter') {
       ensureInterFontLoaded();
@@ -176,7 +176,7 @@ window.customThemes = customThemes;
   Object.assign(state, {
     selectedTracks: new Map(),
     lastClickedTrackRow: null,
-    platform: localStorage.getItem('riff_platform') || 'ytmusic',
+    platform: localStorage.getItem('cremo_platform') || 'ytmusic',
     currentView: 'discover',
     previousView: 'discover',
     currentPlaylistId: null,
@@ -191,10 +191,10 @@ window.customThemes = customThemes;
     currentTrackIndexInContext: -1,
     isPlaying: false,
     toolsReady: false,
-    isMuted: localStorage.getItem('riff_muted') === '1',
+    isMuted: localStorage.getItem('cremo_muted') === '1',
     volume: savedVolume,
-    isRepeat: localStorage.getItem('riff_repeat') === '1',
-    isShuffle: localStorage.getItem('riff_shuffle') === '1',
+    isRepeat: localStorage.getItem('cremo_repeat') === '1',
+    isShuffle: localStorage.getItem('cremo_shuffle') === '1',
     isAutoRemix: false,
     myWaveActive: false,
     isRadioQueue: false,
@@ -205,18 +205,18 @@ window.customThemes = customThemes;
     isRightPanelOpen: true,
     lyricsMode: 'word',
     uiScale: savedScale,
-    activePresetId: soundPersistenceEnabled ? (localStorage.getItem('riff_active_preset') || 'p_default') : 'p_default',
-    themeMode: ['light', 'dark', 'auto'].includes(localStorage.getItem('riff_theme_mode')) ? localStorage.getItem('riff_theme_mode') : 'dark',
-    paletteStyle: localStorage.getItem('riff_palette_style') || 'classic',
-    meshBrightness: parseInt(localStorage.getItem('riff_mesh_brightness') || '100', 10),
-    themeAccent: localStorage.getItem('riff_theme_accent') || '#5247d1',
-    themeIntensity: parseInt(localStorage.getItem('riff_theme_intensity') || '85', 10),
-    themeBrightness: parseInt(localStorage.getItem('riff_theme_brightness') || '20', 10),
-    monoBrightness: parseInt(localStorage.getItem('riff_theme_mono_brightness') || '100', 10),
-    trEnabled: localStorage.getItem('riff_tr_enabled') === 'true',
-    trLang: localStorage.getItem('riff_tr_lang') || 'en',
-    lyricsTranslationLang: localStorage.getItem('riff_tr_lang') || 'en',
-    trAuto: localStorage.getItem('riff_tr_auto') === 'true',
+    activePresetId: soundPersistenceEnabled ? (localStorage.getItem('cremo_active_preset') || 'p_default') : 'p_default',
+    themeMode: ['light', 'dark', 'auto'].includes(localStorage.getItem('cremo_theme_mode')) ? localStorage.getItem('cremo_theme_mode') : 'dark',
+    paletteStyle: localStorage.getItem('cremo_palette_style') || 'classic',
+    meshBrightness: parseInt(localStorage.getItem('cremo_mesh_brightness') || '100', 10),
+    themeAccent: localStorage.getItem('cremo_theme_accent') || '#e2475d',
+    themeIntensity: parseInt(localStorage.getItem('cremo_theme_intensity') || '85', 10),
+    themeBrightness: parseInt(localStorage.getItem('cremo_theme_brightness') || '20', 10),
+    monoBrightness: parseInt(localStorage.getItem('cremo_theme_mono_brightness') || '100', 10),
+    trEnabled: localStorage.getItem('cremo_tr_enabled') === 'true',
+    trLang: localStorage.getItem('cremo_tr_lang') || 'en',
+    lyricsTranslationLang: localStorage.getItem('cremo_tr_lang') || 'en',
+    trAuto: localStorage.getItem('cremo_tr_auto') === 'true',
     trActive: false,
     currentTranslations: null,
     isTvKaraokeOpen: false,
@@ -229,14 +229,14 @@ window.customThemes = customThemes;
                           history: safeArray('devsize_history'),
                           playlists: safeArray('devsize_playlists'),
                           customPresets: normalizedCustomPresets,
-                          localTracks: (safeArray('riff_local_tracks').length > 0 ? safeArray('riff_local_tracks') : safeArray('devsize_local_tracks')).filter(t => {
-                            const b = safeJson('riff_removed_local_paths', []);
+                          localTracks: (safeArray('cremo_local_tracks').length > 0 ? safeArray('cremo_local_tracks') : safeArray('devsize_local_tracks')).filter(t => {
+                            const b = safeJson('cremo_removed_local_paths', []);
                             const p = String(t?.path || t?.filePath || t?.url || '');
                             const id = String(t?.id || '');
                             return (!p || !b.includes(p)) && (!id || !b.includes(id));
                           }),
-                          localFiles: (safeArray('riff_local_files').length > 0 ? safeArray('riff_local_files') : safeArray('devsize_local_files')).filter(t => {
-                            const b = safeJson('riff_removed_local_paths', []);
+                          localFiles: (safeArray('cremo_local_files').length > 0 ? safeArray('cremo_local_files') : safeArray('devsize_local_files')).filter(t => {
+                            const b = safeJson('cremo_removed_local_paths', []);
                             const p = String(t?.path || t?.filePath || t?.url || '');
                             const id = String(t?.id || '');
                             return (!p || !b.includes(p)) && (!id || !b.includes(id));
@@ -257,7 +257,7 @@ window.customThemes = customThemes;
                           lastBroadcastStateKey: null,
                           syncTimeout: null,
                           scrubberDragTargetTime: undefined,
-                          riffFont: localStorage.getItem('riff_font') || 'google'
+                          cremoFont: localStorage.getItem('cremo_font') || 'google'
   });
 
 
@@ -283,20 +283,20 @@ window.customThemes = customThemes;
 
 
 
-  var savedFontScale = localStorage.getItem('riff_font_scale') || '100';
+  var savedFontScale = localStorage.getItem('cremo_font_scale') || '100';
   var fontVal = parseInt(savedFontScale, 10) || 100;
   if (el.sliderFontScale) el.sliderFontScale.value = fontVal.toString();
   if (el.valFontScale) el.valFontScale.textContent = `${fontVal}%`;
   document.documentElement.style.setProperty('--font-scale', ((fontVal / 100) * 0.95 * 1.25).toString());
 
-  var savedRadius = localStorage.getItem('riff_corner_radius') || '16';
+  var savedRadius = localStorage.getItem('cremo_corner_radius') || '16';
   if (el.sliderCornerRadius) el.sliderCornerRadius.value = savedRadius;
   if (el.valCornerRadius) el.valCornerRadius.textContent = savedRadius === '16' ? 'Default' : `${savedRadius}px`;
   document.documentElement.style.setProperty('--md-shape-corner-l', `${savedRadius}px`);
   document.documentElement.style.setProperty('--md-shape-corner-m', `${Math.max(0, parseInt(savedRadius) - 4)}px`);
 
   function isLyricsFullscreenOnly() {
-    return localStorage.getItem('riff_lyrics_fullscreen_only') !== '0';
+    return localStorage.getItem('cremo_lyrics_fullscreen_only') !== '0';
   }
   window.isLyricsFullscreenOnly = isLyricsFullscreenOnly;
   document.body.classList.toggle('lyrics-fullscreen-only', isLyricsFullscreenOnly());
@@ -304,15 +304,15 @@ window.customThemes = customThemes;
   applyReducedMotionSetting();
   document.body.classList.toggle('hide-titlebar', !!getAdv('hide_titlebar', false));
   document.body.classList.toggle('keep-bar-timestamps', !getAdv('autohide_timestamps', true));
-  document.body.classList.toggle('classic-sidebar', !!getAdv('classic_sidebar', false));
-  document.body.classList.toggle('classic-track-rows', localStorage.getItem('riff_classic_track_rows') === '1');
-  document.body.classList.toggle('hide-sp-table-cols', localStorage.getItem('riff_sp_table_cols') === '0');
-  document.body.classList.toggle('show-source-logo', localStorage.getItem('riff_show_source_logo') === '1');
-  document.body.classList.toggle('art-font-on', localStorage.getItem('riff_art_font') !== '0');
-  var npAlignInit = localStorage.getItem('riff_np_align') || 'left';
+  document.body.classList.add('classic-sidebar'); // Cremo's rail is built on the classic sidebar
+  document.body.classList.toggle('classic-track-rows', localStorage.getItem('cremo_classic_track_rows') === '1');
+  document.body.classList.toggle('hide-sp-table-cols', localStorage.getItem('cremo_sp_table_cols') === '0');
+  document.body.classList.toggle('show-source-logo', localStorage.getItem('cremo_show_source_logo') === '1');
+  document.body.classList.toggle('art-font-on', localStorage.getItem('cremo_art_font') !== '0');
+  var npAlignInit = localStorage.getItem('cremo_np_align') || 'left';
   document.body.classList.toggle('np-align-left', npAlignInit === 'left');
   document.body.classList.toggle('np-align-center', npAlignInit === 'center');
-  document.body.classList.toggle('track-rows-compact', localStorage.getItem('riff_track_row_style') === 'compact');
+  document.body.classList.toggle('track-rows-compact', localStorage.getItem('cremo_track_row_style') === 'compact');
 
 
   var titlebarRevealHideTimer = null;
@@ -739,7 +739,7 @@ window.customThemes = customThemes;
     }
     banner.style.display = '';
     const bannerImg = banner.querySelector('.banner-image') || banner;
-    const globalMedia = localStorage.getItem('riff_banner_media');
+    const globalMedia = localStorage.getItem('cremo_banner_media');
     const mediaToUse = trackBanner || globalMedia || thumbUrl;
 
     const hasCustomFx = !!(trackArt.bannerCustomFx || (trackArt.bannerFx && trackArt.bannerFx.enabled));
@@ -836,13 +836,6 @@ window.customThemes = customThemes;
   }
 
   function getTrackPlatformInfo(track) {
-    if (isStaticTikTokTrack(track) || (track && track.platform === 'tiktok')) {
-      return {
-        id: 'tiktok',
-        name: 'TikTok',
-        svg: '<svg width="16" height="16" viewBox="0 0 24 24"><path fill="#25F4EE" d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.24 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z" transform="translate(1, 1)"/><path fill="#FE2C55" d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.24 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z" transform="translate(-1, -1)"/><path fill="#FFFFFF" d="M12.525.02c1.31-.02 2.61-.01 3.91-.02.08 1.53.63 3.09 1.75 4.17 1.12 1.11 2.7 1.62 4.24 1.79v4.03c-1.44-.05-2.89-.35-4.2-.97-.57-.26-1.1-.59-1.62-.93-.01 2.92.01 5.84-.02 8.75-.08 1.4-.54 2.79-1.35 3.94-1.31 1.92-3.58 3.17-5.91 3.21-1.43.08-2.86-.31-4.08-1.03-2.02-1.19-3.44-3.37-3.65-5.71-.02-.5-.03-1-.01-1.49.18-1.9 1.12-3.72 2.58-4.96 1.66-1.44 3.98-2.13 6.15-1.72.02 1.48-.04 2.96-.04 4.44-.99-.32-2.15-.23-3.02.37-.63.41-1.11 1.04-1.36 1.75-.21.51-.24 1.07-.14 1.61.24 1.64 1.82 3.02 3.5 2.87 1.12-.01 2.19-.66 2.77-1.61.19-.33.4-.67.41-1.06.1-1.79.06-3.57.07-5.36.01-4.03-.01-8.05.02-12.07z"/></svg>'
-      };
-    }
     // Cremo: radio, podcasts and Audius (ids like cr-radio:…, see cremo-sources.js).
     const crSrc = track && /^cr-(radio|pod|audius):/.exec(String(track.id || ''));
     if (crSrc) {
@@ -969,8 +962,6 @@ window.closeSbInlinePresets = closeSbInlinePresets;
 
 function ensureUiPackStyles() {}
 window.ensureUiPackStyles = ensureUiPackStyles;
-function ensureAboutSupportStyles() {}
-window.ensureAboutSupportStyles = ensureAboutSupportStyles;
 
   function updateRowFade(row) {
     
@@ -1186,7 +1177,7 @@ window.ensureAboutSupportStyles = ensureAboutSupportStyles;
             if (addBtn.classList.contains('saved') || addBtn.disabled) return;
             addBtn.disabled = true;
             addBtn.style.opacity = '1';
-            addBtn.innerHTML = `<span class="riff-dots-loader sm" aria-hidden="true"><i></i><i></i><i></i></span>`;
+            addBtn.innerHTML = `<span class="cremo-dots-loader sm" aria-hidden="true"><i></i><i></i><i></i></span>`;
             try {
               showToast(typeof t === 'function' ? t('Adding playlist to library...') : 'Adding playlist to library...');
               const pRes = await fetch(`http://127.0.0.1:${state.serverPort}/api/playlist-import?url=${encodeURIComponent(pl.url)}`);
@@ -1264,7 +1255,7 @@ window.ensureAboutSupportStyles = ensureAboutSupportStyles;
     container.innerHTML = `
       <div class="m3-search-loader-wrap">
         <div class="m3-search-shape-stage" style="display:flex;align-items:center;justify-content:center;">
-          <span class="riff-dots-loader lg" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="cremo-dots-loader lg" aria-hidden="true"><i></i><i></i><i></i></span>
           <div class="m3-search-error-icon">
             <svg width="34" height="34" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
           </div>
@@ -1294,7 +1285,7 @@ window.ensureAboutSupportStyles = ensureAboutSupportStyles;
     const nodes = document.querySelectorAll('.m3-btn-shape-spinner');
     cachedSpinners = [];
     const defaultD = (function() {
-      const S = window.RiffShapes;
+      const S = window.CremoShapes;
       if (S && typeof S.ready === 'function' && S.ready()) {
         const a = S.spinnerProfile ? S.spinnerProfile(0) : S.profile(0);
         const K = S.K || 360;
@@ -1502,7 +1493,6 @@ window.ensureAboutSupportStyles = ensureAboutSupportStyles;
       el.searchResults.classList.remove('hidden', 'view-hidden');
       el.searchResults.style.display = '';
     }
-    if (typeof syncHomeAmbientVisibility === 'function') syncHomeAmbientVisibility();
 
     const artistCardContainer = document.getElementById('search-artist-card-container');
     if (artistCardContainer) artistCardContainer.innerHTML = '';
@@ -1535,7 +1525,7 @@ window.ensureAboutSupportStyles = ensureAboutSupportStyles;
         }
         return;
       }
-      const searchPlat = localStorage.getItem('riff_library_enabled') !== '0' ? 'rifflibrary' : state.platform;
+      const searchPlat = localStorage.getItem('cremo_library_enabled') !== '0' ? 'cremolibrary' : state.platform;
       const searchUrl = `http://127.0.0.1:${state.serverPort}/api/search?q=${encodeURIComponent(query)}&platform=${searchPlat}&limit=12&offset=0`;
       const res = await fetch(searchUrl);
       const data = await res.json();
@@ -1559,7 +1549,7 @@ window.ensureAboutSupportStyles = ensureAboutSupportStyles;
         renderSpotifySearchResults(data.tracks, query, searchToken);
       });
 
-      const showArtists = localStorage.getItem('riff_search_artists') !== '0';
+      const showArtists = localStorage.getItem('cremo_search_artists') !== '0';
       if (showArtists && trimmedQuery.length >= 3) {
         fetchArtistCardForSearch(trimmedQuery, searchToken, data.tracks);
       }
@@ -1581,7 +1571,7 @@ window.ensureAboutSupportStyles = ensureAboutSupportStyles;
           if (state.searchHasMore && !state.searchLoadingMore && state.searchQuery) {
             state.searchLoadingMore = true;
             try {
-              const searchPlat = localStorage.getItem('riff_library_enabled') !== '0' ? 'rifflibrary' : state.platform;
+              const searchPlat = localStorage.getItem('cremo_library_enabled') !== '0' ? 'cremolibrary' : state.platform;
               const reqToken = state.searchToken;
               const res = await fetch(`http://127.0.0.1:${state.serverPort}/api/search?q=${encodeURIComponent(state.searchQuery)}&platform=${searchPlat}&limit=12&offset=${state.searchOffset}`);
               const moreData = await res.json();
@@ -1624,18 +1614,18 @@ window.ensureAboutSupportStyles = ensureAboutSupportStyles;
 
 
   function getCtxTipCount() {
-    const raw = parseInt(localStorage.getItem('riff_ctx_tip_v2') || '0', 10);
+    const raw = parseInt(localStorage.getItem('cremo_ctx_tip_v2') || '0', 10);
     return Number.isFinite(raw) ? raw : 0;
   }
 
   function setCtxTipCount(val) {
-    try { localStorage.setItem('riff_ctx_tip_v2', String(val)); } catch (_) {}
+    try { localStorage.setItem('cremo_ctx_tip_v2', String(val)); } catch (_) {}
   }
 
   function ensureTrackHoverTipEl() {
     if (!tgTipEl) {
       tgTipEl = document.createElement('div');
-      tgTipEl.className = 'riff-tg-tip';
+      tgTipEl.className = 'cremo-tg-tip';
       document.body.appendChild(tgTipEl);
     }
     tgTipEl.textContent = typeof t === 'function' ? t('Tip: press right mouse button to see more features') : 'Tip: press right mouse button to see more features';
@@ -1702,7 +1692,7 @@ window.ensureAboutSupportStyles = ensureAboutSupportStyles;
   function ensureContextMenu() {
     if (!ctxMenuEl) {
       ctxMenuEl = document.createElement('div');
-      ctxMenuEl.className = 'riff-ctx-menu';
+      ctxMenuEl.className = 'cremo-ctx-menu';
       document.body.appendChild(ctxMenuEl);
       document.addEventListener('pointerdown', (ev) => {
         if (!ctxMenuEl || !ctxMenuEl.classList.contains('open')) return;
@@ -1736,13 +1726,13 @@ window.ensureAboutSupportStyles = ensureAboutSupportStyles;
     items.forEach((it) => {
       if (it.divider) {
         const div = document.createElement('div');
-        div.className = 'riff-ctx-divider';
+        div.className = 'cremo-ctx-divider';
         ctxMenuEl.appendChild(div);
         return;
       }
       const btn = document.createElement('button');
       btn.type = 'button';
-      btn.className = 'riff-ctx-item' + (it.active ? ' is-active' : '') + (it.danger ? ' danger' : '');
+      btn.className = 'cremo-ctx-item' + (it.active ? ' is-active' : '') + (it.danger ? ' danger' : '');
       const lbl = typeof t === 'function' ? t(it.label) : it.label;
       btn.innerHTML = `${it.icon || ''}<span>${lbl}</span>`;
       btn.addEventListener('click', (ev) => {
@@ -1918,20 +1908,6 @@ window.ensureAboutSupportStyles = ensureAboutSupportStyles;
         icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="8" y1="6" x2="21" y2="6"/><line x1="8" y1="12" x2="21" y2="12"/><line x1="8" y1="18" x2="16" y2="18"/><polygon points="3 6 3 10 6 8 3 6"/><line x1="19" y1="15" x2="19" y2="21"/><line x1="16" y1="18" x2="22" y2="18"/></svg>',
         action: () => addTrackToQueue(track)
       },
-      {
-        id: 'add-sidebar-lib',
-        active: isTrackInSidebarLibrary(track),
-        label: isTrackInSidebarLibrary(track) ? 'Remove from library' : 'Add to library',
-        icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 0 1 2-2h10a2 2 0 0 1 2 2z"/></svg>',
-        action: () => toggleTrackInSidebarLibrary(track)
-      },
-      {
-        id: 'pin-sidebar',
-        active: isTrackPinnedToSidebar(track),
-        label: isTrackPinnedToSidebar(track) ? 'Unpin from sidebar' : 'Pin to sidebar',
-        icon: '<svg viewBox="0 0 24 24" fill="' + (isTrackPinnedToSidebar(track) ? 'currentColor' : 'none') + '" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M9 3h6l-1 7 3 3v2H7v-2l3-3-1-7z"/></svg>',
-        action: () => togglePinTrackToSidebar(track)
-      },
       ...(currentPinScope() ? [{
         id: 'pin',
         active: isTrackPinned(track),
@@ -2037,7 +2013,7 @@ window.ensureAboutSupportStyles = ensureAboutSupportStyles;
       items.push({
         id: 'remove-local',
         danger: true,
-        label: 'Remove from Riff',
+        label: 'Remove from Cremo',
         icon: '<svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6"/><path d="M14 11v6"/></svg>',
         action: () => {
           removeTracksFromLocalLibrary([track]);
@@ -2073,22 +2049,22 @@ window.ensureAboutSupportStyles = ensureAboutSupportStyles;
     items.forEach((it) => {
       if (it.divider) {
         const div = document.createElement('div');
-        div.className = 'riff-ctx-divider';
+        div.className = 'cremo-ctx-divider';
         ctxMenuEl.appendChild(div);
         return;
       }
       const btn = document.createElement('button');
       btn.type = 'button';
-      btn.className = 'riff-ctx-item' + (it.active ? ' is-active' : '') + (it.danger ? ' danger' : '');
+      btn.className = 'cremo-ctx-item' + (it.active ? ' is-active' : '') + (it.danger ? ' danger' : '');
       const lbl = typeof t === 'function' ? t(it.label) : it.label;
       if (it.id === 'reset-audio-source' && it.isNonSearchTrack) {
         btn.innerHTML = `
-          ${it.origThumb ? `<img class="riff-ctx-thumb" src="${escapeHtml(it.origThumb)}" alt="" style="width: 32px !important; height: 32px !important; min-width: 32px !important; min-height: 32px !important; border-radius: 4px !important; object-fit: cover !important; flex-shrink: 0 !important; display: block !important; margin-right: 6px;" onerror="this.style.display='none'">` : it.icon}
+          ${it.origThumb ? `<img class="cremo-ctx-thumb" src="${escapeHtml(it.origThumb)}" alt="" style="width: 32px !important; height: 32px !important; min-width: 32px !important; min-height: 32px !important; border-radius: 4px !important; object-fit: cover !important; flex-shrink: 0 !important; display: block !important; margin-right: 6px;" onerror="this.style.display='none'">` : it.icon}
           <div style="display:flex;flex-direction:column;align-items:flex-start;overflow:hidden;text-align:left;line-height:1.2;flex:1;min-width:0;">
             <span>${lbl}</span>
             <small style="display:inline-flex;align-items:center;gap:4px;font-size:10px;opacity:0.75;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:190px;">
-              <span class="riff-ctx-source-icon" title="${escapeHtml(it.sourcePlatformName || '')}" style="display:inline-flex;align-items:center;width:13px;height:13px;flex-shrink:0;">${it.sourcePlatformSvg || ''}</span>
-              <span class="riff-ctx-subtitle" style="overflow:hidden;text-overflow:ellipsis;">${escapeHtml(it.origTitle || '')}</span>
+              <span class="cremo-ctx-source-icon" title="${escapeHtml(it.sourcePlatformName || '')}" style="display:inline-flex;align-items:center;width:13px;height:13px;flex-shrink:0;">${it.sourcePlatformSvg || ''}</span>
+              <span class="cremo-ctx-subtitle" style="overflow:hidden;text-overflow:ellipsis;">${escapeHtml(it.origTitle || '')}</span>
             </small>
           </div>
         `;
@@ -2106,9 +2082,9 @@ window.ensureAboutSupportStyles = ensureAboutSupportStyles;
                   platform: res.platform || track.platform || 'ytmusic',
                   url: res.url || ''
                 };
-                const thumbImg = btn.querySelector('.riff-ctx-thumb');
-                const subTxt = btn.querySelector('.riff-ctx-subtitle');
-                const srcIconEl = btn.querySelector('.riff-ctx-source-icon');
+                const thumbImg = btn.querySelector('.cremo-ctx-thumb');
+                const subTxt = btn.querySelector('.cremo-ctx-subtitle');
+                const srcIconEl = btn.querySelector('.cremo-ctx-source-icon');
                 if (thumbImg && track._sourceMeta.thumbnail) {
                   thumbImg.src = track._sourceMeta.thumbnail;
                   thumbImg.style.display = 'block';
@@ -2798,7 +2774,7 @@ window.ensureAboutSupportStyles = ensureAboutSupportStyles;
     const getRowStride = () => {
       if (container._rowStride && container._rowStride > 24) return container._rowStride;
       const isCompact = document.body.classList.contains('track-rows-compact');
-      const baseH = isCompact ? 46 : (parseInt(localStorage.getItem('riff_track_row_height') || '64', 10) || 64);
+      const baseH = isCompact ? 46 : (parseInt(localStorage.getItem('cremo_track_row_height') || '64', 10) || 64);
       return baseH + 4;
     };
 
@@ -2906,7 +2882,6 @@ window.ensureAboutSupportStyles = ensureAboutSupportStyles;
         el.searchResultsContainer.classList.remove('hidden', 'view-hidden');
         el.searchResultsContainer.style.display = '';
       }
-      if (typeof syncHomeAmbientVisibility === 'function') syncHomeAmbientVisibility();
       return;
     }
 
@@ -2936,27 +2911,13 @@ window.ensureAboutSupportStyles = ensureAboutSupportStyles;
       el.discoverHome.style.display = 'contents';
     }
 
-    const isSpotify = (localStorage.getItem('riff_home_layout') || 'spotify') === 'spotify';
-    document.body.classList.toggle('home-spotify', isSpotify);
+    document.body.classList.add('home-spotify');
     const spHome = document.getElementById('sp-home');
-    const homeHero = document.getElementById('home-hero');
-
-    if (isSpotify) {
-      if (homeHero) homeHero.style.display = 'none';
-      if (spHome) {
-        spHome.classList.remove('hidden');
-        spHome.style.display = '';
-      }
-      if (typeof renderSpotifyHome === 'function') renderSpotifyHome();
-    } else {
-      if (spHome) spHome.style.display = 'none';
-      if (homeHero) {
-        homeHero.classList.remove('hidden');
-        homeHero.style.display = '';
-      }
-      if (typeof initHomeHero === 'function') initHomeHero();
+    if (spHome) {
+      spHome.classList.remove('hidden');
+      spHome.style.display = '';
     }
-    if (typeof syncHomeAmbientVisibility === 'function') syncHomeAmbientVisibility();
+    if (typeof renderSpotifyHome === 'function') renderSpotifyHome();
   }
 
   var settingsCloseTimer = null;
@@ -2964,7 +2925,7 @@ window.ensureAboutSupportStyles = ensureAboutSupportStyles;
     if (!el.viewSettings) return;
     if (typeof resetSettingsSearch === 'function') resetSettingsSearch();
     if (settingsCloseTimer) { clearTimeout(settingsCloseTimer); settingsCloseTimer = null; }
-    const savedCat = cat || localStorage.getItem('riff_settings_cat');
+    const savedCat = cat || localStorage.getItem('cremo_settings_cat');
     el.viewSettings.classList.add('active', 'modal-open');
     el.viewSettings._activeCat = null;
     showSettingsCategory((savedCat === 'overview' || !savedCat) ? 'interface' : savedCat);
@@ -2979,7 +2940,6 @@ window.ensureAboutSupportStyles = ensureAboutSupportStyles;
   }
   function closeSettingsModal() {
     if (typeof resetSettingsSearch === 'function') resetSettingsSearch();
-    if (typeof updateAboutSupportLottieState === 'function') updateAboutSupportLottieState(false);
     const btnSbSettings = document.getElementById('btn-sb-settings');
     if (btnSbSettings) btnSbSettings.classList.remove('active');
     if (!el.viewSettings || !el.viewSettings.classList.contains('active')) return;
@@ -3109,22 +3069,19 @@ window.ensureAboutSupportStyles = ensureAboutSupportStyles;
       }
     }
 
-    [el.viewDiscover, el.viewFavorites, el.viewAlbums, el.viewLocal, el.viewHistory, el.viewQueue, el.viewPlaylistDetail, el.viewAlbum, el.viewArtist].forEach(v => {
+    [el.viewDiscover, el.viewFavorites, el.viewLocal, el.viewPlaylistDetail, el.viewAlbum, el.viewArtist].forEach(v => {
       if (v) v.classList.remove('active');
     });
 
     const nestedView = viewName === 'playlist-detail' || viewName === 'album' || viewName === 'artist';
     if (!nestedView) {
-      [el.navDiscover, el.navFavorites, el.navAlbums, el.navLocal, el.navHistory, el.navQueue, el.navSettings].forEach(n => {
+      [el.navDiscover, el.navFavorites, el.navLocal, el.navSettings].forEach(n => {
         if (n) n.classList.remove('active');
       });
       const navMap = {
         discover: el.navDiscover,
         favorites: el.navFavorites,
-        albums: el.navAlbums,
-        local: el.navLocal,
-        history: el.navHistory,
-        queue: el.navQueue
+        local: el.navLocal
       };
       if (navMap[viewName]) navMap[viewName].classList.add('active');
     }
@@ -3141,22 +3098,10 @@ window.ensureAboutSupportStyles = ensureAboutSupportStyles;
       if (el.viewFavorites) el.viewFavorites.classList.add('active');
       if (el.navFavorites) el.navFavorites.classList.add('active');
       renderFavoritesView();
-    } else if (viewName === 'albums') {
-      if (el.viewAlbums) el.viewAlbums.classList.add('active');
-      if (el.navAlbums) el.navAlbums.classList.add('active');
-      renderSavedAlbums();
     } else if (viewName === 'local') {
       if (el.viewLocal) el.viewLocal.classList.add('active');
       if (el.navLocal) el.navLocal.classList.add('active');
       renderLocalView();
-    } else if (viewName === 'history') {
-      if (el.viewHistory) el.viewHistory.classList.add('active');
-      if (el.navHistory) el.navHistory.classList.add('active');
-      renderHistoryView();
-    } else if (viewName === 'queue') {
-      if (el.viewQueue) el.viewQueue.classList.add('active');
-      if (el.navQueue) el.navQueue.classList.add('active');
-      renderQueueView();
     } else if (viewName === 'playlist-detail') {
       if (el.viewPlaylistDetail) el.viewPlaylistDetail.classList.add('active');
     } else if (viewName === 'album') {
@@ -3169,9 +3114,7 @@ window.ensureAboutSupportStyles = ensureAboutSupportStyles;
 
     refreshNavBadges();
     highlightPlayingRow();
-    if (typeof syncHomeAmbientVisibility === 'function') syncHomeAmbientVisibility();
     updateFxVisibility();
-    if (typeof renderSidebarLibraryFeed === 'function') renderSidebarLibraryFeed();
     if (typeof updateActiveCoverBg === 'function') updateActiveCoverBg();
   }
 
@@ -3532,7 +3475,7 @@ function updateNavIndicator(animate) {
 
   function formatPlaylistDuration(sec) {
     if (!sec || isNaN(sec) || sec <= 0) return '';
-    const lang = (localStorage.getItem('riff_ui_lang') || localStorage.getItem('riff_lang') || (typeof state !== 'undefined' && state.lang) || 'en').toLowerCase();
+    const lang = (localStorage.getItem('cremo_ui_lang') || localStorage.getItem('cremo_lang') || (typeof state !== 'undefined' && state.lang) || 'en').toLowerCase();
     const isRu = lang === 'ru';
     const isUk = lang === 'uk';
 
@@ -3611,10 +3554,7 @@ function updateNavIndicator(animate) {
   });
 
   if (el.navFavorites) el.navFavorites.addEventListener('click', () => switchView('favorites'));
-  if (el.navAlbums) el.navAlbums.addEventListener('click', () => switchView('albums'));
   if (el.navLocal) el.navLocal.addEventListener('click', () => switchView('local'));
-  if (el.navHistory) el.navHistory.addEventListener('click', () => switchView('history'));
-  if (el.navQueue) el.navQueue.addEventListener('click', () => switchView('queue'));
   if (el.navSettings) el.navSettings.addEventListener('click', () => switchView('settings'));
   updateAlbumsCount();
 
@@ -3634,7 +3574,7 @@ function updateNavIndicator(animate) {
       state.queueHistory = [];
       if (state.isShuffle) {
         state.isShuffle = false;
-        localStorage.setItem('riff_shuffle', '0');
+        localStorage.setItem('cremo_shuffle', '0');
         if (el.btnShuffle) el.btnShuffle.classList.remove('active');
       }
       playTrack(tracks[0], tracks, 0, 'local');
@@ -3655,7 +3595,7 @@ function updateNavIndicator(animate) {
       state.queueHistory = [];
       if (!state.isShuffle) {
         state.isShuffle = true;
-        localStorage.setItem('riff_shuffle', '1');
+        localStorage.setItem('cremo_shuffle', '1');
         if (el.btnShuffle) el.btnShuffle.classList.add('active');
       }
       playTrack(shuffled[0], shuffled, 0, 'local');
@@ -3878,7 +3818,7 @@ function bindCoverHoldZoom(wrapEl) {
     const panel = el.rightPanel || document.getElementById('right-panel');
     if (!edge || !panel) return;
 
-    const savedWidth = localStorage.getItem('riff_right_panel_width');
+    const savedWidth = localStorage.getItem('cremo_right_panel_width');
     if (savedWidth) {
       const w = parseInt(savedWidth, 10);
       if (w >= 260 && w <= 720) {
@@ -3929,7 +3869,7 @@ function bindCoverHoldZoom(wrapEl) {
         raf = 0;
       }
       if (pendingW >= 260 && pendingW <= 720) {
-        localStorage.setItem('riff_right_panel_width', pendingW.toString());
+        localStorage.setItem('cremo_right_panel_width', pendingW.toString());
       }
       if (typeof resizeCanvases === 'function') resizeCanvases();
       updateRightPanelTitleMarquee();
@@ -3941,7 +3881,7 @@ function bindCoverHoldZoom(wrapEl) {
     edge.addEventListener('dblclick', () => {
       panel.style.width = '340px';
       panel.style.setProperty('--right-panel-width', '340px');
-      localStorage.setItem('riff_right_panel_width', '340px');
+      localStorage.setItem('cremo_right_panel_width', '340px');
       if (typeof resizeCanvases === 'function') resizeCanvases();
       updateRightPanelTitleMarquee();
     });
@@ -3984,16 +3924,16 @@ function bindCoverHoldZoom(wrapEl) {
   }
 
 
-  var showYtPlatform = localStorage.getItem('riff_show_yt_platform') === '1';
+  var showYtPlatform = localStorage.getItem('cremo_show_yt_platform') === '1';
   document.body.classList.toggle('show-yt-platform', showYtPlatform);
 
   function setPlatform(platform, triggerSearch = true) {
-    if (platform === 'youtube' && localStorage.getItem('riff_show_yt_platform') !== '1') {
+    if (platform === 'youtube' && localStorage.getItem('cremo_show_yt_platform') !== '1') {
       platform = 'ytmusic';
     }
     if (!['youtube', 'ytmusic', 'soundcloud'].includes(platform)) platform = 'ytmusic';
     state.platform = platform;
-    localStorage.setItem('riff_platform', platform);
+    localStorage.setItem('cremo_platform', platform);
 
     if (el.platformYt) el.platformYt.classList.toggle('active', platform === 'youtube');
     if (el.platformYtm) el.platformYtm.classList.toggle('active', platform === 'ytmusic');
@@ -4031,7 +3971,7 @@ function bindCoverHoldZoom(wrapEl) {
     }
   }
 
-  var savedPlatform = localStorage.getItem('riff_platform') || 'ytmusic';
+  var savedPlatform = localStorage.getItem('cremo_platform') || 'ytmusic';
   setPlatform(savedPlatform, false);
 
   if (el.platformYt) el.platformYt.addEventListener('click', () => setPlatform('youtube'));
@@ -4064,7 +4004,7 @@ function bindCoverHoldZoom(wrapEl) {
   function updateEngineWidthVar() {
     const container = document.querySelector('.platform-switch-container');
     if (!container) return;
-    const isHidden = document.body.classList.contains('hide-engine-btns') || document.body.classList.contains('riff-library-on');
+    const isHidden = document.body.classList.contains('hide-engine-btns') || document.body.classList.contains('cremo-library-on');
     if (isHidden) {
       document.documentElement.style.setProperty('--engine-w', '0px');
       document.documentElement.style.setProperty('--engine-gap', '0px');
@@ -4084,7 +4024,7 @@ function bindCoverHoldZoom(wrapEl) {
     btnShowYtPlatform.addEventListener('click', () => {
       const next = !btnShowYtPlatform.classList.contains('active');
       btnShowYtPlatform.classList.toggle('active', next);
-      localStorage.setItem('riff_show_yt_platform', next ? '1' : '0');
+      localStorage.setItem('cremo_show_yt_platform', next ? '1' : '0');
       document.body.classList.toggle('show-yt-platform', next);
       if (next) {
         showToast('Warning: YouTube may return non-music videos and load slower than YouTube Music', 'warning', 5000);
@@ -4097,7 +4037,7 @@ function bindCoverHoldZoom(wrapEl) {
   }
 
   var btnCompactEngineBtns = document.getElementById('btn-compact-engine-btns');
-  var isCompactEngine = localStorage.getItem('riff_compact_engine_btns') === '1';
+  var isCompactEngine = localStorage.getItem('cremo_compact_engine_btns') === '1';
   document.body.classList.toggle('compact-engine-btns', isCompactEngine);
   if (btnCompactEngineBtns) {
     btnCompactEngineBtns.classList.toggle('active', isCompactEngine);
@@ -4105,14 +4045,14 @@ function bindCoverHoldZoom(wrapEl) {
       const next = !btnCompactEngineBtns.classList.contains('active');
       btnCompactEngineBtns.classList.toggle('active', next);
       document.body.classList.toggle('compact-engine-btns', next);
-      localStorage.setItem('riff_compact_engine_btns', next ? '1' : '0');
+      localStorage.setItem('cremo_compact_engine_btns', next ? '1' : '0');
       updateEngineWidthVar();
       setTimeout(updateEngineWidthVar, 350);
     });
   }
 
   var btnHideEngineBtns = document.getElementById('btn-hide-engine-btns');
-  var isHideEngine = localStorage.getItem('riff_hide_engine_btns') === '1';
+  var isHideEngine = localStorage.getItem('cremo_hide_engine_btns') === '1';
   document.body.classList.toggle('hide-engine-btns', isHideEngine);
   if (btnHideEngineBtns) {
     btnHideEngineBtns.classList.toggle('active', isHideEngine);
@@ -4120,25 +4060,25 @@ function bindCoverHoldZoom(wrapEl) {
       const next = !btnHideEngineBtns.classList.contains('active');
       btnHideEngineBtns.classList.toggle('active', next);
       document.body.classList.toggle('hide-engine-btns', next);
-      localStorage.setItem('riff_hide_engine_btns', next ? '1' : '0');
+      localStorage.setItem('cremo_hide_engine_btns', next ? '1' : '0');
       updateEngineWidthVar();
       setTimeout(updateEngineWidthVar, 350);
     });
   }
 
-  var isRiffLibOn = localStorage.getItem('riff_library_enabled') !== '0';
-  var isRiffStreamOn = localStorage.getItem('riff_library_streaming') === '1';
-  document.body.classList.toggle('riff-library-on', isRiffLibOn);
+  var isCremoLibOn = localStorage.getItem('cremo_library_enabled') !== '0';
+  var isCremoStreamOn = localStorage.getItem('cremo_library_streaming') === '1';
+  document.body.classList.toggle('cremo-library-on', isCremoLibOn);
   updateEngineWidthVar();
 
-  var btnRiffLibrary = document.getElementById('btn-riff-library');
-  if (btnRiffLibrary) {
-    btnRiffLibrary.classList.toggle('active', isRiffLibOn);
-    btnRiffLibrary.addEventListener('click', () => {
-      const next = !btnRiffLibrary.classList.contains('active');
-      btnRiffLibrary.classList.toggle('active', next);
-      localStorage.setItem('riff_library_enabled', next ? '1' : '0');
-      document.body.classList.toggle('riff-library-on', next);
+  var btnCremoLibrary = document.getElementById('btn-cremo-library');
+  if (btnCremoLibrary) {
+    btnCremoLibrary.classList.toggle('active', isCremoLibOn);
+    btnCremoLibrary.addEventListener('click', () => {
+      const next = !btnCremoLibrary.classList.contains('active');
+      btnCremoLibrary.classList.toggle('active', next);
+      localStorage.setItem('cremo_library_enabled', next ? '1' : '0');
+      document.body.classList.toggle('cremo-library-on', next);
       updateEngineWidthVar();
       setTimeout(updateEngineWidthVar, 350);
       const q = (el.searchInput && el.searchInput.value.trim()) || state.searchQuery || '';
@@ -4146,13 +4086,13 @@ function bindCoverHoldZoom(wrapEl) {
     });
   }
 
-  var btnRiffLibraryStreaming = document.getElementById('btn-riff-library-streaming');
-  if (btnRiffLibraryStreaming) {
-    btnRiffLibraryStreaming.classList.toggle('active', isRiffStreamOn);
-    btnRiffLibraryStreaming.addEventListener('click', () => {
-      const next = !btnRiffLibraryStreaming.classList.contains('active');
-      btnRiffLibraryStreaming.classList.toggle('active', next);
-      localStorage.setItem('riff_library_streaming', next ? '1' : '0');
+  var btnCremoLibraryStreaming = document.getElementById('btn-cremo-library-streaming');
+  if (btnCremoLibraryStreaming) {
+    btnCremoLibraryStreaming.classList.toggle('active', isCremoStreamOn);
+    btnCremoLibraryStreaming.addEventListener('click', () => {
+      const next = !btnCremoLibraryStreaming.classList.contains('active');
+      btnCremoLibraryStreaming.classList.toggle('active', next);
+      localStorage.setItem('cremo_library_streaming', next ? '1' : '0');
     });
   }
 
@@ -4163,7 +4103,7 @@ function bindCoverHoldZoom(wrapEl) {
       const next = !btnPersistSound.classList.contains('active');
       btnPersistSound.classList.toggle('active', next);
       soundPersistenceEnabled = next;
-      localStorage.setItem('riff_persist_sound_settings', next ? '1' : '0');
+      localStorage.setItem('cremo_persist_sound_settings', next ? '1' : '0');
       if (next) persistSoundSettings();
     });
   }
@@ -4176,7 +4116,7 @@ function bindCoverHoldZoom(wrapEl) {
     el.btnShuffle.classList.toggle('active', state.isShuffle);
     el.btnShuffle.addEventListener('click', () => {
       state.isShuffle = !state.isShuffle;
-      localStorage.setItem('riff_shuffle', state.isShuffle ? '1' : '0');
+      localStorage.setItem('cremo_shuffle', state.isShuffle ? '1' : '0');
       el.btnShuffle.classList.toggle('active', state.isShuffle);
     });
   }
@@ -4185,7 +4125,7 @@ function bindCoverHoldZoom(wrapEl) {
     el.btnRepeat.classList.toggle('active', state.isRepeat);
     el.btnRepeat.addEventListener('click', () => {
       state.isRepeat = !state.isRepeat;
-      localStorage.setItem('riff_repeat', state.isRepeat ? '1' : '0');
+      localStorage.setItem('cremo_repeat', state.isRepeat ? '1' : '0');
       el.btnRepeat.classList.toggle('active', state.isRepeat);
     });
   }
@@ -4223,8 +4163,8 @@ function bindCoverHoldZoom(wrapEl) {
 
   function persistVolumeState() {
     try {
-      localStorage.setItem('riff_volume', String(state.volume));
-      localStorage.setItem('riff_muted', state.isMuted ? '1' : '0');
+      localStorage.setItem('cremo_volume', String(state.volume));
+      localStorage.setItem('cremo_muted', state.isMuted ? '1' : '0');
     } catch (e) {}
     updateVolumeSliderFill();
   }
@@ -4278,24 +4218,7 @@ function bindCoverHoldZoom(wrapEl) {
     });
   }
 
-  if (el.btnClearHistory) {
-    el.btnClearHistory.addEventListener('click', () => {
-      state.history = [];
-      localStorage.setItem('devsize_history', '[]');
-      renderHistoryView();
-    });
-  }
 
-  if (el.btnClearQueue) {
-    el.btnClearQueue.addEventListener('click', () => {
-      state.isRadioQueue = false;
-      state.queue = [];
-      state.queueIndex = -1;
-      state.queueHistory = [];
-      updateQueueBadge();
-      renderQueueView();
-    });
-  }
 
   var btnTogglePlaylistSearch = document.getElementById('btn-toggle-playlist-search');
   var playlistSearchBox = document.getElementById('playlist-search-box');
@@ -4795,7 +4718,7 @@ function bindCoverHoldZoom(wrapEl) {
     el.themeModeBtns.forEach(btn => {
       btn.addEventListener('click', () => {
         state.themeMode = btn.dataset.themeMode;
-        localStorage.setItem('riff_theme_mode', state.themeMode);
+        localStorage.setItem('cremo_theme_mode', state.themeMode);
         updateThemeFromState();
       });
     });
@@ -4805,11 +4728,11 @@ function bindCoverHoldZoom(wrapEl) {
     el.themeSwatches.forEach(sw => {
       sw.addEventListener('click', () => {
         state.themeAccent = sw.dataset.color;
-        localStorage.setItem('riff_theme_accent', state.themeAccent);
+        localStorage.setItem('cremo_theme_accent', state.themeAccent);
         if (state.themeMode === 'auto') {
           const targetMode = currentEffectiveMode || 'dark';
           state.themeMode = targetMode;
-          localStorage.setItem('riff_theme_mode', targetMode);
+          localStorage.setItem('cremo_theme_mode', targetMode);
         }
         updateThemeFromState();
       });
@@ -4820,11 +4743,11 @@ function bindCoverHoldZoom(wrapEl) {
     const applyCustomAccent = (value) => {
       if (!/^#[0-9a-f]{6}$/i.test(value)) return;
       state.themeAccent = value.toLowerCase();
-      localStorage.setItem('riff_theme_accent', state.themeAccent);
+      localStorage.setItem('cremo_theme_accent', state.themeAccent);
       if (state.themeMode === 'auto') {
         const targetMode = currentEffectiveMode || 'dark';
         state.themeMode = targetMode;
-        localStorage.setItem('riff_theme_mode', targetMode);
+        localStorage.setItem('cremo_theme_mode', targetMode);
       }
       updateThemeFromState();
       if (el.themeSwatches) el.themeSwatches.forEach(sw => sw.classList.remove('active'));
@@ -4842,11 +4765,11 @@ function bindCoverHoldZoom(wrapEl) {
       const h = parseInt(e.target.value, 10);
       if (el.valHue) el.valHue.textContent = h + '°';
       state.themeAccent = hslToHex(h, 65, 55);
-      localStorage.setItem('riff_theme_accent', state.themeAccent);
+      localStorage.setItem('cremo_theme_accent', state.themeAccent);
       if (state.themeMode === 'auto') {
         const targetMode = currentEffectiveMode || 'dark';
         state.themeMode = targetMode;
-        localStorage.setItem('riff_theme_mode', targetMode);
+        localStorage.setItem('cremo_theme_mode', targetMode);
       }
       updateThemeFromState();
       if (el.themeSwatches) el.themeSwatches.forEach(sw => sw.classList.remove('active'));
@@ -4863,11 +4786,11 @@ function bindCoverHoldZoom(wrapEl) {
       state.themeIntensity = val;
       document.body.classList.toggle('intensity-zero', state.themeIntensity < 5);
       if (el.valIntensity) el.valIntensity.textContent = val + '%';
-      localStorage.setItem('riff_theme_intensity', val.toString());
+      localStorage.setItem('cremo_theme_intensity', val.toString());
       if (state.themeMode === 'auto') {
         const targetMode = currentEffectiveMode || 'dark';
         state.themeMode = targetMode;
-        localStorage.setItem('riff_theme_mode', targetMode);
+        localStorage.setItem('cremo_theme_mode', targetMode);
       }
       updateThemeFromState();
     });
@@ -4882,11 +4805,11 @@ function bindCoverHoldZoom(wrapEl) {
       const val = parseInt(e.target.value, 10);
       state.themeBrightness = val;
       if (el.valBrightness) el.valBrightness.textContent = val + '%';
-      localStorage.setItem('riff_theme_brightness', val.toString());
+      localStorage.setItem('cremo_theme_brightness', val.toString());
       if (state.themeMode === 'auto') {
         const targetMode = currentEffectiveMode || 'dark';
         state.themeMode = targetMode;
-        localStorage.setItem('riff_theme_mode', targetMode);
+        localStorage.setItem('cremo_theme_mode', targetMode);
       }
       updateThemeFromState();
     });
@@ -4894,10 +4817,10 @@ function bindCoverHoldZoom(wrapEl) {
 
 
   function applyTrackRowHeight(val) {
-    const v = parseInt(val || localStorage.getItem('riff_track_row_height') || '64', 10);
+    const v = parseInt(val || localStorage.getItem('cremo_track_row_height') || '64', 10);
     const coverSize = Math.max(34, Math.round(v * 0.72));
-    document.documentElement.style.setProperty('--riff-track-row-height', `${v}px`);
-    document.documentElement.style.setProperty('--riff-track-cover-size', `${coverSize}px`);
+    document.documentElement.style.setProperty('--cremo-track-row-height', `${v}px`);
+    document.documentElement.style.setProperty('--cremo-track-cover-size', `${coverSize}px`);
   }
   applyTrackRowHeight();
 
@@ -4907,7 +4830,7 @@ function bindCoverHoldZoom(wrapEl) {
     const targetParent = fontRow ? fontRow.parentNode : document.querySelector('#view-settings .settings-section[data-cat="interface"] .m3-group');
     if (!targetParent) return;
 
-    const curH = parseInt(localStorage.getItem('riff_track_row_height') || '64', 10);
+    const curH = parseInt(localStorage.getItem('cremo_track_row_height') || '64', 10);
     const item = document.createElement('div');
     item.className = 'setting-item';
     item.id = 'setting-track-row-height';
@@ -4934,7 +4857,7 @@ function bindCoverHoldZoom(wrapEl) {
         const v = parseInt(e.target.value, 10);
         if (valEl) valEl.textContent = `${v}px`;
         if (typeof updateRangeProg === 'function') updateRangeProg(e.target);
-        localStorage.setItem('riff_track_row_height', v.toString());
+        localStorage.setItem('cremo_track_row_height', v.toString());
         applyTrackRowHeight(v);
       };
       slider.addEventListener('input', onRowHeightInput);
@@ -4948,24 +4871,24 @@ function bindCoverHoldZoom(wrapEl) {
   function applyHomeButtonIcon() {
     const btn = document.getElementById('btn-top-search-home');
     if (!btn) return;
-    const isRiffIcon = localStorage.getItem('riff_home_icon_riff') === 'true';
-    btn.innerHTML = isRiffIcon ? RIFF_FLAME_SVG : DEFAULT_HOME_SVG;
+    const isCremoIcon = localStorage.getItem('cremo_home_icon_cremo') === 'true';
+    btn.innerHTML = isCremoIcon ? CREMO_FLAME_SVG : DEFAULT_HOME_SVG;
   }
   window.applyHomeButtonIcon = applyHomeButtonIcon;
 
-  function ensureRiffHomeIconSettingDOM() {
-    if (document.getElementById('setting-riff-home-icon')) return;
+  function ensureCremoHomeIconSettingDOM() {
+    if (document.getElementById('setting-cremo-home-icon')) return;
     const refItem = document.getElementById('setting-top-moment-icon') || document.getElementById('setting-track-row-height') || document.getElementById('setting-interface-font');
     if (!refItem || !refItem.parentNode) return;
 
-    const isRiff = localStorage.getItem('riff_home_icon_riff') === 'true';
+    const isCremo = localStorage.getItem('cremo_home_icon_cremo') === 'true';
     const item = document.createElement('div');
     item.className = 'setting-item';
-    item.id = 'setting-riff-home-icon';
+    item.id = 'setting-cremo-home-icon';
     item.innerHTML = `
       <div class="setting-item-top" style="align-items: center;">
-        <span class="setting-name" data-i18n>Riff logo on Home button</span>
-        <button type="button" class="effect-switch-btn ${isRiff ? 'active' : ''}" id="btn-setting-riff-home-icon">
+        <span class="setting-name" data-i18n>Cremo logo on Home button</span>
+        <button type="button" class="effect-switch-btn ${isCremo ? 'active' : ''}" id="btn-setting-cremo-home-icon">
           <span class="thumb"></span>
         </button>
       </div>
@@ -4973,335 +4896,20 @@ function bindCoverHoldZoom(wrapEl) {
 
     refItem.parentNode.insertBefore(item, refItem.nextSibling);
 
-    const btnSwitch = item.querySelector('#btn-setting-riff-home-icon');
+    const btnSwitch = item.querySelector('#btn-setting-cremo-home-icon');
     if (btnSwitch) {
       btnSwitch.onclick = () => {
         const next = !btnSwitch.classList.contains('active');
         btnSwitch.classList.toggle('active', next);
-        localStorage.setItem('riff_home_icon_riff', String(next));
+        localStorage.setItem('cremo_home_icon_cremo', String(next));
         applyHomeButtonIcon();
       };
     }
   }
-  window.ensureRiffHomeIconSettingDOM = ensureRiffHomeIconSettingDOM;
-  ensureRiffHomeIconSettingDOM();
+  window.ensureCremoHomeIconSettingDOM = ensureCremoHomeIconSettingDOM;
+  ensureCremoHomeIconSettingDOM();
   applyHomeButtonIcon();
 
-  var cachedDuckData = null;
-  var duckFetchPromise = null;
-  var lottieLibPromise = null;
-  var aboutSupportLottieAnim = null;
-  var aboutSupportObserver = null;
-  var aboutSupportPollInterval = null;
-
-
-  function getLottieLibrary() {
-    if (window.lottie) return Promise.resolve(window.lottie);
-    if (window.bodymovin) return Promise.resolve(window.bodymovin);
-    if (lottieLibPromise) return lottieLibPromise;
-
-    lottieLibPromise = new Promise(async (resolve) => {
-      try {
-        const cached = localStorage.getItem('riff_lottie_lib_cache');
-        if (cached && cached.length > 1000) {
-          const s = document.createElement('script');
-          s.textContent = cached;
-          document.head.appendChild(s);
-          if (window.lottie || window.bodymovin) {
-            resolve(window.lottie || window.bodymovin);
-            return;
-          }
-        }
-      } catch (_) {}
-
-      const localSources = ['../../assets/lottie.min.js', 'assets/lottie.min.js'];
-      for (const src of localSources) {
-        try {
-          const ok = await new Promise((resOk) => {
-            const s = document.createElement('script');
-            s.src = src;
-            s.onload = () => resOk(true);
-            s.onerror = () => { s.remove(); resOk(false); };
-            document.head.appendChild(s);
-          });
-          if (ok && (window.lottie || window.bodymovin)) {
-            resolve(window.lottie || window.bodymovin);
-            return;
-          }
-        } catch (_) {}
-      }
-
-      const cdnSources = [
-        'https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.12.2/lottie.min.js',
-        'https://cdn.jsdelivr.net/npm/lottie-web@5.12.2/build/player/lottie.min.js',
-        'https://cdnjs.cloudflare.com/ajax/libs/bodymovin/5.12.2/lottie_light.min.js'
-      ];
-      for (const cdnUrl of cdnSources) {
-        try {
-          const res = await fetch(cdnUrl, { cache: 'force-cache' });
-          if (res.ok) {
-            const code = await res.text();
-            if (code && code.length > 1000) {
-              const s = document.createElement('script');
-              s.textContent = code;
-              document.head.appendChild(s);
-              try { localStorage.setItem('riff_lottie_lib_cache', code); } catch (_) {}
-              if (window.lottie || window.bodymovin) {
-                resolve(window.lottie || window.bodymovin);
-                return;
-              }
-            }
-          }
-        } catch (_) {}
-      }
-
-      for (const cdnUrl of cdnSources) {
-        try {
-          const ok = await new Promise((resOk) => {
-            const s = document.createElement('script');
-            s.src = cdnUrl;
-            s.onload = () => resOk(true);
-            s.onerror = () => { s.remove(); resOk(false); };
-            document.head.appendChild(s);
-          });
-          if (ok && (window.lottie || window.bodymovin)) {
-            resolve(window.lottie || window.bodymovin);
-            return;
-          }
-        } catch (_) {}
-      }
-
-      resolve(window.lottie || window.bodymovin || null);
-    });
-
-    return lottieLibPromise;
-  }
-
-  try { setTimeout(() => getLottieLibrary().catch(() => {}), 100); } catch (_) {}
-
-  async function loadDuckData() {
-    if (cachedDuckData) return cachedDuckData;
-    if (duckFetchPromise) return duckFetchPromise;
-
-    duckFetchPromise = (async () => {
-      const candidatePaths = [
-        new URL('../../assets/duck.json', window.location.href).href,
-        '../../assets/duck.json',
-        '../assets/duck.json',
-        './assets/duck.json',
-        'assets/duck.json',
-        '/assets/duck.json'
-      ];
-
-      for (const p of candidatePaths) {
-        try {
-          const resp = await fetch(p);
-          if (resp.ok || (resp.status === 0 && resp.type !== 'error')) {
-            const txt = await resp.text();
-            if (txt && txt.trim().startsWith('{')) {
-              const parsed = JSON.parse(txt);
-              if (parsed && (parsed.v || parsed.layers || parsed.op)) {
-                cachedDuckData = parsed;
-                return cachedDuckData;
-              }
-            }
-          }
-        } catch (_) {}
-
-        try {
-          const xhrResult = await new Promise((resXhr) => {
-            const xhr = new XMLHttpRequest();
-            xhr.open('GET', p, true);
-            xhr.onload = () => {
-              if ((xhr.status === 200 || xhr.status === 0) && xhr.responseText && xhr.responseText.trim().startsWith('{')) {
-                try {
-                  const parsed = JSON.parse(xhr.responseText);
-                  if (parsed && (parsed.v || parsed.layers || parsed.op)) {
-                    resXhr(parsed);
-                    return;
-                  }
-                } catch (_) {}
-              }
-              resXhr(null);
-            };
-            xhr.onerror = () => resXhr(null);
-            xhr.send();
-          });
-          if (xhrResult) {
-            cachedDuckData = xhrResult;
-            return cachedDuckData;
-          }
-        } catch (_) {}
-      }
-      return null;
-    })();
-
-    const res = await duckFetchPromise;
-    duckFetchPromise = null;
-    return res;
-  }
-
-  function isAboutTabActive() {
-    const sec = document.getElementById('settings-section-about');
-    if (!sec) return false;
-    if (sec.classList.contains('cat-hidden') || sec.style.display === 'none') return false;
-    const viewSettings = document.getElementById('view-settings');
-    if (viewSettings && !viewSettings.classList.contains('active')) return false;
-    return true;
-  }
-
-  function updateAboutSupportLottieState(isAboutActive) {
-    if (!aboutSupportLottieAnim) return;
-    const active = typeof isAboutActive === 'boolean' ? isAboutActive : isAboutTabActive();
-    if (active && !document.hidden) {
-      aboutSupportLottieAnim.play();
-    } else {
-      aboutSupportLottieAnim.pause();
-    }
-  }
-
-  async function initAboutSupportLottie() {
-    const wrap = document.getElementById('support-me-lottie-wrap');
-    if (!wrap) return;
-    if (aboutSupportLottieAnim) {
-      updateAboutSupportLottieState(isAboutTabActive());
-      return;
-    }
-
-    const [lottie, duckData] = await Promise.all([
-      getLottieLibrary(),
-      loadDuckData()
-    ]);
-
-    if (!lottie || !duckData) {
-      if (!duckData && !aboutSupportPollInterval) {
-        aboutSupportPollInterval = setInterval(async () => {
-          if (!isAboutTabActive()) return;
-          const data = await loadDuckData();
-          if (data) {
-            clearInterval(aboutSupportPollInterval);
-            aboutSupportPollInterval = null;
-            initAboutSupportLottie();
-          }
-        }, 2500);
-      }
-      return;
-    }
-
-    if (aboutSupportPollInterval) {
-      clearInterval(aboutSupportPollInterval);
-      aboutSupportPollInterval = null;
-    }
-
-    wrap.innerHTML = '';
-
-    try {
-      if (typeof lottie.setSubframe === 'function') {
-        lottie.setSubframe(true);
-      }
-      aboutSupportLottieAnim = lottie.loadAnimation({
-        container: wrap,
-        renderer: 'svg',
-        loop: true,
-        autoplay: true,
-        animationData: duckData,
-        rendererSettings: {
-          preserveAspectRatio: 'xMidYMid meet',
-          progressiveLoad: false,
-          hideOnTransparent: true,
-          className: 'support-duck-lottie-svg'
-        }
-      });
-
-      aboutSupportLottieAnim.setSpeed(1.0);
-
-      if (!aboutSupportObserver) {
-        aboutSupportObserver = new IntersectionObserver((entries) => {
-          entries.forEach(entry => {
-            if (!aboutSupportLottieAnim) return;
-            if (entry.isIntersecting && !document.hidden && isAboutTabActive()) {
-              aboutSupportLottieAnim.play();
-            } else {
-              aboutSupportLottieAnim.pause();
-            }
-          });
-        }, { threshold: 0.05 });
-        aboutSupportObserver.observe(wrap);
-      }
-
-      updateAboutSupportLottieState(isAboutTabActive());
-    } catch (err) {
-      console.warn('[Riff] Failed to load duck lottie animation:', err);
-    }
-  }
-
-  function ensureAboutSupportDOM() {
-    // Cremo: the "Support me / Buy a coffee" card was Riff's author's ko-fi.
-    return;
-    const aboutSec = document.getElementById('settings-section-about');
-    if (!aboutSec) return;
-    if (document.getElementById('support-me-group')) return;
-
-    ensureAboutSupportStyles();
-
-    const group = document.createElement('div');
-    group.className = 'm3-group support-me-group';
-    group.id = 'support-me-group';
-
-    group.innerHTML = `
-      <div class="setting-item support-me-card" id="support-me-card">
-        <div class="support-me-lottie-wrap" id="support-me-lottie-wrap">
-          <div class="support-lottie-placeholder" id="support-lottie-placeholder" title="Animated duck loading...">
-            <svg width="48" height="48" viewBox="0 0 24 24" fill="currentColor">
-              <path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"/>
-            </svg>
-          </div>
-        </div>
-        <div class="support-me-content">
-          <span class="support-me-title setting-name">Support me!</span>
-          <span class="support-me-desc setting-hint">Riff is created and maintained by one person. If you enjoy using it, any small tip like $1 helps keep the project going!</span>
-          <div class="support-me-actions">
-            <a href="https://ko-fi.com/rootlesszen/" target="_blank" rel="noopener noreferrer" class="btn-pill-primary support-me-btn" id="btn-support-buy-coffee" style="text-decoration: none !important; border: none !important; outline: none !important;">
-              <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" aria-hidden="true" style="flex-shrink:0;">
-                <path d="M20 3H4v10c0 2.21 1.79 4 4 4h6c2.21 0 4-1.79 4-4v-3h2c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 5h-2V5h2v3zM4 19h16v2H4z"/>
-              </svg>
-              <span>Buy a coffee</span>
-            </a>
-          </div>
-        </div>
-      </div>
-    `;
-
-    const m3Group = aboutSec.querySelector('.m3-group');
-    if (m3Group) {
-      aboutSec.insertBefore(group, m3Group);
-    } else {
-      aboutSec.appendChild(group);
-    }
-
-    const btnCoffee = group.querySelector('#btn-support-buy-coffee');
-    if (btnCoffee) {
-      btnCoffee.addEventListener('click', (e) => {
-        const coffeeUrl = 'https://ko-fi.com/rootlesszen/';
-        try {
-          window.open(coffeeUrl, '_blank');
-        } catch (_) {}
-      });
-    }
-
-    initAboutSupportLottie();
-  }
-  ensureAboutSupportDOM();
-
-  document.addEventListener('visibilitychange', () => {
-    updateAboutSupportLottieState();
-  });
-
-  if (window.electronAPI && typeof window.electronAPI.onWindowVisibility === 'function') {
-    window.electronAPI.onWindowVisibility((visible) => {
-      updateAboutSupportLottieState(!!visible);
-    });
-  }
 
 
   function syncAllThemeToggleIndicators() {
@@ -5341,16 +4949,16 @@ function bindCoverHoldZoom(wrapEl) {
   ].forEach(({ btn, key }) => {
     if (btn) {
       btn.addEventListener('click', () => {
-        localStorage.setItem('riff_font', key);
+        localStorage.setItem('cremo_font', key);
         applyFont(key);
         requestAnimationFrame(syncAllThemeToggleIndicators);
       });
     }
   });
-  applyFont(state.riffFont);
+  applyFont(state.cremoFont);
   requestAnimationFrame(syncAllThemeToggleIndicators);
 
-  var isArtFont = localStorage.getItem('riff_art_font') !== '0';
+  var isArtFont = localStorage.getItem('cremo_art_font') !== '0';
   document.body.classList.toggle('art-font-on', isArtFont);
   var btnArtFont = document.getElementById('btn-art-font');
   if (btnArtFont) {
@@ -5359,11 +4967,11 @@ function bindCoverHoldZoom(wrapEl) {
       const next = !document.body.classList.contains('art-font-on');
       document.body.classList.toggle('art-font-on', next);
       btnArtFont.classList.toggle('active', next);
-      localStorage.setItem('riff_art_font', next ? '1' : '0');
+      localStorage.setItem('cremo_art_font', next ? '1' : '0');
     });
   }
 
-  var npAlign = localStorage.getItem('riff_np_align') || 'left';
+  var npAlign = localStorage.getItem('cremo_np_align') || 'left';
   var npAlignLeft = document.getElementById('np-align-left');
   var npAlignCenter = document.getElementById('np-align-center');
   var updateNpAlignUI = (val) => {
@@ -5371,7 +4979,7 @@ function bindCoverHoldZoom(wrapEl) {
     document.body.classList.toggle('np-align-center', val === 'center');
     if (npAlignLeft) npAlignLeft.classList.toggle('active', val === 'left');
     if (npAlignCenter) npAlignCenter.classList.toggle('active', val === 'center');
-    localStorage.setItem('riff_np_align', val);
+    localStorage.setItem('cremo_np_align', val);
   };
   if (npAlignLeft) {
     npAlignLeft.addEventListener('click', () => updateNpAlignUI('left'));
@@ -5387,15 +4995,15 @@ function bindCoverHoldZoom(wrapEl) {
     const p = valid.includes(pos) ? pos : 'top-center';
     if (el.rightPanel) el.rightPanel.setAttribute('data-np-toolbar-pos', p);
     if (npToolbarPosSelect) npToolbarPosSelect.value = p;
-    localStorage.setItem('riff_np_toolbar_pos', p);
+    localStorage.setItem('cremo_np_toolbar_pos', p);
   };
-  applyNpToolbarPos(localStorage.getItem('riff_np_toolbar_pos') || 'top-center');
+  applyNpToolbarPos(localStorage.getItem('cremo_np_toolbar_pos') || 'top-center');
   if (npToolbarPosSelect) {
     npToolbarPosSelect.addEventListener('change', (e) => applyNpToolbarPos(e.target.value));
     setupSortDropdown('np-toolbar-pos-dropdown', 'np-toolbar-pos-trigger', 'np-toolbar-pos-menu', 'np-toolbar-pos-label', document.getElementById('np-toolbar-pos-select'));
   }
 
-  var trackRowStyle = localStorage.getItem('riff_track_row_style') || 'default';
+  var trackRowStyle = localStorage.getItem('cremo_track_row_style') || 'default';
   var trackStyleDefault = document.getElementById('track-style-default');
   var trackStyleCompact = document.getElementById('track-style-compact');
   var updateTrackRowStyleUI = (val) => {
@@ -5403,7 +5011,7 @@ function bindCoverHoldZoom(wrapEl) {
     document.body.classList.toggle('track-rows-compact', isCompact);
     if (trackStyleDefault) trackStyleDefault.classList.toggle('active', !isCompact);
     if (trackStyleCompact) trackStyleCompact.classList.toggle('active', isCompact);
-    localStorage.setItem('riff_track_row_style', val);
+    localStorage.setItem('cremo_track_row_style', val);
     if (state.currentView === 'playlist-detail' && state.currentPlaylistId) {
       openPlaylistDetail(state.currentPlaylistId);
     } else if (state.currentView === 'favorites' && typeof renderFavoritesView === 'function') {
@@ -5487,10 +5095,7 @@ function bindCoverHoldZoom(wrapEl) {
     sf: {
       '#nav-discover svg': '<circle cx="12" cy="12" r="9.5"></circle><polygon points="15.5 8.5 13.5 13.5 8.5 15.5 10.5 10.5 15.5 8.5" fill="currentColor"></polygon>',
       '#nav-favorites svg': '<path d="M12 21.35l-1.45-1.32C5.4 15.36 2 12.28 2 8.5 2 5.42 4.42 3 7.5 3c1.74 0 3.41.81 4.5 2.09C13.09 3.81 14.76 3 16.5 3 19.58 3 22 5.42 22 8.5c0 3.78-3.4 6.86-8.55 11.54L12 21.35z"></path>',
-      '#nav-albums svg': '<circle cx="12" cy="12" r="9.5"></circle><circle cx="12" cy="12" r="3.2"></circle><circle cx="12" cy="12" r="1" fill="currentColor"></circle>',
       '#nav-local svg': '<path d="M2.5 7A2.5 2.5 0 0 1 5 4.5h4.2c.8 0 1.5.4 1.9 1l1.2 1.8c.4.6 1.1 1 1.9 1H19A2.5 2.5 0 0 1 21.5 11v6.5a2.5 2.5 0 0 1-2.5 2.5H5a2.5 2.5 0 0 1-2.5-2.5V7z"></path>',
-      '#nav-history svg': '<circle cx="12" cy="12" r="9.5"></circle><polyline points="12 6.5 12 12 15.5 14"></polyline>',
-      '#nav-queue svg': '<path d="M4 6.5h16M4 12h16M4 17.5h16" stroke-linecap="round"></path>',
       '#nav-settings svg': '<circle cx="12" cy="12" r="3.2"></circle><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83-2.83l.06-.06A1.65 1.65 0 0 0 4.68 15a1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 2.83-2.83l.06.06A1.65 1.65 0 0 0 9 4.68a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 2.83l-.06.06A1.65 1.65 0 0 0 19.4 9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1Z"></path>',
       '#btn-toggle-lyrics-panel svg': '<path d="M9 18V5l12-2v13M9 9l12-2"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle>',
       '#btn-open-settings svg': '<line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line>',
@@ -5499,10 +5104,7 @@ function bindCoverHoldZoom(wrapEl) {
     lucide: {
       '#nav-discover svg': '<circle cx="12" cy="12" r="10"></circle><polygon points="16.24 7.76 14.12 14.12 7.76 16.24 9.88 9.88 16.24 7.76"></polygon>',
       '#nav-favorites svg': '<path d="M19 14c1.49-1.46 3-3.21 3-5.5A5.5 5.5 0 0 0 16.5 3c-1.76 0-3 .5-4.5 2-1.5-1.5-2.74-2-4.5-2A5.5 5.5 0 0 0 2 8.5c0 2.3 1.5 4.05 3 5.5l7 7Z"></path>',
-      '#nav-albums svg': '<circle cx="12" cy="12" r="10"></circle><circle cx="12" cy="12" r="4"></circle><circle cx="12" cy="12" r="1"></circle>',
       '#nav-local svg': '<path d="M4 20h16a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.93a2 2 0 0 1-1.66-.9l-.82-1.2A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13c0 1.1.9 2 2 2Z"></path>',
-      '#nav-history svg': '<circle cx="12" cy="12" r="10"></circle><polyline points="12 6 12 12 16 14"></polyline>',
-      '#nav-queue svg': '<line x1="4" y1="7" x2="20" y2="7"></line><line x1="4" y1="12" x2="20" y2="12"></line><line x1="4" y1="17" x2="14" y2="17"></line>',
       '#nav-settings svg': '<path d="M12.22 2h-.44a2 2 0 0 0-2 2v.18a2 2 0 0 1-1 1.73l-.43.25a2 2 0 0 1-2 0l-.15-.08a2 2 0 0 0-2.73.73l-.22.38a2 2 0 0 0 .73 2.73l.15.1a2 2 0 0 1 1 1.72v.51a2 2 0 0 1-1 1.74l-.15.09a2 2 0 0 0-.73 2.73l.22.38a2 2 0 0 0 2.73.73l.15-.08a2 2 0 0 1 2 0l.43.25a2 2 0 0 1 1 1.73V20a2 2 0 0 0 2 2h.44a2 2 0 0 0 2-2v-.18a2 2 0 0 1 1-1.73l.43-.25a2 2 0 0 1 2 0l.15.08a2 2 0 0 0 2.73-.73l.22-.39a2 2 0 0 0-.73-2.73l-.15-.08a2 2 0 0 1-1-1.74v-.5a2 2 0 0 1 1-1.74l.15-.09a2 2 0 0 0 .73-2.73l-.22-.38a2 2 0 0 0-2.73-.73l-.15.08a2 2 0 0 1-2 0l-.43-.25a2 2 0 0 1-1-1.73V4a2 2 0 0 0-2-2z"></path><circle cx="12" cy="12" r="3"></circle>',
       '#btn-toggle-lyrics-panel svg': '<path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle>',
       '#btn-open-settings svg': '<line x1="4" y1="21" x2="4" y2="14"></line><line x1="4" y1="10" x2="4" y2="3"></line><line x1="12" y1="21" x2="12" y2="12"></line><line x1="12" y1="8" x2="12" y2="3"></line><line x1="20" y1="21" x2="20" y2="16"></line><line x1="20" y1="12" x2="20" y2="3"></line><line x1="1" y1="14" x2="7" y2="14"></line><line x1="9" y1="8" x2="15" y2="8"></line><line x1="17" y1="16" x2="23" y2="16"></line>',
@@ -5511,10 +5113,7 @@ function bindCoverHoldZoom(wrapEl) {
     solar: {
       '#nav-discover svg': '<circle cx="12" cy="12" r="9.5"></circle><polygon points="16 8 13.8 13.8 8 16 10.2 10.2 16 8"></polygon>',
       '#nav-favorites svg': '<path d="M12.62 20.89c-.38.14-.86.14-1.24 0C8.48 19.82 2 15.69 2 8.69A5.69 5.69 0 0 1 7.69 3c1.64 0 3.12.7 4.31 1.83A6.05 6.05 0 0 1 16.31 3 5.69 5.69 0 0 1 22 8.69c0 7-6.48 11.13-9.38 12.2z"></path>',
-      '#nav-albums svg': '<circle cx="12" cy="12" r="9.5"></circle><circle cx="12" cy="12" r="3"></circle>',
       '#nav-local svg': '<path d="M2 11c0-2.83 0-4.24.88-5.12C3.76 5 5.17 5 8 5h.5c.78 0 1.43 0 1.98.24.54.23.97.66 1.52 1.48L13 8h3c2.83 0 4.24 0 5.12.88C22 9.76 22 11.17 22 14v2c0 2.83 0 4.24-.88 5.12C20.24 22 18.83 22 16 22H8c-2.83 0-4.24 0-5.12-.88C2 20.24 2 18.83 2 16v-5z"></path>',
-      '#nav-history svg': '<circle cx="12" cy="12" r="9.5"></circle><polyline points="12 7 12 12 15 13.5"></polyline>',
-      '#nav-queue svg': '<path d="M4 7h16M4 12h16M4 17h11"></path>',
       '#nav-settings svg': '<circle cx="12" cy="12" r="3.5"></circle><path d="M12 2v2m0 16v2m10-10h-2M4 12H2m15.07-7.07-1.41 1.41M8.34 17.66l-1.41 1.41m12.14 0-1.41-1.41M8.34 6.34 6.93 4.93"></path>',
       '#btn-toggle-lyrics-panel svg': '<path d="M9 18V5l12-2v13"></path><circle cx="6" cy="18" r="3"></circle><circle cx="18" cy="16" r="3"></circle>',
       '#btn-open-settings svg': '<path d="M4 21v-7M4 10V3M12 21v-9M12 8V3M20 21v-5M20 12V3M1 14h6M9 8h6M17 16h6"></path>',
@@ -5524,23 +5123,13 @@ function bindCoverHoldZoom(wrapEl) {
 
   var MATERIAL_SYMBOL_NAMES = {
     '#nav-favorites svg': 'favorite',
-    '#nav-albums svg': 'album',
     '#nav-local svg': 'folder',
-    '#nav-history svg': 'history',
-    '#nav-queue svg': 'queue_music',
     '#nav-settings svg': 'settings',
-    '#btn-sb-settings svg': 'settings',
-    '#btn-sb-new-playlist svg': 'playlist_add',
-    '#btn-sb-collapse svg': 'dock_to_left',
-    '#btn-rail-expand-lib svg': 'dock_to_right',
-    '#btn-sb-create-pill svg': 'add',
     '#btn-toggle-presets-drawer svg': 'tune',
     '#btn-toggle-playlists-drawer svg': 'queue_music',
     '#btn-toggle-lyrics-panel svg': 'dock_to_left',
     '#btn-toggle-queue-panel svg': 'queue_music',
     '#btn-open-settings svg': 'tune',
-    '#btn-sb-lib-search svg': 'search',
-    '#btn-sb-lib-sort svg': 'sort',
     '#btn-playbar-more svg': 'more_horiz',
     '#btn-playbar-share svg': 'share',
     '#btn-edit-current-track svg': 'edit',
@@ -5562,9 +5151,9 @@ function bindCoverHoldZoom(wrapEl) {
     }
 
     const msFont = pack === 'material-sharp' ? "'Material Symbols Sharp'" : (pack === 'material' ? "'Material Symbols Outlined'" : "'Material Symbols Rounded'");
-    const msFill = (pack === 'material-filled' || localStorage.getItem('riff_icon_fill') === '1') ? '1' : '0';
+    const msFill = (pack === 'material-filled' || localStorage.getItem('cremo_icon_fill') === '1') ? '1' : '0';
     document.body.setAttribute('data-icon-fill', msFill);
-    const msWght = localStorage.getItem('riff_icon_wght') || '400';
+    const msWght = localStorage.getItem('cremo_icon_wght') || '400';
     const svgStrokeW = ((parseInt(msWght, 10) / 400) * 2).toFixed(2) + 'px';
     const svgLinejoin = pack === 'material-sharp' ? 'miter' : 'round';
     const svgLinecap = pack === 'material-sharp' ? 'butt' : 'round';
@@ -5700,7 +5289,7 @@ function bindCoverHoldZoom(wrapEl) {
     applyPlaybarHardcodedIcons();
   }
 
-  var savedIconPack = localStorage.getItem('riff_icon_pack') || 'material';
+  var savedIconPack = localStorage.getItem('cremo_icon_pack') || 'material';
   applyIconPack(savedIconPack);
   applyPlaybarHardcodedIcons();
 
@@ -5718,11 +5307,11 @@ function bindCoverHoldZoom(wrapEl) {
         e.stopPropagation();
         const val = opt.dataset.value;
         if (val === 'material-filled') {
-          localStorage.setItem('riff_icon_fill', '1');
+          localStorage.setItem('cremo_icon_fill', '1');
         } else if (val.startsWith('material')) {
-          localStorage.setItem('riff_icon_fill', '0');
+          localStorage.setItem('cremo_icon_fill', '0');
         }
-        localStorage.setItem('riff_icon_pack', val);
+        localStorage.setItem('cremo_icon_pack', val);
         applyIconPack(val);
         iconPackDropdown.classList.remove('open');
       });
@@ -5738,7 +5327,7 @@ function bindCoverHoldZoom(wrapEl) {
   if (sliderIconRoundness) {
     sliderIconRoundness.addEventListener('input', (e) => {
       const val = parseInt(e.target.value, 10);
-      const isFilled = (localStorage.getItem('riff_icon_fill') || '0') === '1';
+      const isFilled = (localStorage.getItem('cremo_icon_fill') || '0') === '1';
       let newPack = 'material';
       if (val === 0) {
         newPack = 'material-sharp';
@@ -5750,7 +5339,7 @@ function bindCoverHoldZoom(wrapEl) {
         newPack = isFilled ? 'material-filled' : 'material-rounded';
         if (valIconRoundness) valIconRoundness.textContent = 'Rounded';
       }
-      localStorage.setItem('riff_icon_pack', newPack);
+      localStorage.setItem('cremo_icon_pack', newPack);
       applyIconPack(newPack);
     });
   }
@@ -5761,10 +5350,10 @@ function bindCoverHoldZoom(wrapEl) {
     sliderIconWeight.addEventListener('input', (e) => {
       const wght = e.target.value;
       if (valIconWeight) valIconWeight.textContent = wght;
-      localStorage.setItem('riff_icon_wght', wght);
+      localStorage.setItem('cremo_icon_wght', wght);
       const strokeW = ((parseInt(wght, 10) / 400) * 2).toFixed(2) + 'px';
       document.documentElement.style.setProperty('--ms-icon-wght', wght);
-      const fillVal = (localStorage.getItem('riff_icon_fill') || '0') === '1' ? '1' : '0';
+      const fillVal = (localStorage.getItem('cremo_icon_fill') || '0') === '1' ? '1' : '0';
       document.body.setAttribute('data-icon-fill', fillVal);
       document.querySelectorAll('.ms-injected-icon, .material-symbols-outlined, .material-symbols-rounded, .material-symbols-sharp').forEach(span => {
         span.style.setProperty('font-variation-settings', `'FILL' ${fillVal}, 'wght' ${wght}, 'GRAD' 0, 'opsz' 24`, 'important');
@@ -5776,10 +5365,10 @@ function bindCoverHoldZoom(wrapEl) {
   if (btnIconFilled) {
     btnIconFilled.addEventListener('click', (e) => {
       e.stopPropagation();
-      const curPack = localStorage.getItem('riff_icon_pack') || 'material';
-      const curFill = (localStorage.getItem('riff_icon_fill') || '0') === '1' || curPack === 'material-filled';
+      const curPack = localStorage.getItem('cremo_icon_pack') || 'material';
+      const curFill = (localStorage.getItem('cremo_icon_fill') || '0') === '1' || curPack === 'material-filled';
       const nextFill = curFill ? '0' : '1';
-      localStorage.setItem('riff_icon_fill', nextFill);
+      localStorage.setItem('cremo_icon_fill', nextFill);
       btnIconFilled.classList.toggle('active', nextFill === '1');
       document.documentElement.style.setProperty('--ms-icon-fill', nextFill);
 
@@ -5789,7 +5378,7 @@ function bindCoverHoldZoom(wrapEl) {
       } else if (nextFill === '0' && curPack === 'material-filled') {
         newPack = 'material-rounded';
       }
-      localStorage.setItem('riff_icon_pack', newPack);
+      localStorage.setItem('cremo_icon_pack', newPack);
       applyIconPack(newPack);
     });
   }
@@ -5813,7 +5402,7 @@ function bindCoverHoldZoom(wrapEl) {
     }
   }
 
-  var savedSearchPos = localStorage.getItem('riff_search_pos') || 'middle';
+  var savedSearchPos = localStorage.getItem('cremo_search_pos') || 'middle';
   applySearchPos(savedSearchPos);
 
   var searchPosDropdown = document.getElementById('search-pos-dropdown');
@@ -5829,7 +5418,7 @@ function bindCoverHoldZoom(wrapEl) {
       opt.addEventListener('click', (e) => {
         e.stopPropagation();
         const val = opt.dataset.value;
-        localStorage.setItem('riff_search_pos', val);
+        localStorage.setItem('cremo_search_pos', val);
         applySearchPos(val);
         searchPosDropdown.classList.remove('open');
       });
@@ -5861,7 +5450,7 @@ function bindCoverHoldZoom(wrapEl) {
       if (el.valCornerRadius) el.valCornerRadius.textContent = val === 16 ? 'Default' : `${val}px`;
       document.documentElement.style.setProperty('--md-shape-corner-l', `${val}px`);
       document.documentElement.style.setProperty('--md-shape-corner-m', `${Math.max(0, val - 4)}px`);
-      localStorage.setItem('riff_corner_radius', val.toString());
+      localStorage.setItem('cremo_corner_radius', val.toString());
     });
   }
 
@@ -5870,7 +5459,7 @@ function bindCoverHoldZoom(wrapEl) {
       const val = Math.max(20, Math.min(100, parseInt(e.target.value, 10) || 100));
       if (el.valUiAlpha) el.valUiAlpha.textContent = `${val}%`;
       document.documentElement.style.setProperty('--ui-alpha', `${val}%`);
-      localStorage.setItem('riff_ui_alpha', val.toString());
+      localStorage.setItem('cremo_ui_alpha', val.toString());
       refreshCachedThemeColors();
     });
   }
@@ -5881,7 +5470,7 @@ function bindCoverHoldZoom(wrapEl) {
       if (el.sliderUiAlpha) el.sliderUiAlpha.value = val;
       if (el.valUiAlpha) el.valUiAlpha.textContent = `${val}%`;
       document.documentElement.style.setProperty('--ui-alpha', `${val}%`);
-      localStorage.setItem('riff_ui_alpha', val.toString());
+      localStorage.setItem('cremo_ui_alpha', val.toString());
       refreshCachedThemeColors();
     });
   }
@@ -5893,7 +5482,7 @@ function bindCoverHoldZoom(wrapEl) {
       document.body.style.setProperty('--panel-blur', `${val}px`);
       document.body.classList.toggle('no-panel-blur', val <= 0);
       if (el.valPanelBlur) el.valPanelBlur.textContent = `${val}px`;
-      localStorage.setItem('riff_panel_blur', String(val));
+      localStorage.setItem('cremo_panel_blur', String(val));
     });
   }
 
@@ -5905,7 +5494,7 @@ function bindCoverHoldZoom(wrapEl) {
       document.documentElement.style.setProperty('--panel-blur', `${val}px`);
       document.body.style.setProperty('--panel-blur', `${val}px`);
       document.body.classList.toggle('no-panel-blur', false);
-      localStorage.setItem('riff_panel_blur', '24');
+      localStorage.setItem('cremo_panel_blur', '24');
     });
   }
 
@@ -5914,7 +5503,7 @@ function bindCoverHoldZoom(wrapEl) {
       const isNowActive = !el.btnPlayBtnBg.classList.contains('active');
       el.btnPlayBtnBg.classList.toggle('active', isNowActive);
       document.body.classList.toggle('play-btn-nobg', !isNowActive);
-      localStorage.setItem('riff_play_btn_bg', isNowActive ? 'true' : 'false');
+      localStorage.setItem('cremo_play_btn_bg', isNowActive ? 'true' : 'false');
     });
   }
 
@@ -5925,7 +5514,7 @@ function bindCoverHoldZoom(wrapEl) {
       const next = !document.body.classList.contains('home-next-to-search');
       document.body.classList.toggle('home-next-to-search', next);
       btnHomeNextToSearch.classList.toggle('active', next);
-      localStorage.setItem('riff_home_next_to_search', next ? '1' : '0');
+      localStorage.setItem('cremo_home_next_to_search', next ? '1' : '0');
     });
   }
 
@@ -5937,7 +5526,7 @@ function bindCoverHoldZoom(wrapEl) {
       if (window.electronAPI && window.electronAPI.pickMedia) {
         const url = await window.electronAPI.pickMedia();
         if (url) {
-          localStorage.setItem('riff_banner_media', url);
+          localStorage.setItem('cremo_banner_media', url);
           const thumb = getTrackThumbUrl(state.currentTrack);
           updateRightPanelBanner(thumb);
           updatePlaylistDetailBanner(thumb);
@@ -5948,7 +5537,7 @@ function bindCoverHoldZoom(wrapEl) {
 
   if (btnResetBannerMedia) {
     btnResetBannerMedia.addEventListener('click', () => {
-      localStorage.removeItem('riff_banner_media');
+      localStorage.removeItem('cremo_banner_media');
       const thumb = getTrackThumbUrl(state.currentTrack);
       updateRightPanelBanner(thumb);
       updatePlaylistDetailBanner(thumb);
@@ -5968,7 +5557,7 @@ function bindCoverHoldZoom(wrapEl) {
       const v = parseInt(e.target.value, 10);
       document.documentElement.style.setProperty('--banner-blur', `${v}px`);
       if (valBannerBlur) valBannerBlur.textContent = `${v}px`;
-      localStorage.setItem('riff_banner_blur', v.toString());
+      localStorage.setItem('cremo_banner_blur', v.toString());
     });
   }
 
@@ -5985,7 +5574,7 @@ function bindCoverHoldZoom(wrapEl) {
       const v = parseInt(e.target.value, 10);
       document.documentElement.style.setProperty('--banner-opacity', `${v / 100}`);
       if (valBannerOpacity) valBannerOpacity.textContent = `${v}%`;
-      localStorage.setItem('riff_banner_opacity', v.toString());
+      localStorage.setItem('cremo_banner_opacity', v.toString());
     });
   }
 
@@ -6008,7 +5597,7 @@ function bindCoverHoldZoom(wrapEl) {
         rightBanner.style.setProperty('--banner-fade-end', `${v}%`);
       }
       if (valBannerFade) valBannerFade.textContent = `${v}%`;
-      localStorage.setItem('riff_banner_fade', v.toString());
+      localStorage.setItem('cremo_banner_fade', v.toString());
     });
   }
 
@@ -6058,7 +5647,7 @@ function bindCoverHoldZoom(wrapEl) {
       opt.addEventListener('click', (e) => {
         e.stopPropagation();
         const val = opt.dataset.value;
-        localStorage.setItem('riff_banner_fit', val);
+        localStorage.setItem('cremo_banner_fit', val);
         applyBannerFit(val);
         if (bannerFitLabel) bannerFitLabel.textContent = opt.textContent;
         bannerFitMenu.querySelectorAll('.m3-dropdown-option').forEach(o => o.classList.remove('selected'));
@@ -6082,7 +5671,7 @@ function bindCoverHoldZoom(wrapEl) {
 
 
   function updateShowLocalUI(animate = false) {
-    const show = localStorage.getItem('riff_show_local') !== 'false';
+    const show = localStorage.getItem('cremo_show_local') !== 'false';
     if (el.navLocal) el.navLocal.classList.toggle('nav-collapsed', !show);
     if (btnShowLocal) btnShowLocal.classList.toggle('active', show);
     if (!show && state.currentView === 'local') {
@@ -6102,40 +5691,23 @@ function bindCoverHoldZoom(wrapEl) {
   }
   if (btnShowLocal) {
     btnShowLocal.addEventListener('click', () => {
-      const show = localStorage.getItem('riff_show_local') !== 'false';
-      localStorage.setItem('riff_show_local', (!show) ? 'true' : 'false');
+      const show = localStorage.getItem('cremo_show_local') !== 'false';
+      localStorage.setItem('cremo_show_local', (!show) ? 'true' : 'false');
       updateShowLocalUI(true);
       refreshStacks();
     });
   }
   updateShowLocalUI(false);
 
-  var showAlbumsSaved = localStorage.getItem('riff_show_albums') === '1';
-  document.body.classList.toggle('hide-albums-tab', !showAlbumsSaved);
-  var btnShowAlbums = document.getElementById('btn-show-albums');
-  if (btnShowAlbums) {
-    btnShowAlbums.classList.toggle('active', showAlbumsSaved);
-    btnShowAlbums.addEventListener('click', () => {
-      const next = !btnShowAlbums.classList.contains('active');
-      btnShowAlbums.classList.toggle('active', next);
-      localStorage.setItem('riff_show_albums', next ? '1' : '0');
-      document.body.classList.toggle('hide-albums-tab', !next);
-      if (!next && state.currentView === 'albums') {
-        switchView('discover');
-      }
-      if (typeof refreshStacks === 'function') refreshStacks();
-      if (typeof updateNavIndicator === 'function') updateNavIndicator(false);
-    });
-  }
 
   var btnShowPlaylistRecs = document.getElementById('btn-show-playlist-recs');
-  var showPlaylistRecs = localStorage.getItem('riff_show_playlist_recs') !== '0';
+  var showPlaylistRecs = localStorage.getItem('cremo_show_playlist_recs') !== '0';
   if (btnShowPlaylistRecs) {
     btnShowPlaylistRecs.classList.toggle('active', showPlaylistRecs);
     btnShowPlaylistRecs.addEventListener('click', () => {
       const next = !btnShowPlaylistRecs.classList.contains('active');
       btnShowPlaylistRecs.classList.toggle('active', next);
-      localStorage.setItem('riff_show_playlist_recs', next ? '1' : '0');
+      localStorage.setItem('cremo_show_playlist_recs', next ? '1' : '0');
       const recsSec = document.getElementById('playlist-recs-section');
       if (next) {
         if (state.currentView === 'playlist-detail' && state.currentPlaylist) {
@@ -6151,26 +5723,26 @@ function bindCoverHoldZoom(wrapEl) {
     document.body.classList.toggle('hide-favorites-header', !show);
   }
   var btnFavHeaderSetting = document.getElementById('btn-fav-header-setting');
-  var favHeaderPref = localStorage.getItem('riff_fav_header') !== '0';
+  var favHeaderPref = localStorage.getItem('cremo_fav_header') !== '0';
   applyFavHeader(favHeaderPref);
   if (btnFavHeaderSetting) {
     btnFavHeaderSetting.classList.toggle('active', favHeaderPref);
     btnFavHeaderSetting.addEventListener('click', () => {
       const next = !btnFavHeaderSetting.classList.contains('active');
       btnFavHeaderSetting.classList.toggle('active', next);
-      localStorage.setItem('riff_fav_header', next ? '1' : '0');
+      localStorage.setItem('cremo_fav_header', next ? '1' : '0');
       applyFavHeader(next);
     });
   }
 
   var btnShowFavRecs = document.getElementById('btn-show-fav-recs');
-  var showFavRecs = localStorage.getItem('riff_show_fav_recs') !== '0';
+  var showFavRecs = localStorage.getItem('cremo_show_fav_recs') !== '0';
   if (btnShowFavRecs) {
     btnShowFavRecs.classList.toggle('active', showFavRecs);
     btnShowFavRecs.addEventListener('click', () => {
       const next = !btnShowFavRecs.classList.contains('active');
       btnShowFavRecs.classList.toggle('active', next);
-      localStorage.setItem('riff_show_fav_recs', next ? '1' : '0');
+      localStorage.setItem('cremo_show_fav_recs', next ? '1' : '0');
       const recsSec = document.getElementById('favorites-recs-section');
       if (next) {
         if (state.currentView === 'favorites') {
@@ -6186,7 +5758,7 @@ function bindCoverHoldZoom(wrapEl) {
     document.body.classList.toggle('hide-track-numbers', !!hide);
   }
   var btnShowTrackNumbers = document.getElementById('btn-show-track-numbers') || document.getElementById('btn-hide-track-numbers');
-  var hideTrackNumbersPref = localStorage.getItem('riff_hide_track_numbers') === '1';
+  var hideTrackNumbersPref = localStorage.getItem('cremo_hide_track_numbers') === '1';
   applyHideTrackNumbers(hideTrackNumbersPref);
   if (btnShowTrackNumbers) {
     btnShowTrackNumbers.classList.toggle('active', !hideTrackNumbersPref);
@@ -6194,7 +5766,7 @@ function bindCoverHoldZoom(wrapEl) {
       const nextShow = !btnShowTrackNumbers.classList.contains('active');
       btnShowTrackNumbers.classList.toggle('active', nextShow);
       const hide = !nextShow;
-      localStorage.setItem('riff_hide_track_numbers', hide ? '1' : '0');
+      localStorage.setItem('cremo_hide_track_numbers', hide ? '1' : '0');
       applyHideTrackNumbers(hide);
     });
   }
@@ -6203,14 +5775,14 @@ function bindCoverHoldZoom(wrapEl) {
     document.body.classList.toggle('no-hand-cursor', !!on);
   }
   var btnNoHandCursor = document.getElementById('btn-no-hand-cursor');
-  var noHand = localStorage.getItem('riff_no_hand_cursor') !== '0';
+  var noHand = localStorage.getItem('cremo_no_hand_cursor') !== '0';
   applyNoHandCursor(noHand);
   if (btnNoHandCursor) {
     btnNoHandCursor.classList.toggle('active', noHand);
     btnNoHandCursor.addEventListener('click', () => {
       const next = !btnNoHandCursor.classList.contains('active');
       btnNoHandCursor.classList.toggle('active', next);
-      localStorage.setItem('riff_no_hand_cursor', next ? '1' : '0');
+      localStorage.setItem('cremo_no_hand_cursor', next ? '1' : '0');
       applyNoHandCursor(next);
     });
   }
@@ -6219,19 +5791,19 @@ function bindCoverHoldZoom(wrapEl) {
     document.body.classList.toggle('highlight-buttons', !!on);
   }
   var btnHighlightButtons = document.getElementById('btn-highlight-buttons');
-  var initialHighlightButtons = localStorage.getItem('riff_highlight_buttons') !== '0';
+  var initialHighlightButtons = localStorage.getItem('cremo_highlight_buttons') !== '0';
   applyHighlightButtons(initialHighlightButtons);
   if (btnHighlightButtons) {
     btnHighlightButtons.classList.toggle('active', initialHighlightButtons);
     btnHighlightButtons.addEventListener('click', () => {
       const next = !btnHighlightButtons.classList.contains('active');
       btnHighlightButtons.classList.toggle('active', next);
-      localStorage.setItem('riff_highlight_buttons', next ? '1' : '0');
+      localStorage.setItem('cremo_highlight_buttons', next ? '1' : '0');
       applyHighlightButtons(next);
     });
   }
 
-  var RIFF_APP_ICONS = [
+  var CREMO_APP_ICONS = [
     { id: '01-default.svg', label: 'Default' },
     { id: '02-editor.svg', label: 'Editor' },
     { id: '03-orbit.svg', label: 'Orbit' },
@@ -6309,8 +5881,8 @@ function bindCoverHoldZoom(wrapEl) {
     img.src = imgSrc;
   }
   function applyHomeAppIcon(val) {
-    const chosen = val || localStorage.getItem('riff_app_icon') || '02-editor.svg';
-    localStorage.setItem('riff_app_icon', chosen);
+    const chosen = val || localStorage.getItem('cremo_app_icon') || '02-editor.svg';
+    localStorage.setItem('cremo_app_icon', chosen);
     const resolved = resolveAppIconSrc(chosen);
     const homeImg = document.getElementById('nav-home-app-icon');
     if (homeImg) homeImg.src = resolved;
@@ -6343,10 +5915,10 @@ function bindCoverHoldZoom(wrapEl) {
   }
   function initAppIconPicker() {
     const grid = document.getElementById('app-icon-picker-grid');
-    const saved = localStorage.getItem('riff_app_icon') || '02-editor.svg';
+    const saved = localStorage.getItem('cremo_app_icon') || '02-editor.svg';
     if (grid) {
       grid.innerHTML = '';
-      RIFF_APP_ICONS.forEach(item => {
+      CREMO_APP_ICONS.forEach(item => {
         const btn = document.createElement('button');
         btn.type = 'button';
         btn.className = 'app-icon-option' + (saved === item.id ? ' active' : '');
@@ -6376,16 +5948,34 @@ function bindCoverHoldZoom(wrapEl) {
       nav.insertBefore(searchBox, nav.firstElementChild);
     }
     // Cremo: visualizer, player and explore are Cremo's own categories (see cremo.js).
-    const order = ['interface', 'visualizer', 'player', 'explore', 'theme', 'banners', 'tracks', 'integrations', 'storage', 'about', 'advanced', 'custom-themes', 'plugins'];
+    // Categories are shown in small labelled groups so the menu fits without scrolling.
+    const es = (localStorage.getItem('cremo_ui_lang') || 'en') === 'es';
+    const groups = [
+      ['general', es ? 'General' : 'General', ['interface', 'player', 'visualizer', 'explore']],
+      ['look', es ? 'Apariencia' : 'Appearance', ['theme', 'custom-themes', 'banners']],
+      ['media', es ? 'Música y datos' : 'Music & data', ['tracks', 'integrations', 'storage']],
+      ['system', es ? 'Sistema' : 'System', ['advanced', 'plugins', 'about']]
+    ];
     const buttons = Array.from(nav.querySelectorAll('.settings-nav-btn'));
     if (!buttons.length) return;
     const btnMap = new Map();
     buttons.forEach(b => {
       if (b.dataset.cat) btnMap.set(b.dataset.cat, b);
     });
-    order.forEach(cat => {
-      const b = btnMap.get(cat);
-      if (b) nav.appendChild(b);
+    groups.forEach(([key, label, cats]) => {
+      let head = nav.querySelector('.settings-nav-group[data-group="' + key + '"]');
+      if (!head) {
+        head = document.createElement('div');
+        head.className = 'settings-nav-group';
+        head.dataset.group = key;
+        head.setAttribute('data-i18n-fixed', '');
+      }
+      if (head.textContent !== label) head.textContent = label;
+      nav.appendChild(head);
+      cats.forEach(cat => {
+        const b = btnMap.get(cat);
+        if (b) nav.appendChild(b);
+      });
     });
     let spacer = nav.querySelector('div[style*="flex"]') || nav.querySelector('.settings-nav-spacer');
     if (!spacer) {
@@ -6403,7 +5993,7 @@ function bindCoverHoldZoom(wrapEl) {
 
   function showSettingsCategory(cat) {
     if (cat === 'appearance' || cat === 'overview' || !cat || cat === 'home') cat = 'interface';
-    try { localStorage.setItem('riff_settings_cat', cat); } catch (e) {}
+    try { localStorage.setItem('cremo_settings_cat', cat); } catch (e) {}
     reorderSettingsNav();
     const viewSettings = el.viewSettings || document.getElementById('view-settings');
     if (!viewSettings) return;
@@ -6418,12 +6008,9 @@ function bindCoverHoldZoom(wrapEl) {
     if (typeof ensureDisableAnimationsDOM === 'function') ensureDisableAnimationsDOM();
     if (typeof ensureTrackRowHeightSliderDOM === 'function') ensureTrackRowHeightSliderDOM();
     if (typeof ensureTopMomentIconSettingsDOM === 'function') ensureTopMomentIconSettingsDOM();
-    if (typeof ensureRiffHomeIconSettingDOM === 'function') ensureRiffHomeIconSettingDOM();
+    if (typeof ensureCremoHomeIconSettingDOM === 'function') ensureCremoHomeIconSettingDOM();
     if (typeof ensureCoverBgSettingsDOM === 'function') ensureCoverBgSettingsDOM();
     if (typeof window.cremoOrganizeSettings === 'function') window.cremoOrganizeSettings();
-    if (typeof ensureAboutSupportDOM === 'function') ensureAboutSupportDOM();
-    if (typeof updateAboutSupportLottieState === 'function') updateAboutSupportLottieState(cat === 'about');
-    if (cat === 'about' && typeof initAboutSupportLottie === 'function') initAboutSupportLottie();
     document.querySelectorAll('#view-settings .setting-item.hidden').forEach(i => i.classList.remove('hidden'));
     document.querySelectorAll('#view-settings .settings-section').forEach(s => {
       s.style.display = '';
@@ -6577,7 +6164,7 @@ function bindCoverHoldZoom(wrapEl) {
     showToast(`Plugin ${file} failed: ${e && e.message ? e.message : e}`, 'error');
   }
   function createPluginApi(p) {
-    const prefix = `riff_plugin_${p.file}_`;
+    const prefix = `cremo_plugin_${p.file}_`;
     return {
       plugin: { file: p.file, name: p.name, author: p.author, version: p.version },
       on(event, cb) {
@@ -6588,7 +6175,7 @@ function bindCoverHoldZoom(wrapEl) {
       toast: (message, type) => showToast(String(message), type || 'info'),
       addStyle(css) {
         const s = document.createElement('style');
-        s.dataset.riffCustom = 'plugin';
+        s.dataset.cremoCustom = 'plugin';
         s.dataset.plugin = p.file;
         s.textContent = css;
         document.head.appendChild(s);
@@ -6626,7 +6213,6 @@ function bindCoverHoldZoom(wrapEl) {
           });
           if (added.length) {
             updateQueueBadge();
-            if (state.currentView === 'queue') renderQueueView();
           }
           return added;
         }
@@ -6666,7 +6252,7 @@ function bindCoverHoldZoom(wrapEl) {
     if (loadedPlugins.has(p.file)) return;
     try {
       const api = createPluginApi(p);
-      const fn = new Function('Riff', 'plugin', `${p.code}\n//# sourceURL=riff-plugin-${p.file}`);
+      const fn = new Function('Cremo', 'plugin', `${p.code}\n//# sourceURL=cremo-plugin-${p.file}`);
       const result = fn(api, api.plugin);
       loadedPlugins.set(p.file, { stop: result && typeof result.stop === 'function' ? result.stop : null });
     } catch (e) { reportPluginError(p.file, e); }
@@ -6679,7 +6265,7 @@ function bindCoverHoldZoom(wrapEl) {
     document.querySelectorAll(`style[data-plugin="${p.file}"]`).forEach((n) => n.remove());
     const hadStop = !!(entry && entry.stop);
     loadedPlugins.delete(p.file);
-    if (!silent && !hadStop) showToast(`Restart Riff to fully unload "${p.name}"`, 'info');
+    if (!silent && !hadStop) showToast(`Restart Cremo to fully unload "${p.name}"`, 'info');
   }
   var pluginsCache = [];
   function renderPluginCards() {
@@ -6777,7 +6363,7 @@ function bindCoverHoldZoom(wrapEl) {
     return cssEditorLoading;
   }
 
-  function defineRiffMonacoTheme(monaco) {
+  function defineCremoMonacoTheme(monaco) {
     const cs = getComputedStyle(document.documentElement);
     const hex = (name, fallback) => { const v = cs.getPropertyValue(name).trim(); return /^#[0-9a-f]{6}$/i.test(v) ? v : fallback; };
     const bg = hex('--md-sys-color-surface-container-lowest-solid', '#141218');
@@ -6786,7 +6372,7 @@ function bindCoverHoldZoom(wrapEl) {
     const lum = (h) => { const n = parseInt(h.slice(1), 16); return (0.299 * (n >> 16) + 0.587 * ((n >> 8) & 255) + 0.114 * (n & 255)) / 255; };
     const isDark = lum(bg) < 0.5;
     const fg = isDark ? '#e6e1e5' : '#1c1b1f';
-    monaco.editor.defineTheme('riff', {
+    monaco.editor.defineTheme('cremo', {
       base: isDark ? 'vs-dark' : 'vs',
       inherit: true,
       rules: [
@@ -6810,7 +6396,7 @@ function bindCoverHoldZoom(wrapEl) {
         'editor.selectionBackground': primary + '55'
       }
     });
-    monaco.editor.setTheme('riff');
+    monaco.editor.setTheme('cremo');
   }
 
   async function openCssEditor() {
@@ -6821,16 +6407,16 @@ function bindCoverHoldZoom(wrapEl) {
     overlay.classList.remove('hidden');
     let monaco;
     try { monaco = await loadMonaco(); } catch (e) { overlay.classList.add('hidden'); showToast('Could not load the CSS editor', 'error'); return; }
-    defineRiffMonacoTheme(monaco);
+    defineCremoMonacoTheme(monaco);
     if (cssEditorInstance) {
       cssEditorInstance.layout();
       cssEditorInstance.focus();
       return;
     }
     cssEditorInstance = monaco.editor.create(document.getElementById('css-editor-host'), {
-      value: localStorage.getItem('riff_custom_css') || '/* Your CSS goes here. Example:\n.btn-pill-primary { border-radius: 8px; }\n*/\n',
+      value: localStorage.getItem('cremo_custom_css') || '/* Your CSS goes here. Example:\n.btn-pill-primary { border-radius: 8px; }\n*/\n',
       language: 'css',
-      theme: 'riff',
+      theme: 'cremo',
       automaticLayout: true,
       minimap: { enabled: true },
       fontSize: 14,
@@ -6850,7 +6436,7 @@ function bindCoverHoldZoom(wrapEl) {
     cssEditorInstance.onDidChangeModelContent(() => {
       clearTimeout(saveTimer);
       saveTimer = setTimeout(() => {
-        localStorage.setItem('riff_custom_css', cssEditorInstance.getValue());
+        localStorage.setItem('cremo_custom_css', cssEditorInstance.getValue());
         applyCustomStyles();
       }, 350);
     });
@@ -6868,17 +6454,17 @@ function bindCoverHoldZoom(wrapEl) {
   if (btnCssClose) btnCssClose.addEventListener('click', () => document.getElementById('css-editor').classList.add('hidden'));
   var btnCssClear = document.getElementById('btn-css-clear');
   if (btnCssClear) btnCssClear.addEventListener('click', () => {
-    const current = localStorage.getItem('riff_custom_css') || '';
-    if (current.trim()) localStorage.setItem('riff_custom_css_backup', current);
+    const current = localStorage.getItem('cremo_custom_css') || '';
+    if (current.trim()) localStorage.setItem('cremo_custom_css_backup', current);
     if (cssEditorInstance) cssEditorInstance.setValue('');
-    else { localStorage.removeItem('riff_custom_css'); applyCustomStyles(); }
+    else { localStorage.removeItem('cremo_custom_css'); applyCustomStyles(); }
   });
   var btnCssRestore = document.getElementById('btn-css-restore');
   if (btnCssRestore) btnCssRestore.addEventListener('click', () => {
-    const backup = localStorage.getItem('riff_custom_css_backup');
+    const backup = localStorage.getItem('cremo_custom_css_backup');
     if (!backup) { showToast('Nothing to restore', 'info'); return; }
     if (cssEditorInstance) cssEditorInstance.setValue(backup);
-    else { localStorage.setItem('riff_custom_css', backup); applyCustomStyles(); }
+    else { localStorage.setItem('cremo_custom_css', backup); applyCustomStyles(); }
   });
 
 
@@ -6940,12 +6526,12 @@ function bindCoverHoldZoom(wrapEl) {
       }
     }
     if (d.toggles) {
-      setSwitch(document.getElementById('btn-show-local'), d.toggles.riff_show_local);
-      setSwitch(document.getElementById('btn-search-artists'), d.toggles.riff_search_artists);
-      setSwitch(document.getElementById('btn-no-hand-cursor'), d.toggles.riff_no_hand_cursor);
-      setSwitch(document.getElementById('btn-perf-mode'), d.toggles.riff_perf_mode);
-      if (d.toggles.riff_custom_bg_enabled && d.background) {
-        localStorage.setItem('riff_bg_url', d.background);
+      setSwitch(document.getElementById('btn-show-local'), d.toggles.cremo_show_local);
+      setSwitch(document.getElementById('btn-search-artists'), d.toggles.cremo_search_artists);
+      setSwitch(document.getElementById('btn-no-hand-cursor'), d.toggles.cremo_no_hand_cursor);
+      setSwitch(document.getElementById('btn-perf-mode'), d.toggles.cremo_perf_mode);
+      if (d.toggles.cremo_custom_bg_enabled && d.background) {
+        localStorage.setItem('cremo_bg_url', d.background);
         if (typeof updateCustomBg === 'function') updateCustomBg();
         if (typeof onBackgroundChanged === 'function') onBackgroundChanged('custom', true);
       }
@@ -6961,14 +6547,14 @@ function bindCoverHoldZoom(wrapEl) {
       const btnConfirm = document.getElementById('btn-confirm-spotify-import');
       if (btnConfirm) btnConfirm.click();
     }
-    showToast('Welcome to Riff!', 'info');
+    showToast('Welcome to Cremo!', 'info');
   }
   if (window.electronAPI && window.electronAPI.onWelcomeResult) window.electronAPI.onWelcomeResult((d) => applyWelcomeResult(d));
 
   function checkCompactLayout() {
     const isMini = window.innerWidth <= 520;
     document.body.classList.toggle('mini', isMini);
-    const savedLyricsOn = localStorage.getItem('riff_mini_lyrics') === '1';
+    const savedLyricsOn = localStorage.getItem('cremo_mini_lyrics') === '1';
     document.body.classList.toggle('mini-lyrics-on', isMini && savedLyricsOn);
     const btn = document.getElementById('btn-mini-lyrics');
     if (btn) btn.classList.toggle('active', isMini && savedLyricsOn);
@@ -6984,7 +6570,7 @@ function bindCoverHoldZoom(wrapEl) {
     if (window.electronAPI && window.electronAPI.toggleMiniWindow) {
       const isNowMini = await window.electronAPI.toggleMiniWindow();
       if (isNowMini) {
-        const savedLyricsOn = localStorage.getItem('riff_mini_lyrics') === '1';
+        const savedLyricsOn = localStorage.getItem('cremo_mini_lyrics') === '1';
         if (savedLyricsOn && window.electronAPI.setMiniLyrics) {
           await window.electronAPI.setMiniLyrics(true);
         }
@@ -7007,7 +6593,7 @@ function bindCoverHoldZoom(wrapEl) {
   if (btnMiniLyrics) {
     btnMiniLyrics.addEventListener('click', async () => {
       const nextOn = !document.body.classList.contains('mini-lyrics-on');
-      localStorage.setItem('riff_mini_lyrics', nextOn ? '1' : '0');
+      localStorage.setItem('cremo_mini_lyrics', nextOn ? '1' : '0');
       document.body.classList.toggle('mini-lyrics-on', nextOn);
       btnMiniLyrics.classList.toggle('active', nextOn);
       if (window.electronAPI && window.electronAPI.setMiniLyrics) {
@@ -7021,12 +6607,12 @@ function bindCoverHoldZoom(wrapEl) {
   }
 
   var knownAudioOutputIds = new Set();
-  var currentAudioOutputDeviceId = localStorage.getItem('riff_audio_output_device') || 'default';
+  var currentAudioOutputDeviceId = localStorage.getItem('cremo_audio_output_device') || 'default';
 
   async function applyAudioOutputDevice(deviceId) {
     currentAudioOutputDeviceId = deviceId || 'default';
     try {
-      localStorage.setItem('riff_audio_output_device', currentAudioOutputDeviceId);
+      localStorage.setItem('cremo_audio_output_device', currentAudioOutputDeviceId);
     } catch (_) {}
 
     const targetId = (deviceId === 'default' || !deviceId) ? '' : deviceId;
@@ -7220,7 +6806,7 @@ function bindCoverHoldZoom(wrapEl) {
 
   var activeShortcuts = { ...defaultShortcuts };
   try {
-    const rawShortcuts = localStorage.getItem('riff_keyboard_shortcuts');
+    const rawShortcuts = localStorage.getItem('cremo_keyboard_shortcuts');
     if (rawShortcuts) {
       const parsed = JSON.parse(rawShortcuts);
       if (parsed && typeof parsed === 'object') {
@@ -7240,7 +6826,7 @@ function bindCoverHoldZoom(wrapEl) {
 
   function saveCustomShortcuts() {
     try {
-      localStorage.setItem('riff_keyboard_shortcuts', JSON.stringify(activeShortcuts));
+      localStorage.setItem('cremo_keyboard_shortcuts', JSON.stringify(activeShortcuts));
     } catch (_) {}
   }
 
@@ -7499,7 +7085,7 @@ function bindCoverHoldZoom(wrapEl) {
     btn.addEventListener('click', () => {
       const fromCpm = !!btn.closest('#create-playlist-modal');
       document.getElementById('create-playlist-modal')?.classList.add('hidden');
-      if (btn.dataset.platform && !['deezer', 'tiktok', 'vk', 'yandex'].includes(btn.dataset.platform)) setPlatform(btn.dataset.platform, false);
+      if (btn.dataset.platform && btn.dataset.platform !== 'deezer') setPlatform(btn.dataset.platform, false);
       openLinkImportModal(btn.dataset.platform || '');
       if (fromCpm) {
         const card = document.querySelector('#link-import-modal .dialog-card');
@@ -7526,7 +7112,7 @@ function bindCoverHoldZoom(wrapEl) {
 
   var trackToDownload = null;
   var downloadBatch = null;
-  var selectedFormat = localStorage.getItem('riff_download_format') || 'mp3';
+  var selectedFormat = localStorage.getItem('cremo_download_format') || 'mp3';
   var selectedQuality = '0';
 
 
@@ -7685,565 +7271,31 @@ function bindCoverHoldZoom(wrapEl) {
     refreshOverflowFades(document);
   });
 
-  var ambientIdx = 0;
-  var currentAmbientUrl = null;
-
-  function scrollCarouselTo(row, idx) {
-    if (!row) return;
-    const cards = row.querySelectorAll('.my-wave-track-card');
-    if (cards.length === 0) return;
-    const clampedIdx = Math.max(0, Math.min(cards.length - 1, idx));
-    row._targetIndex = clampedIdx;
-    let step = 304;
-    if (cards.length > 1) {
-      step = cards[1].offsetLeft - cards[0].offsetLeft;
-    } else if (cards.length === 1) {
-      step = cards[0].offsetWidth + 24;
-    }
-    const maxScroll = Math.max(0, row.scrollWidth - row.clientWidth);
-    const target = Math.max(0, Math.min(maxScroll, clampedIdx * step));
-    row.scrollTo({ left: target, behavior: 'smooth' });
-  }
-
-  function updateCoverflowCards(row, titleEl, artistEl, ambientEl, tracks) {
-    if (!row) row = document.getElementById('home-vibe-grid');
-    if (!row) return;
-    if (!tracks) {
-      tracks = (row.id === 'home-vibe-grid')
-        ? (homeMode === 'recent' ? jumpBackCurrentTracks : (homeMode === 'artists' ? favArtistsCurrentList : myWaveCurrentTracks))
-        : jumpBackCurrentTracks;
-    }
-    if (!tracks || tracks.length === 0) return;
-    const cards = row.querySelectorAll('.my-wave-track-card');
-    if (cards.length === 0) return;
-
-    if (!titleEl) titleEl = document.getElementById(row.id === 'home-vibe-grid' ? 'my-wave-focused-title' : 'jump-focused-title');
-    if (!artistEl) artistEl = document.getElementById(row.id === 'home-vibe-grid' ? 'my-wave-focused-artist' : 'jump-focused-artist');
-    if (!ambientEl) ambientEl = document.getElementById(row.id === 'home-vibe-grid' ? 'my-wave-ambient-light' : 'jump-ambient-light');
-
-    let step = 304;
-    if (cards.length > 1) {
-      step = cards[1].offsetLeft - cards[0].offsetLeft;
-    } else if (cards.length === 1) {
-      step = cards[0].offsetWidth + 24;
-    }
-    if (!step || step <= 0) step = 304;
-
-    const floatIndex = row.scrollLeft / step;
-    const newFocused = Math.max(0, Math.min(cards.length - 1, Math.round(floatIndex)));
-    if (typeof row._targetIndex === 'number' && Math.abs(row.scrollLeft - (row._targetIndex * step)) < 12) {
-      row._targetIndex = undefined;
-    }
-
-    cards.forEach((card, j) => {
-      const dist = Math.abs(j - newFocused);
-      card.classList.remove('near', 'far');
-      if (dist === 0) {
-        card.style.zIndex = '10';
-      } else if (dist === 1) {
-        card.classList.add('near');
-        card.style.zIndex = '5';
-      } else {
-        card.classList.add('far');
-        card.style.zIndex = '1';
-      }
-    });
-
-    const prevFocused = (typeof row._focusedIndex === 'number') ? row._focusedIndex : -1;
-    if (newFocused !== prevFocused && tracks[newFocused]) {
-      row._focusedIndex = newFocused;
-      if (row.id === 'home-vibe-grid') {
-        currentWaveFocusedIndex = newFocused;
-      }
-      const item = tracks[newFocused];
-      if (titleEl && artistEl) {
-        if (homeMode === 'artists') {
-          titleEl.textContent = item.name || 'Unknown';
-          const pText = item.plays > 0
-            ? `${formatCount(item.plays)} play${item.plays === 1 ? '' : 's'}`
-            : (item.fans > 0 ? `${formatCount(item.fans)} listeners` : '0 plays');
-          artistEl.textContent = pText;
-        } else {
-          titleEl.textContent = item.title || 'Untitled';
-          artistEl.textContent = item.artist || 'Unknown';
-        }
-        updateTextFade(titleEl);
-        updateTextFade(artistEl);
-      }
-      if (homeMode === 'artists') {
-        updateAmbientLight(ambientEl, '');
-      } else {
-        const thumb = (typeof getTrackThumbUrl === 'function' ? getTrackThumbUrl(item) : '') || item.thumbnail || item.cover || item.image || '';
-        updateAmbientLight(ambientEl, thumb);
-      }
-    }
-  }
-
-  function getJumpBackTracks() {
-    const raw = Array.isArray(state.history) ? state.history : [];
-    const seen = new Set();
-    const tracks = [];
-    for (const t of raw) {
-      if (!t || typeof t !== 'object') continue;
-      const canId = (typeof getTrackCanonicalId === 'function' ? getTrackCanonicalId(t) : '') || t.id || `${t.artist || ''}::${t.title || ''}`;
-      if (seen.has(canId)) continue;
-      seen.add(canId);
-      const thumb = (typeof getTrackThumbUrl === 'function' ? getTrackThumbUrl(t) : '') || t.thumbnail || t.cover || t.image || t.localThumbnail || '';
-      tracks.push({
-        ...t,
-        thumbnail: thumb,
-        title: t.title || 'Untitled',
-        artist: t.artist || t.uploader || 'Unknown artist'
-      });
-      if (tracks.length >= 15) break;
-    }
-    return tracks;
-  }
-
-  function buildHomeCard(track, mode, idx) {
-    const card = document.createElement('div');
-    card.className = 'my-wave-track-card';
-    if (typeof idx === 'number') card.dataset.index = String(idx);
-    const candidates = (typeof coverCandidates === 'function'
-      ? coverCandidates(track)
-      : [(typeof getTrackThumbUrl === 'function' ? getTrackThumbUrl(track) : '') || track.thumbnail || track.cover || track.image || '']
-    ).filter(Boolean);
-
-    card.innerHTML = `
-      <div class="my-wave-track-cover-wrap">
-        <img class="my-wave-track-cover" alt="">
-        <div class="my-wave-track-play-overlay">
-          <svg width="24" height="24" viewBox="0 0 24 24" fill="currentColor"><polygon points="5 3 19 12 5 21 5 3"></polygon></svg>
-        </div>
-      </div>
-    `;
-
-    const img = card.querySelector('img.my-wave-track-cover');
-    if (img) {
-      if (candidates.length === 0) {
-        setTimeout(() => {
-          const cardEl = img.closest('.my-wave-track-card') || card;
-          if (cardEl && cardEl.parentNode) cardEl.remove();
-        }, 0);
-      } else {
-        let attempt = 0;
-        img.addEventListener('error', () => {
-          attempt++;
-          if (attempt < candidates.length) {
-            img.src = candidates[attempt];
-          } else {
-            const cardEl = img.closest('.my-wave-track-card') || card;
-            if (cardEl && cardEl.parentNode) {
-              cardEl.remove();
-            }
-          }
-        });
-        img.src = candidates[0];
-      }
-    }
-
-    card.addEventListener('click', () => {
-      const row = document.getElementById('home-vibe-grid');
-      const curIdx = (typeof idx === 'number') ? idx : parseInt(card.dataset.index, 10);
-      const focusedIndex = (row && typeof row._focusedIndex === 'number') ? row._focusedIndex : 0;
-      if (curIdx === focusedIndex) {
-        if (mode === 'wave') {
-          state.isRadioQueue = true;
-          state.myWaveActive = true;
-          const waveQueue = [...myWaveCurrentTracks];
-          playTrack(track, waveQueue, curIdx);
-        } else {
-          state.isRadioQueue = false;
-          state.myWaveActive = false;
-          const recentTracks = jumpBackCurrentTracks.length > 0 ? jumpBackCurrentTracks : getJumpBackTracks();
-          playTrack(track, [...recentTracks], curIdx);
-        }
-      } else if (row) {
-        scrollCarouselTo(row, curIdx);
-      }
-    });
-
-    return card;
-  }
-
-  function getWaveSpinnerHtml() {
-    return `
-      <div class="m3-spinner-container" style="margin: auto;">
-        <span class="riff-dots-loader lg" aria-hidden="true"><i></i><i></i><i></i></span>
-      </div>
-    `;
-  }
-
-  function renderHomeCarousel(mode) {
-    if (!mode) mode = homeMode || 'wave';
-    homeMode = mode;
-
-    const headerLabel = document.querySelector('#section-my-wave .home-pane-label');
-    if (headerLabel) {
-      const waveLabel = (state.isHotPicks && state.hotPicksTitle) ? state.hotPicksTitle : 'For you';
-      headerLabel.textContent = (mode === 'recent') ? 'Jump back in' : (mode === 'artists' ? 'Favorite artists' : waveLabel);
-      headerLabel.style.cursor = availableModes().length > 1 ? 'pointer' : 'default';
-      headerLabel.style.pointerEvents = 'auto';
-      if (!headerLabel._hasToggleListener) {
-        headerLabel._hasToggleListener = true;
-        headerLabel.addEventListener('click', () => {
-          const avail = availableModes();
-          if (avail.length > 1) {
-            const curIdx = avail.indexOf(homeMode);
-            const nextIdx = (curIdx + 1) % avail.length;
-            if (nextIdx !== -1) {
-              switchHomeMode(nextIdx - curIdx);
-            }
-          }
-        });
-      }
-    }
-    const actions = document.querySelector('#section-my-wave .my-wave-actions');
-    if (actions) {
-      actions.style.display = (mode === 'wave') ? '' : 'none';
-    }
-
-    const vibeGrid = document.getElementById('home-vibe-grid');
-    const focusedMeta = document.getElementById('my-wave-focused-meta');
-    if (!vibeGrid) return;
-
-    if (mode === 'recent') {
-      jumpBackCurrentTracks = getJumpBackTracks();
-    } else if (mode === 'artists') {
-      favArtistsCurrentList = getFavoriteArtistsList();
-    }
-    const rawSource = (mode === 'recent') ? jumpBackCurrentTracks : (mode === 'artists' ? favArtistsCurrentList : myWaveCurrentTracks);
-    const source = (mode === 'artists')
-      ? rawSource
-      : (Array.isArray(rawSource) ? rawSource.filter(t => !isTrackBlocked(t) && !isArtistBlocked(t.artist) && !isTrackFailedOrUnavailable(t) && Boolean(getTrackThumbUrl(t))) : []);
-    if (mode === 'wave') myWaveCurrentTracks = source;
-    else if (mode === 'recent') jumpBackCurrentTracks = source;
-
-    vibeGrid.innerHTML = '';
-
-    if (!source || source.length === 0) {
-      if (focusedMeta) focusedMeta.innerHTML = '';
-      if (mode === 'recent') {
-        vibeGrid.innerHTML = `<div class="vibe-empty-hint">Play some tracks to see them here</div>`;
-      } else if (mode === 'artists') {
-        vibeGrid.innerHTML = `<div class="vibe-empty-hint">Follow some artists to see them here</div>`;
-      } else {
-        const cachedVibe = (window.HomeCache && window.HomeCache.get('home_vibe')) || safeJson('riff_my_wave_cache', null)?.tracks;
-        if (!cachedVibe || cachedVibe.length === 0) {
-          vibeGrid.innerHTML = getWaveSpinnerHtml();
-        }
-      }
-      updateAmbientLight('my-wave-ambient-light', '');
-      return;
-    }
-
-    const fragment = document.createDocumentFragment();
-    if (mode === 'artists') {
-      source.forEach((artistObj, idx) => {
-        fragment.appendChild(buildFavArtistCircleCard(artistObj, true, idx));
-      });
-    } else {
-      source.forEach((track, idx) => {
-        fragment.appendChild(buildHomeCard(track, mode, idx));
-      });
-    }
-    vibeGrid.appendChild(fragment);
-
-    const firstThumb = (mode === 'artists') ? '' : ((typeof getTrackThumbUrl === 'function' ? getTrackThumbUrl(source[0]) : '') || source[0].thumbnail || source[0].cover || source[0].image || '');
-
-    if (focusedMeta && source[0]) {
-      if (mode === 'artists') {
-        const item = source[0];
-        const pText = item.plays > 0
-          ? `${formatCount(item.plays)} play${item.plays === 1 ? '' : 's'}`
-          : (item.fans > 0 ? `${formatCount(item.fans)} listeners` : '0 plays');
-        focusedMeta.innerHTML = `
-          <div class="my-wave-focused-title" id="my-wave-focused-title">${escapeHtml(item.name || 'Unknown')}</div>
-          <div class="my-wave-focused-artist" id="my-wave-focused-artist">${escapeHtml(pText)}</div>
-        `;
-        const titleEl = document.getElementById('my-wave-focused-title');
-        const artistEl = document.getElementById('my-wave-focused-artist');
-        if (titleEl) updateTextFade(titleEl);
-        if (artistEl) updateTextFade(artistEl);
-        updateAmbientLight('my-wave-ambient-light', '');
-      } else {
-        focusedMeta.innerHTML = `
-          <div class="my-wave-focused-title" id="my-wave-focused-title">${escapeHtml(source[0].title || 'Untitled')}</div>
-          <div class="my-wave-focused-artist" id="my-wave-focused-artist">${escapeHtml(source[0].artist || 'Unknown')}</div>
-        `;
-        const titleEl = document.getElementById('my-wave-focused-title');
-        const artistEl = document.getElementById('my-wave-focused-artist');
-        if (titleEl) updateTextFade(titleEl);
-        if (artistEl) updateTextFade(artistEl);
-        updateAmbientLight('my-wave-ambient-light', firstThumb);
-      }
-    }
-
-    vibeGrid.scrollLeft = 0;
-    vibeGrid._focusedIndex = -1;
-    updateCoverflowCards(vibeGrid, document.getElementById('my-wave-focused-title'), document.getElementById('my-wave-focused-artist'), document.getElementById('my-wave-ambient-light'), source);
-    refreshOverflowFades();
-  }
-
-
-  function availableModes() {
-    const modes = [];
-    if (getAdv('my_wave', true)) modes.push('wave');
-    if (getAdv('jump_back', true)) modes.push('recent');
-    if (getAdv('fav_artists', true)) modes.push('artists');
-    return modes;
-  }
-
-  function updateHomeDots() {
-    const dotsContainer = document.getElementById('home-hero-dots');
-    if (!dotsContainer) return;
-    const avail = availableModes();
-    if (avail.length <= 1) {
-      dotsContainer.style.display = 'none';
-      dotsContainer.innerHTML = '';
-      return;
-    }
-    dotsContainer.style.display = '';
-    dotsContainer.innerHTML = '';
-    avail.forEach(m => {
-      const btn = document.createElement('button');
-      const label = m === 'recent' ? 'Jump back in' : (m === 'artists' ? 'Favorite artists' : 'For you');
-      btn.setAttribute('aria-label', label);
-      btn.title = label;
-      if (m === homeMode) btn.classList.add('active');
-      btn.addEventListener('click', () => {
-        if (m !== homeMode) {
-          const curIdx = avail.indexOf(homeMode);
-          const targetIdx = avail.indexOf(m);
-          switchHomeMode(targetIdx - curIdx);
-        }
-      });
-      dotsContainer.appendChild(btn);
-    });
-  }
-
-  function switchHomeMode(dir) {
-    const avail = availableModes();
-    if (avail.length <= 1) return;
-    const curIdx = avail.indexOf(homeMode);
-    if (curIdx === -1) return;
-    const targetIdx = curIdx + dir;
-    if (targetIdx < 0 || targetIdx >= avail.length) return;
-    const newMode = avail[targetIdx];
-    if (newMode === homeMode) return;
-
-    homeMode = newMode;
-    localStorage.setItem('riff_home_pane', newMode);
-    updateHomeDots();
-
-    const isPerf = document.body.classList.contains('perf') || window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-    if (isPerf) {
-      renderHomeCarousel(newMode);
-      return;
-    }
-
-    const vibeGrid = document.getElementById('home-vibe-grid');
-    const focusedMeta = document.getElementById('my-wave-focused-meta');
-    const animTargets = [vibeGrid, focusedMeta].filter(Boolean);
-
-    const shiftOut = dir > 0 ? '-16px' : '16px';
-    const shiftIn = dir > 0 ? '16px' : '-16px';
-
-    animTargets.forEach(el => {
-      el.style.setProperty('--home-shift', shiftOut);
-      el.classList.remove('home-in');
-      el.classList.add('home-out');
-    });
-
-    setTimeout(() => {
-      renderHomeCarousel(newMode);
-      const newVibeGrid = document.getElementById('home-vibe-grid');
-      const newFocusedMeta = document.getElementById('my-wave-focused-meta');
-      const newTargets = [newVibeGrid, newFocusedMeta].filter(Boolean);
-      newTargets.forEach(el => {
-        el.style.setProperty('--home-in-shift', shiftIn);
-        el.classList.remove('home-out');
-        el.classList.add('home-in');
-        setTimeout(() => {
-          el.classList.remove('home-in');
-        }, 260);
-      });
-    }, 180);
-  }
-
-  function initHomeHero() {
-    const avail = availableModes();
-    const hero = document.getElementById('home-hero') || document.querySelector('#view-discover .discover-content');
-    const dots = document.getElementById('home-hero-dots');
-
-    if (avail.length === 0) {
-      if (hero) hero.style.display = 'none';
-      if (dots) dots.style.display = 'none';
-      const homeAmbient = document.getElementById('home-ambient');
-      if (homeAmbient) homeAmbient.style.display = 'none';
-      return;
-    }
-
-    if (hero) hero.style.display = '';
-
-    if (!avail.includes(homeMode)) {
-      homeMode = avail[0];
-      localStorage.setItem('riff_home_pane', homeMode);
-    }
-
-    updateHomeDots();
-    renderHomeCarousel(homeMode);
-    syncHomeAmbientVisibility();
-  }
-
-  function stepCarouselFocus(delta) {
-    const row = document.getElementById('home-vibe-grid');
-    if (!row) return;
-    const cards = row.querySelectorAll('.my-wave-track-card');
-    if (cards.length === 0) return;
-    const base = (typeof row._targetIndex === 'number')
-      ? row._targetIndex
-      : ((typeof row._focusedIndex === 'number') ? row._focusedIndex : 0);
-    const next = Math.max(0, Math.min(cards.length - 1, base + delta));
-    scrollCarouselTo(row, next);
-  }
-
-  function isDiscoverActive() {
-    const view = document.getElementById('view-discover');
-    return !!(view && view.classList.contains('active'));
-  }
-
-  function isFormInputFocused() {
-    const activeEl = document.activeElement;
-    if (!activeEl) return false;
-    const tag = activeEl.tagName.toLowerCase();
-    return tag === 'input' || tag === 'textarea' || activeEl.isContentEditable;
-  }
-
-  var isWheelModeLocked = false;
-  var isCarouselWheelLocked = false;
-
-  var viewDiscoverEl = document.getElementById('view-discover');
-  if (viewDiscoverEl) {
-    viewDiscoverEl.addEventListener('wheel', (e) => {
-      if (document.body.classList.contains('home-spotify')) return;
-      if (!isDiscoverActive() || isFormInputFocused()) return;
-      if (el.searchResultsContainer && !el.searchResultsContainer.classList.contains('hidden')) return;
-      if (e.target.closest('#search-results-container')) return;
-      const delta = Math.abs(e.deltaY) >= Math.abs(e.deltaX) ? e.deltaY : e.deltaX;
-      if (Math.abs(delta) < 8) return;
-      if (isCarouselWheelLocked) return;
-      e.preventDefault();
-      isCarouselWheelLocked = true;
-      setTimeout(() => { isCarouselWheelLocked = false; }, 85);
-      stepCarouselFocus(delta > 0 ? 1 : -1);
-    }, { passive: false });
-
-    let touchStartY = 0;
-    let touchStartX = 0;
-    viewDiscoverEl.addEventListener('touchstart', (e) => {
-      if (!isDiscoverActive()) return;
-      if (el.searchResultsContainer && !el.searchResultsContainer.classList.contains('hidden')) return;
-      if (e.touches.length > 0) {
-        touchStartY = e.touches[0].clientY;
-        touchStartX = e.touches[0].clientX;
-      }
-    }, { passive: true });
-
-    viewDiscoverEl.addEventListener('touchend', (e) => {
-      if (!isDiscoverActive()) return;
-      if (el.searchResultsContainer && !el.searchResultsContainer.classList.contains('hidden')) return;
-      if (e.changedTouches.length > 0) {
-        const touchEndY = e.changedTouches[0].clientY;
-        const touchEndX = e.changedTouches[0].clientX;
-        const diffY = touchStartY - touchEndY;
-        const diffX = touchStartX - touchEndX;
-        const diff = Math.abs(diffX) >= Math.abs(diffY) ? diffX : diffY;
-        if (Math.abs(diff) > 40) {
-          stepCarouselFocus(diff > 0 ? 1 : -1);
-        }
-      }
-    }, { passive: true });
-  }
-
-  window.addEventListener('keydown', (e) => {
-    if (!isDiscoverActive() || isFormInputFocused()) return;
-    if (el.searchResultsContainer && !el.searchResultsContainer.classList.contains('hidden')) return;
-
-    if (e.key === 'ArrowLeft' || e.key === 'ArrowUp') {
-      e.preventDefault();
-      stepCarouselFocus(-1);
-    } else if (e.key === 'ArrowRight' || e.key === 'ArrowDown') {
-      e.preventDefault();
-      stepCarouselFocus(1);
-    }
-  });
-
-
+  // Cremo: "Para ti" recommendations. They feed the Explorar home and the Para ti
+  // radio; Cremo's old carousel home that used to draw them is gone.
   function renderVibeCards(tracks) {
     if (!Array.isArray(tracks)) return;
     state.vibeTracks = tracks;
     myWaveCurrentTracks = tracks;
     currentWaveFocusedIndex = 0;
-    if (typeof renderHomeCarousel === 'function') renderHomeCarousel('wave');
   }
 
   async function fetchPersonalVibe(forceRefresh = false) {
-    const cachedVibe = !forceRefresh && ((window.HomeCache && window.HomeCache.get('home_vibe')) || safeJson('riff_my_wave_cache', null)?.tracks);
+    const cachedVibe = !forceRefresh && ((window.HomeCache && window.HomeCache.get('home_vibe')) || safeJson('cremo_my_wave_cache', null)?.tracks);
     if (cachedVibe && Array.isArray(cachedVibe) && cachedVibe.length > 0) {
       state.vibeTracks = cachedVibe.filter(t => !isTrackBlocked(t) && !isArtistBlocked(t.artist) && !isTrackFailedOrUnavailable(t) && Boolean(getTrackThumbUrl(t)));
       myWaveCurrentTracks = state.vibeTracks;
       renderVibeCards(state.vibeTracks);
       if (typeof renderSpotifyHome === 'function') renderSpotifyHome();
       const item = window.HomeCache && window.HomeCache.store && window.HomeCache.store['home_vibe'];
-      const ts = (item && item.ts) ? item.ts : (safeJson('riff_my_wave_cache', null)?.ts || 0);
+      const ts = (item && item.ts) ? item.ts : (safeJson('cremo_my_wave_cache', null)?.ts || 0);
       if (Date.now() - ts < 4 * 3600 * 1000) return true;
     }
     return await loadHomePage(forceRefresh);
   }
 
   async function loadHomePage(isRefresh = false) {
-    const jumpSection = document.getElementById('section-jump-back');
-    if (jumpSection) {
-      jumpSection.style.display = 'none';
-    }
-
-    const waveSection = document.getElementById('section-my-wave');
-    if (waveSection) {
-      waveSection.style.display = '';
-    }
-
-    if (!isRefresh) {
-      jumpBackCurrentTracks = getJumpBackTracks();
-      initHomeHero();
-    }
-    if (availableModes().length === 0) return false;
-
-    if (!getAdv('my_wave', true)) {
-      if (homeMode === 'recent') {
-        renderHomeCarousel('recent');
-      } else if (homeMode === 'artists') {
-        renderHomeCarousel('artists');
-      }
-      return false;
-    }
-
-    const vibeGrid = document.getElementById('home-vibe-grid');
-    const focusedMeta = document.getElementById('my-wave-focused-meta');
-    const cachedVibe = (window.HomeCache && window.HomeCache.get('home_vibe')) || safeJson('riff_my_wave_cache', null)?.tracks;
-
-    if (!isRefresh && focusedMeta && homeMode === 'wave' && myWaveCurrentTracks.length === 0 && (!cachedVibe || cachedVibe.length === 0)) {
-      focusedMeta.innerHTML = `
-        <div class="my-wave-skeleton-title-bar skeleton-shimmer"></div>
-        <div class="my-wave-skeleton-artist-bar skeleton-shimmer"></div>
-      `;
-    }
-
-    if (!isRefresh && vibeGrid && homeMode === 'wave' && myWaveCurrentTracks.length === 0 && (!cachedVibe || cachedVibe.length === 0)) {
-      vibeGrid.style.opacity = '1';
-      vibeGrid.innerHTML = getWaveSpinnerHtml();
-    }
-
+    if (!getAdv('my_wave', true)) return false;
     try {
       const profile = await computeTasteProfile();
       const vibePayload = {
@@ -8282,7 +7334,7 @@ function bindCoverHoldZoom(wrapEl) {
           }
           if (uniqueTracks.length > 0) {
             state.vibeTracks = uniqueTracks;
-            try { localStorage.setItem('riff_my_wave_cache', JSON.stringify({ ts: Date.now(), tracks: state.vibeTracks })); } catch (_) {}
+            try { localStorage.setItem('cremo_my_wave_cache', JSON.stringify({ ts: Date.now(), tracks: state.vibeTracks })); } catch (_) {}
             if (window.HomeCache) {
               window.HomeCache.set('home_vibe', uniqueTracks);
             }
@@ -8306,30 +7358,7 @@ function bindCoverHoldZoom(wrapEl) {
       }
 
       if (uniqueTracks.length === 0) {
-        if (!isRefresh) {
-          myWaveCurrentTracks = [];
-          if (homeMode === 'wave') {
-            if (focusedMeta) focusedMeta.innerHTML = '';
-            if (vibeGrid) {
-              vibeGrid.innerHTML = `
-                <div class="my-wave-retry-container" style="display: flex; align-items: center; justify-content: center; gap: 8px; margin: auto; padding: 24px; color: var(--md-sys-color-on-surface-variant); font-size: 14px;">
-                  <span>Couldn't load recommendations</span>
-                  <button class="btn-icon-pill" id="btn-retry-vibe" title="Retry" aria-label="Retry" style="width: 32px; height: 32px;">
-                    <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
-                  </button>
-                </div>
-              `;
-              const retryBtn = vibeGrid.querySelector('#btn-retry-vibe');
-              if (retryBtn) {
-                retryBtn.addEventListener('click', () => {
-                  if (el.btnRefreshVibe) el.btnRefreshVibe.click();
-                  else loadHomePage(true);
-                });
-              }
-            }
-            updateAmbientLight('my-wave-ambient-light', '');
-          }
-        }
+        if (!isRefresh) myWaveCurrentTracks = [];
         return false;
       }
 
@@ -8337,73 +7366,16 @@ function bindCoverHoldZoom(wrapEl) {
       uniqueTracks = uniqueTracks.filter(t => !isTrackBlocked(t) && !isArtistBlocked(t.artist) && !isTrackFailedOrUnavailable(t) && Boolean(getTrackThumbUrl(t)));
       myWaveCurrentTracks = uniqueTracks;
       state.vibeTracks = uniqueTracks;
-      try { localStorage.setItem('riff_my_wave_cache', JSON.stringify({ ts: Date.now(), tracks: state.vibeTracks })); } catch (_) {}
+      try { localStorage.setItem('cremo_my_wave_cache', JSON.stringify({ ts: Date.now(), tracks: state.vibeTracks })); } catch (_) {}
       if (window.HomeCache) {
         window.HomeCache.set('home_vibe', uniqueTracks);
       }
       currentWaveFocusedIndex = 0;
-      if (homeMode === 'wave') {
-        if (vibeGrid) {
-          vibeGrid.style.transition = 'none';
-          vibeGrid.style.opacity = '0';
-        }
-        renderHomeCarousel('wave');
-        currentWaveFocusedIndex = 0;
-        if (vibeGrid) {
-          vibeGrid.scrollLeft = 0;
-          vibeGrid._focusedIndex = 0;
-          const firstCard = vibeGrid.querySelector('.my-wave-track-card');
-          if (firstCard && document.activeElement && document.activeElement.closest('#home-vibe-grid')) {
-            firstCard.focus();
-          }
-          vibeGrid.offsetHeight;
-          vibeGrid.style.transition = 'opacity 250ms ease';
-          vibeGrid.style.opacity = '1';
-        }
-      }
       return true;
     } catch (err) {
-      if (!isRefresh) {
-        myWaveCurrentTracks = [];
-        if (homeMode === 'wave') {
-          if (focusedMeta) focusedMeta.innerHTML = '';
-          if (vibeGrid) {
-            vibeGrid.innerHTML = `
-              <div class="my-wave-retry-container" style="display: flex; align-items: center; justify-content: center; gap: 8px; margin: auto; padding: 24px; color: var(--md-sys-color-on-surface-variant); font-size: 14px;">
-                <span>Couldn't load recommendations</span>
-                <button class="btn-icon-pill" id="btn-retry-vibe" title="Retry" aria-label="Retry" style="width: 32px; height: 32px;">
-                  <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M21.5 2v6h-6M21.34 15.57a10 10 0 1 1-.57-8.38l5.67-5.67"/></svg>
-                </button>
-              </div>
-            `;
-            const retryBtn = vibeGrid.querySelector('#btn-retry-vibe');
-            if (retryBtn) {
-              retryBtn.addEventListener('click', () => {
-                if (el.btnRefreshVibe) el.btnRefreshVibe.click();
-                else loadHomePage(true);
-              });
-            }
-          }
-          updateAmbientLight('my-wave-ambient-light', '');
-        }
-      }
+      if (!isRefresh) myWaveCurrentTracks = [];
       return false;
     }
-  }
-
-  var vibeGridEl = document.getElementById('home-vibe-grid');
-  if (vibeGridEl) {
-    vibeGridEl.addEventListener('scroll', () => {
-      const curTracks = (homeMode === 'recent') ? jumpBackCurrentTracks : myWaveCurrentTracks;
-      updateCoverflowCards(vibeGridEl, document.getElementById('my-wave-focused-title'), document.getElementById('my-wave-focused-artist'), document.getElementById('my-wave-ambient-light'), curTracks);
-    }, { passive: true });
-  }
-
-  var quickRowEl = document.getElementById('home-quick-play-row');
-  if (quickRowEl) {
-    quickRowEl.addEventListener('scroll', () => {
-      updateCoverflowCards(quickRowEl, document.getElementById('jump-focused-title'), document.getElementById('jump-focused-artist'), document.getElementById('jump-ambient-light'), jumpBackCurrentTracks);
-    }, { passive: true });
   }
 
   function applyCoverTintToCard() {}
@@ -8675,7 +7647,7 @@ function bindCoverHoldZoom(wrapEl) {
       if (/[а-яёіїєґ]/i.test(str)) cyrCount++;
       if (/[іїєґ]/i.test(str)) uaCount++;
     }
-    const uiLang = (localStorage.getItem('riff_ui_lang') || '').toLowerCase();
+    const uiLang = (localStorage.getItem('cremo_ui_lang') || '').toLowerCase();
     if (uiLang === 'uk' || (sample.length > 0 && uaCount / sample.length >= 0.15)) return 'ua';
     if (uiLang === 'ru' || (sample.length > 0 && cyrCount / sample.length >= 0.18) || (navigator.languages || []).some(l => /^ru/i.test(l))) return 'ru';
     if (uiLang === 'kz') return 'kz';
@@ -8708,11 +7680,11 @@ function bindCoverHoldZoom(wrapEl) {
       .slice(0, 3)
       .map(e => e[0]);
 
-    const cachedTrendRegion = localStorage.getItem('riff_trending_region');
+    const cachedTrendRegion = localStorage.getItem('cremo_trending_region');
     const regionMatches = cachedTrendRegion === region;
 
-    const cachedTrend = regionMatches ? ((window.HomeCache && window.HomeCache.get('home_trending')) || safeJson('riff_trending_cache', null)?.tracks) : null;
-    const rawLocal = regionMatches ? safeJson('riff_trending_cache', null) : null;
+    const cachedTrend = regionMatches ? ((window.HomeCache && window.HomeCache.get('home_trending')) || safeJson('cremo_trending_cache', null)?.tracks) : null;
+    const rawLocal = regionMatches ? safeJson('cremo_trending_cache', null) : null;
     const cacheItem = (regionMatches && window.HomeCache && window.HomeCache.store) ? window.HomeCache.store['home_trending'] : null;
     const cacheTs = (cacheItem && cacheItem.ts) ? cacheItem.ts : (rawLocal?.ts || 0);
     const isFresh = regionMatches && cacheTs > 0 && (Date.now() - cacheTs < 12 * 3600 * 1000);
@@ -8727,7 +7699,7 @@ function bindCoverHoldZoom(wrapEl) {
       sec.hidden = false;
       row.innerHTML = `
         <div class="m3-spinner-container" style="margin: 24px auto; grid-column: 1 / -1;">
-          <span class="riff-dots-loader lg" aria-hidden="true"><i></i><i></i><i></i></span>
+          <span class="cremo-dots-loader lg" aria-hidden="true"><i></i><i></i><i></i></span>
         </div>
       `;
     }
@@ -8737,12 +7709,12 @@ function bindCoverHoldZoom(wrapEl) {
       const res = await fetch(`http://127.0.0.1:${port}/api/trending?region=${encodeURIComponent(region)}&artists=${encodeURIComponent(topArtists.join(','))}`);
       const data = await res.json();
       if (data && data.success && Array.isArray(data.tracks) && data.tracks.length > 0) {
-        localStorage.setItem('riff_trending_region', region);
+        localStorage.setItem('cremo_trending_region', region);
         if (window.HomeCache) {
           window.HomeCache.set('home_trending', data.tracks);
         }
         try {
-          localStorage.setItem('riff_trending_cache', JSON.stringify({ ts: Date.now(), tracks: data.tracks }));
+          localStorage.setItem('cremo_trending_cache', JSON.stringify({ ts: Date.now(), tracks: data.tracks }));
         } catch (_) {}
         renderTrendingCards(row, data.tracks);
         sec.hidden = false;
@@ -8792,64 +7764,13 @@ function bindCoverHoldZoom(wrapEl) {
     refreshOverflowFades(row);
   }
 
-  var MIX_KEY = 'riff_daily_mixes';
+  var MIX_KEY = 'cremo_daily_mixes';
 
 
+  // Cremo always uses the Explorar home.
   function applyHomeLayout() {
-    const isRiff = (localStorage.getItem('riff_home_layout') || 'spotify') === 'riff';
-    const sp = !isRiff;
-    document.body.classList.toggle('home-spotify', sp);
-    const btnToggle = document.getElementById('btn-toggle-riff-home');
-    if (btnToggle) btnToggle.classList.toggle('active', isRiff);
-    const btnSp = document.getElementById('home-layout-spotify');
-    const btnRiff = document.getElementById('home-layout-riff');
-    if (btnSp) btnSp.classList.toggle('active', sp);
-    if (btnRiff) btnRiff.classList.toggle('active', !sp);
-    const settingHomeImg = document.getElementById('setting-home-app-icon');
-    if (settingHomeImg && typeof resolveAppIconSrc === 'function') {
-      settingHomeImg.src = resolveAppIconSrc(localStorage.getItem('riff_app_icon'));
-    }
-    const descEl = document.querySelector('#setting-home-layout div[style*="margin-top"]');
-    if (descEl) descEl.style.display = 'none';
-    if (sp) {
-      renderSpotifyHome();
-    } else {
-      const spHome = document.getElementById('sp-home');
-      const homeHero = document.getElementById('home-hero');
-      if (spHome) spHome.style.display = 'none';
-      if (homeHero) {
-        homeHero.classList.remove('hidden');
-        homeHero.style.display = '';
-      }
-      initHomeHero();
-      if (!myWaveCurrentTracks || myWaveCurrentTracks.length === 0) {
-        loadHomePage();
-      }
-    }
-  }
-
-  var btnToggleRiffHome = document.getElementById('btn-toggle-riff-home');
-  if (btnToggleRiffHome) {
-    btnToggleRiffHome.addEventListener('click', () => {
-      const cur = localStorage.getItem('riff_home_layout') || 'spotify';
-      const next = cur === 'riff' ? 'spotify' : 'riff';
-      localStorage.setItem('riff_home_layout', next);
-      applyHomeLayout();
-    });
-  }
-  var btnHomeSpotify = document.getElementById('home-layout-spotify');
-  var btnHomeRiff = document.getElementById('home-layout-riff');
-  if (btnHomeSpotify) {
-    btnHomeSpotify.addEventListener('click', () => {
-      localStorage.setItem('riff_home_layout', 'spotify');
-      applyHomeLayout();
-    });
-  }
-  if (btnHomeRiff) {
-    btnHomeRiff.addEventListener('click', () => {
-      localStorage.setItem('riff_home_layout', 'riff');
-      applyHomeLayout();
-    });
+    document.body.classList.add('home-spotify');
+    renderSpotifyHome();
   }
 
   cacheModal = document.getElementById('cache-modal');
@@ -8908,7 +7829,7 @@ function bindCoverHoldZoom(wrapEl) {
       }
       const move = window.confirm(
         'Move your existing music to the new folder?\n\n' +
-        'OK: move all downloaded and imported files, then restart Riff.\n' +
+        'OK: move all downloaded and imported files, then restart Cremo.\n' +
         'Cancel: switch to the new folder without moving (files stay in the old one).'
       );
       btnChangeMusicFolder.disabled = true;
@@ -8928,7 +7849,7 @@ function bindCoverHoldZoom(wrapEl) {
         return;
       }
       btnChangeMusicFolder.textContent = 'Restarting...';
-      showToast('Restarting Riff...');
+      showToast('Restarting Cremo...');
       setTimeout(() => { if (window.electronAPI.restartApp) window.electronAPI.restartApp(); }, 400);
     });
   }
@@ -9056,7 +7977,7 @@ function bindCoverHoldZoom(wrapEl) {
 
   var STATUS_ICONS = {
     pending: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--md-sys-color-outline);"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>',
-    downloading: '<span class="riff-dots-loader sm" aria-hidden="true"><i></i><i></i><i></i></span>',
+    downloading: '<span class="cremo-dots-loader sm" aria-hidden="true"><i></i><i></i><i></i></span>',
     done: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" style="color: #4cd964;"><polyline points="20 6 9 17 4 12"/></svg>',
     error: '<svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" style="color: var(--md-sys-color-error, #ff5449);"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>'
   };
@@ -9433,7 +8354,7 @@ function bindCoverHoldZoom(wrapEl) {
         ev.stopPropagation();
         stopShortcutRecording();
         activeShortcuts = { ...defaultShortcuts };
-        try { localStorage.removeItem('riff_keyboard_shortcuts'); } catch (_) {}
+        try { localStorage.removeItem('cremo_keyboard_shortcuts'); } catch (_) {}
         renderShortcutsModalBody();
         if (typeof showToast === 'function') {
           showToast('Shortcuts reset to defaults', 'info');
@@ -9485,7 +8406,7 @@ function bindCoverHoldZoom(wrapEl) {
 
   function getSidebarOrder() {
     try {
-      const raw = localStorage.getItem('riff_sidebar_order');
+      const raw = localStorage.getItem('cremo_sidebar_order');
       if (raw) {
         const parsed = JSON.parse(raw);
         if (Array.isArray(parsed) && parsed.length > 0) {
@@ -9527,7 +8448,7 @@ function bindCoverHoldZoom(wrapEl) {
 
   function getHomeSectionsOrder() {
     try {
-      const raw = localStorage.getItem('riff_home_order');
+      const raw = localStorage.getItem('cremo_home_order');
       if (raw) {
         const parsed = JSON.parse(raw);
         if (Array.isArray(parsed) && parsed.length > 0) {
@@ -9657,7 +8578,7 @@ function bindCoverHoldZoom(wrapEl) {
       renderSidebar = makeCustomizerList(
         sidebarContainer,
         getSidebarOrder,
-        'riff_sidebar_order',
+        'cremo_sidebar_order',
         SIDEBAR_ITEM_DEFS,
         applySidebarOrder
       );
@@ -9666,7 +8587,7 @@ function bindCoverHoldZoom(wrapEl) {
       renderHome = makeCustomizerList(
         homeContainer,
         getHomeSectionsOrder,
-        'riff_home_order',
+        'cremo_home_order',
         HOME_SECTION_DEFS,
         applyHomeSectionsOrder
       );
@@ -9674,8 +8595,8 @@ function bindCoverHoldZoom(wrapEl) {
 
     if (resetBtn) {
       resetBtn.addEventListener('click', () => {
-        localStorage.removeItem('riff_sidebar_order');
-        localStorage.removeItem('riff_home_order');
+        localStorage.removeItem('cremo_sidebar_order');
+        localStorage.removeItem('cremo_home_order');
         applySidebarOrder(DEFAULT_SIDEBAR_ORDER);
         applyHomeSectionsOrder(DEFAULT_HOME_ORDER);
         if (renderSidebar) renderSidebar();
@@ -9741,48 +8662,6 @@ function bindCoverHoldZoom(wrapEl) {
 
 
 
-  function initSpotifyPromo() {
-    const card = document.getElementById('spotify-promo');
-    const btnImport = document.getElementById('btn-spotify-promo-import');
-    const btnClose = document.getElementById('btn-spotify-promo-close');
-    if (!card || !btnImport || !btnClose) return;
-    const isDismissed = localStorage.getItem('riff_spotify_promo_dismissed') === '1' || (Array.isArray(state.playlists) && state.playlists.length > 0);
-    const dismissForever = () => {
-      card.hidden = true;
-      card.classList.add('hidden');
-      localStorage.setItem('riff_spotify_promo_dismissed', '1');
-      try {
-        if (window.electronAPI?.storageSaveSync && window.__RIFF_STORAGE_MAP__) {
-          window.__RIFF_STORAGE_MAP__['riff_spotify_promo_dismissed'] = '1';
-          window.electronAPI.storageSaveSync(window.__RIFF_STORAGE_MAP__);
-        }
-      } catch (_) {}
-    };
-    if (isDismissed) {
-      dismissForever();
-      return;
-    }
-    card.hidden = false;
-    card.classList.remove('hidden');
-    const syncOrbitPaused = () => {
-      const stage = card.querySelector('.riff-orbit-stage');
-      if (stage) stage.classList.toggle('orbit-paused', document.hidden);
-    };
-    document.addEventListener('visibilitychange', syncOrbitPaused);
-    if (window.electronAPI && window.electronAPI.onWindowVisibility) {
-      window.electronAPI.onWindowVisibility(visible => {
-        const stage = card.querySelector('.riff-orbit-stage');
-        if (stage) stage.classList.toggle('orbit-paused', !visible || document.hidden);
-      });
-    }
-    btnImport.addEventListener('click', () => {
-      dismissForever();
-      localStorage.setItem('riff_settings_cat', 'integrations');
-      switchView('settings');
-      if (typeof showSettingsCategory === 'function') showSettingsCategory('integrations');
-    });
-    btnClose.addEventListener('click', dismissForever);
-  }
 
 
   function initSearchFilterChips() {
@@ -9857,7 +8736,7 @@ function bindCoverHoldZoom(wrapEl) {
     const btnRestore = document.getElementById('btn-restore-owner-profile');
 
     if (btnRestore) {
-      if (localStorage.getItem('riff_owner_profile_backup')) {
+      if (localStorage.getItem('cremo_owner_profile_backup')) {
         btnRestore.classList.remove('hidden');
         btnRestore.style.display = '';
       } else {
@@ -9867,18 +8746,18 @@ function bindCoverHoldZoom(wrapEl) {
 
       btnRestore.addEventListener('click', () => {
         try {
-          const backupRaw = localStorage.getItem('riff_owner_profile_backup');
+          const backupRaw = localStorage.getItem('cremo_owner_profile_backup');
           if (!backupRaw) return;
           const backupObj = JSON.parse(backupRaw);
           localStorage.clear();
           for (const [k, v] of Object.entries(backupObj)) {
-            if (k !== 'riff_owner_profile_backup') {
+            if (k !== 'cremo_owner_profile_backup') {
               localStorage.setItem(k, typeof v === 'string' ? v : JSON.stringify(v));
             }
           }
-          localStorage.removeItem('riff_owner_profile_backup');
+          localStorage.removeItem('cremo_owner_profile_backup');
           if (window.electronAPI && typeof window.electronAPI.storageSaveSync === 'function') {
-            const diskMap = window.__RIFF_STORAGE_MAP__ || {};
+            const diskMap = window.__CREMO_STORAGE_MAP__ || {};
             window.electronAPI.storageSaveSync(diskMap);
           }
           window.location.reload();
@@ -9896,7 +8775,7 @@ function bindCoverHoldZoom(wrapEl) {
             const k = localStorage.key(i);
             if (!k) continue;
             if (EXCLUDED_PERSONAL_KEYS.has(k)) continue;
-            if (k.startsWith('riff_i18n_') || k.startsWith('riff_audio_analysis_')) continue;
+            if (k.startsWith('cremo_i18n_') || k.startsWith('cremo_audio_analysis_')) continue;
             defs[k] = localStorage.getItem(k);
           }
 
@@ -9906,7 +8785,7 @@ function bindCoverHoldZoom(wrapEl) {
             method: 'POST',
             headers: {
               'Content-Type': 'application/json',
-              ...(token ? { 'X-Riff-Token': token } : {})
+              ...(token ? { 'X-Cremo-Token': token } : {})
             },
             body: JSON.stringify({ defaults: defs })
           });
@@ -9932,18 +8811,18 @@ function bindCoverHoldZoom(wrapEl) {
           }
           const backup = JSON.stringify(allLocalStorage);
           localStorage.clear();
-          localStorage.setItem('riff_owner_profile_backup', backup);
-          localStorage.setItem('riff_user_initialized_v1', '1');
+          localStorage.setItem('cremo_owner_profile_backup', backup);
+          localStorage.setItem('cremo_user_initialized_v1', '1');
 
           const defs = getDefaultsJsonSync() || {};
           for (const [k, v] of Object.entries(defs)) {
-            if (k !== 'riff_owner_profile_backup') {
+            if (k !== 'cremo_owner_profile_backup') {
               localStorage.setItem(k, typeof v === 'string' ? v : JSON.stringify(v));
             }
           }
 
           if (window.electronAPI && typeof window.electronAPI.storageSaveSync === 'function') {
-            const diskMap = window.__RIFF_STORAGE_MAP__ || {};
+            const diskMap = window.__CREMO_STORAGE_MAP__ || {};
             window.electronAPI.storageSaveSync(diskMap);
           }
           window.location.reload();
@@ -9957,563 +8836,24 @@ function bindCoverHoldZoom(wrapEl) {
   function initLikeAlbumTracksSetting() {
     const btn = document.getElementById('btn-like-album-tracks');
     if (!btn) return;
-    const isEnabled = localStorage.getItem('riff_like_album_tracks') === '1';
+    const isEnabled = localStorage.getItem('cremo_like_album_tracks') === '1';
     btn.classList.toggle('active', isEnabled);
     btn.addEventListener('click', () => {
       const nextState = !btn.classList.contains('active');
       btn.classList.toggle('active', nextState);
-      localStorage.setItem('riff_like_album_tracks', nextState ? '1' : '0');
+      localStorage.setItem('cremo_like_album_tracks', nextState ? '1' : '0');
     });
   }
 
-  var SIDEBAR_PINNED_TRACKS_KEY = 'riff_sidebar_pinned_tracks';
-
+  // Cremo: the rail has a fixed width (set in cremo.css). Cremo's expandable "Your Library"
+  // panel (feed, search, sort, pinned tracks, resize handle) is gone.
   function initSidebarResizeAndLibrary() {
-    const edge = document.getElementById('sidebar-resize-edge');
-    const sidebar = document.getElementById('sidebar');
-    const feed = document.getElementById('sidebar-library-feed');
-    if (!edge || !sidebar) return;
-
-    if (feed && !feed._scrollMaskBound) {
-      feed._scrollMaskBound = true;
-      let feedScrollRaf = 0;
-      feed.addEventListener('scroll', () => {
-        if (feedScrollRaf) return;
-        feedScrollRaf = requestAnimationFrame(() => {
-          feedScrollRaf = 0;
-          const needFade = feed.scrollTop > 6;
-          if (feed._lastFadeTop !== needFade) {
-            feed._lastFadeTop = needFade;
-            feed.classList.toggle('fade-top', needFade);
-          }
-        });
-      }, { passive: true });
-    }
-
-    if (feed && !feed._reorderInit) {
-      feed._reorderInit = true;
-      initListReordering({
-        container: feed,
-        itemSelector: '.sb-lib-row[data-sb-group]',
-        isFilterActive: () => currentSidebarLibFilter !== 'playlists',
-        setOrder: (fromIdx, toIdx) => {
-          const rows = Array.from(feed.querySelectorAll('.sb-lib-row[data-sb-group]'));
-
-          const currentPinned = getSidebarPinnedTracks();
-          const orderedKeys = rows
-            .filter(r => r.dataset.sbGroup === 'pinned-track')
-            .map(r => r.dataset.sbKey)
-            .filter(Boolean);
-          if (orderedKeys.length > 0 && currentPinned.length > 0) {
-            const trackMap = new Map();
-            currentPinned.forEach(t => {
-              const k = getTrackCanonicalId(t);
-              if (k && !trackMap.has(k)) trackMap.set(k, t);
-            });
-            const reorderedPinned = [];
-            orderedKeys.forEach(k => {
-              if (trackMap.has(k)) {
-                reorderedPinned.push(trackMap.get(k));
-                trackMap.delete(k);
-              }
-            });
-            trackMap.forEach(t => reorderedPinned.push(t));
-            localStorage.setItem('riff_sidebar_pinned_tracks', JSON.stringify(reorderedPinned.slice(0, 50)));
-          }
-
-          const currentLibTracks = getSidebarLibraryTracks();
-          const orderedUnpinnedTrackKeys = rows
-            .filter(r => r.dataset.sbGroup === 'unpinned-track')
-            .map(r => r.dataset.sbKey)
-            .filter(Boolean);
-          if (orderedUnpinnedTrackKeys.length > 0 && currentLibTracks.length > 0) {
-            const libMap = new Map();
-            currentLibTracks.forEach(t => {
-              const k = getTrackCanonicalId(t);
-              if (k && !libMap.has(k)) libMap.set(k, t);
-            });
-            const reorderedLib = [];
-            orderedUnpinnedTrackKeys.forEach(k => {
-              if (libMap.has(k)) {
-                reorderedLib.push(libMap.get(k));
-                libMap.delete(k);
-              }
-            });
-            libMap.forEach(t => reorderedLib.push(t));
-            try { localStorage.setItem(SIDEBAR_LIBRARY_TRACKS_KEY, JSON.stringify(reorderedLib.slice(0, 200))); } catch (_) {}
-            localStorage.setItem('riff_sb_lib_sort', 'Custom');
-            const sortLbl = document.getElementById('sb-lib-sort-label');
-            if (sortLbl) sortLbl.textContent = typeof t === 'function' ? t('Custom') : 'Custom';
-          }
-
-          const orderedPinnedPlIds = rows
-            .filter(r => r.dataset.sbGroup === 'pinned-pl')
-            .map(r => r.dataset.playlistId)
-            .filter(Boolean);
-          localStorage.setItem('riff_pinned_playlists', JSON.stringify(orderedPinnedPlIds));
-
-          const orderedUnpinnedPlIds = rows
-            .filter(r => r.dataset.sbGroup === 'unpinned-pl')
-            .map(r => r.dataset.playlistId)
-            .filter(Boolean);
-          const orderedAllPlIds = [...orderedPinnedPlIds, ...orderedUnpinnedPlIds];
-          if (orderedAllPlIds.length > 0) {
-            localStorage.setItem('riff_sidebar_custom_order', JSON.stringify(orderedAllPlIds));
-            localStorage.setItem('riff_sb_lib_sort', 'Custom');
-            const sortLbl = document.getElementById('sb-lib-sort-label');
-            if (sortLbl) sortLbl.textContent = typeof t === 'function' ? t('Custom') : 'Custom';
-          }
-          if (Array.isArray(state.playlists) && orderedAllPlIds.length > 0) {
-            const plMap = new Map(state.playlists.map(p => [String(p.id), p]));
-            const reorderedPlaylists = [];
-            orderedAllPlIds.forEach(id => {
-              const pl = plMap.get(String(id));
-              if (pl) {
-                reorderedPlaylists.push(pl);
-                plMap.delete(String(id));
-              }
-            });
-            plMap.forEach(p => reorderedPlaylists.push(p));
-            state.playlists = reorderedPlaylists;
-            localStorage.setItem('devsize_playlists', JSON.stringify(state.playlists));
-            if (typeof renderPlaylistsList === 'function') renderPlaylistsList();
-          }
-
-          feed._lastSig = '';
-          if (typeof renderSidebarLibraryFeed === 'function') {
-            renderSidebarLibraryFeed(false);
-          }
-        }
-      });
-    }
-
-    const btnSbPresets = document.getElementById('btn-sb-presets');
-    const btnSbNewPl = document.getElementById('btn-sb-new-playlist');
-    const btnSbSettings = document.getElementById('btn-sb-settings');
-
-    if (btnSbPresets) {
-      btnSbPresets.addEventListener('click', (e) => {
-        e.stopPropagation();
-        openDrawerState = openDrawerState === 'presets' ? null : 'presets';
-        applyDrawerState(btnSbPresets);
-      });
-    }
-    if (btnSbNewPl) {
-      btnSbNewPl.addEventListener('click', (e) => {
-        e.stopPropagation();
-        setCpmTab('new', false);
-        if (el.btnNewPlaylist) el.btnNewPlaylist.click();
-      });
-    }
-    if (btnSbSettings) {
-      btnSbSettings.addEventListener('click', (e) => {
-        e.stopPropagation();
-        switchView('settings');
-      });
-    }
-
-    function updateSidebarSplitCovers() {
-      const urls = [];
-      const pushFromList = (list) => {
-        if (!Array.isArray(list)) return;
-        for (const item of list) {
-          if (urls.length >= 4) break;
-          if (!item) continue;
-          const u = (typeof getTrackThumbUrl === 'function') ? getTrackThumbUrl(item) : (item.thumbnail || item.cover || '');
-          if (u && !urls.includes(u)) {
-            urls.push(u);
-          }
-        }
-      };
-
-      pushFromList(state.favorites);
-      if (urls.length < 4 && typeof myWaveCurrentTracks !== 'undefined') pushFromList(myWaveCurrentTracks);
-      if (urls.length < 4 && Array.isArray(state.history)) pushFromList(state.history);
-
-      const firstCover = urls[0] || '';
-
-      for (let i = 1; i <= 4; i++) {
-        const img = document.getElementById(`sb-split-img-${i}`);
-        if (!img) continue;
-        const url = urls[i - 1] || firstCover;
-        if (url) {
-          if (img.getAttribute('src') !== url) {
-            img.src = url;
-          }
-          img.style.display = 'block';
-          img.onerror = () => {
-            img.onerror = null;
-            if (firstCover && img.src !== firstCover) {
-              img.src = firstCover;
-            } else {
-              img.style.display = 'none';
-            }
-          };
-        } else {
-          img.style.display = 'none';
-        }
-      }
-    }
-    window.updateSidebarSplitCovers = updateSidebarSplitCovers;
-
-    const btnSbRadio = document.getElementById('btn-sb-banner-radio');
-    if (btnSbRadio) {
-      btnSbRadio.addEventListener('click', (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        playMyWave();
-      });
-    }
-
-    updateSidebarSplitCovers();
-
-    const EXPAND_THRESHOLD = 180;
-    const applySidebarWidth = (w, save = false) => {
-      if (w >= EXPAND_THRESHOLD) {
-        const clamped = Math.max(256, Math.min(390, Math.round(w)));
-        document.documentElement.style.setProperty('--sidebar-w', `${clamped}px`);
-        document.body.classList.add('sidebar-expanded');
-        renderSidebarLibraryFeed();
-        if (typeof window.syncSidebarLibTabs === 'function') {
-          requestAnimationFrame(window.syncSidebarLibTabs);
-        }
-        if (save) localStorage.setItem('riff_sidebar_width', String(clamped));
-      } else {
-        document.documentElement.style.setProperty('--sidebar-w', '84px');
-        document.body.classList.remove('sidebar-expanded');
-        const sheet = document.getElementById('sb-inline-presets-sheet');
-        if (sheet) sheet.classList.remove('open');
-        if (save) localStorage.setItem('riff_sidebar_width', '84');
-        requestAnimationFrame(() => {
-          updateNavIndicator(false);
-          if (typeof resizeCanvases === 'function') resizeCanvases();
-        });
-      }
-      if (typeof window.syncSidebarLibTabs === 'function') {
-        requestAnimationFrame(window.syncSidebarLibTabs);
-      }
-      if (typeof resizeCanvases === 'function') requestAnimationFrame(resizeCanvases);
-    };
-
-    if (localStorage.getItem('riff_sidebar_default_wide_v2') !== '1') {
-      localStorage.setItem('riff_sidebar_default_wide_v2', '1');
-      localStorage.setItem('riff_sidebar_width', '288');
-    }
-    const savedW = parseInt(localStorage.getItem('riff_sidebar_width') || '288', 10);
-    applySidebarWidth(savedW, false);
-
-    let startX = 0, startW = 84, dragging = false;
-    edge.addEventListener('pointerdown', (e) => {
-      if (e.button !== 0) return;
-      dragging = true;
-      startX = e.clientX;
-      startW = sidebar.getBoundingClientRect().width;
-      edge.setPointerCapture(e.pointerId);
-      edge.classList.add('dragging');
-      document.body.classList.add('is-resizing-panel');
-      e.preventDefault();
+    document.body.classList.remove('sidebar-expanded');
+    localStorage.removeItem('cremo_sidebar_width');
+    requestAnimationFrame(() => {
+      updateNavIndicator(false);
+      if (typeof resizeCanvases === 'function') resizeCanvases();
     });
-
-    edge.addEventListener('pointermove', (e) => {
-      if (!dragging) return;
-      applySidebarWidth(startW + (e.clientX - startX), false);
-    });
-
-    const endDrag = (e) => {
-      if (!dragging) return;
-      dragging = false;
-      try { edge.releasePointerCapture(e.pointerId); } catch (_) {}
-      edge.classList.remove('dragging');
-      document.body.classList.remove('is-resizing-panel');
-      const finalW = document.body.classList.contains('sidebar-expanded')
-        ? parseInt(getComputedStyle(document.documentElement).getPropertyValue('--sidebar-w'), 10) || 288
-        : 84;
-      applySidebarWidth(finalW, true);
-    };
-    edge.addEventListener('pointerup', endDrag);
-    edge.addEventListener('pointercancel', endDrag);
-
-    edge.addEventListener('dblclick', () => {
-      const isExp = document.body.classList.contains('sidebar-expanded');
-      applySidebarWidth(isExp ? 84 : 288, true);
-    });
-
-    const tabsWrap = document.getElementById('sidebar-lib-chips');
-    if (tabsWrap) tabsWrap.style.display = 'none';
-
-    let iconTabsWrap = document.getElementById('sb-lib-tabs-icons');
-    if (!iconTabsWrap) {
-      const searchWrap = document.getElementById('sb-lib-search-wrap');
-      if (searchWrap) {
-        iconTabsWrap = document.createElement('div');
-        iconTabsWrap.id = 'sb-lib-tabs-icons';
-        iconTabsWrap.className = 'sb-lib-tabs-icons';
-        iconTabsWrap.innerHTML = `
-          <button type="button" class="sb-lib-icon-tab active" data-lib-filter="playlists" title="Playlists / Home" aria-label="Playlists">
-            <svg width="18" height="18" viewBox="0 0 24 24" fill="currentColor"><path d="M4,19V10Q4,9.52 4.21,9.1Q4.43,8.67 4.8,8.4l6-4.5Q11.33,3.5 12,3.5t1.2,0.4l6,4.5q0.38,0.28 0.59,0.7Q20,9.52 20,10v9q0,0.82-0.59,1.41T18,21H15q-0.42,0-0.71-0.29Q14,20.43 14,20V15q0-0.43-0.29-0.71T13,14H11q-0.42,0-0.71,0.29T10,15v5q0,0.43-0.29,0.71T9,21H6q-0.82,0-1.41-0.59T4,19Z"/></svg>
-          </button>
-          <button type="button" class="sb-lib-icon-tab" data-lib-filter="albums" title="Albums" aria-label="Albums">
-            <span class="material-symbols-rounded">library_music</span>
-          </button>
-          <button type="button" class="sb-lib-icon-tab" data-lib-filter="queue" title="Queue" aria-label="Queue">
-            <span class="material-symbols-rounded">queue_music</span>
-          </button>
-        `;
-        searchWrap.insertAdjacentElement('afterend', iconTabsWrap);
-      }
-    }
-
-    const iconTabBtns = iconTabsWrap ? Array.from(iconTabsWrap.querySelectorAll('.sb-lib-icon-tab')) : [];
-    const syncActiveIconTabs = () => {
-      iconTabBtns.forEach((b) => {
-        b.classList.toggle('active', b.dataset.libFilter === currentSidebarLibFilter);
-      });
-      const legacyBtns = tabsWrap ? Array.from(tabsWrap.querySelectorAll('.sb-horiz-tab')) : [];
-      legacyBtns.forEach(b => b.classList.toggle('active', b.dataset.libFilter === currentSidebarLibFilter));
-    };
-    iconTabBtns.forEach((tabBtn) => {
-      tabBtn.addEventListener('click', (e) => {
-        e.stopPropagation();
-        currentSidebarLibFilter = tabBtn.dataset.libFilter || 'playlists';
-        syncActiveIconTabs();
-        const f = document.getElementById('sidebar-library-feed');
-        if (f) f._lastSig = '';
-        renderSidebarLibraryFeed(true);
-      });
-    });
-    syncActiveIconTabs();
-    window.syncSidebarLibTabs = syncActiveIconTabs;
-
-    window.applySidebarWidth = applySidebarWidth;
-
-    const btnSbCollapse = document.getElementById('btn-sb-collapse');
-    if (btnSbCollapse) {
-      btnSbCollapse.addEventListener('click', (e) => {
-        e.stopPropagation();
-        applySidebarWidth(84, true);
-      });
-    }
-
-    let btnRailExpandLib = document.getElementById('btn-rail-expand-lib');
-    if (!btnRailExpandLib) {
-      const railActionGroup = document.querySelector('.rail-action-group');
-      if (railActionGroup) {
-        btnRailExpandLib = document.createElement('button');
-        btnRailExpandLib.className = 'rail-icon-btn';
-        btnRailExpandLib.id = 'btn-rail-expand-lib';
-        btnRailExpandLib.title = typeof t === 'function' ? t('Expand Your Library') : 'Expand Your Library';
-        btnRailExpandLib.setAttribute('aria-label', 'Expand Your Library');
-        btnRailExpandLib.setAttribute('type', 'button');
-        btnRailExpandLib.innerHTML = `
-          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="3" width="18" height="18" rx="2"/>
-            <line x1="9" y1="3" x2="9" y2="21"/>
-            <polyline points="11 9 14 12 11 15"/>
-          </svg>
-        `;
-        railActionGroup.insertBefore(btnRailExpandLib, railActionGroup.firstChild);
-      }
-    }
-    if (btnRailExpandLib) {
-      btnRailExpandLib.addEventListener('click', (e) => {
-        if (!document.body.classList.contains('sidebar-expanded')) {
-          e.stopPropagation();
-          e.preventDefault();
-          const prevW = parseInt(localStorage.getItem('riff_sidebar_width') || '288', 10);
-          applySidebarWidth(prevW > 84 ? prevW : 288, true);
-        }
-      }, true);
-    }
-
-    const btnCreatePill = document.getElementById('btn-sb-create-pill');
-    const createPopover = document.getElementById('sb-create-popover');
-    if (createPopover) createPopover.classList.add('hidden');
-    if (btnCreatePill) {
-      btnCreatePill.addEventListener('click', (e) => {
-        showInAppContextMenu(e, [
-          {
-            label: 'Create playlist',
-            icon: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 18V5l12-2v13"/><circle cx="6" cy="18" r="3"/><circle cx="18" cy="16" r="3"/></svg>',
-            action: () => {
-              const cpm = document.getElementById('create-playlist-modal');
-              if (cpm) {
-                setCpmTab('new', false);
-                openModal(cpm);
-              }
-            }
-          },
-          {
-            label: 'Import playlist',
-            icon: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>',
-            action: () => {
-              const cpm = document.getElementById('create-playlist-modal');
-              if (cpm) {
-                setCpmTab('import', false);
-                openModal(cpm);
-              }
-            }
-          },
-          {
-            label: 'Pin current track',
-            icon: '<svg viewBox="0 0 24 24" width="18" height="18" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 17v5"/><path d="M9 3h6l-1 7 3 3v2H7v-2l3-3-1-7z"/></svg>',
-            action: () => {
-              if (state.currentTrack) togglePinTrackToSidebar(state.currentTrack);
-              else showToast(typeof t === 'function' ? t('No track playing') : 'No track playing', 'info');
-            }
-          }
-        ]);
-      });
-    }
-
-    const promoCard = document.getElementById('sb-import-promo-card');
-    if (promoCard) {
-      if (localStorage.getItem('riff_sb_promo_dismissed_v1') === '1') {
-        promoCard.classList.add('hidden');
-      }
-      const btnClosePromo = document.getElementById('btn-close-sb-import-promo');
-      if (btnClosePromo) {
-        btnClosePromo.addEventListener('click', (e) => {
-          e.stopPropagation();
-          localStorage.setItem('riff_sb_promo_dismissed_v1', '1');
-          promoCard.classList.add('hidden');
-        });
-      }
-      const btnOpenPromo = document.getElementById('btn-sb-import-promo-open');
-      if (btnOpenPromo) {
-        btnOpenPromo.addEventListener('click', (e) => {
-          e.stopPropagation();
-          const cpm = document.getElementById('create-playlist-modal');
-          if (cpm) {
-            setCpmTab('import', false);
-            openModal(cpm);
-          }
-        });
-      }
-    }
-
-    const btnSbSearch = document.getElementById('btn-sb-lib-search');
-    const searchWrap = document.getElementById('sb-lib-search-wrap');
-    const searchInput = document.getElementById('sb-lib-search-input');
-    const btnSbSort = document.getElementById('btn-sb-lib-sort');
-    const sortLabel = document.getElementById('sb-lib-sort-label');
-
-    function applySidebarLibFilter() {
-      const q = (searchInput?.value || '').trim().toLowerCase();
-      const f = document.getElementById('sidebar-library-feed');
-      if (!f) return;
-      const rows = f.querySelectorAll('.sb-lib-row');
-      let visibleCount = 0;
-      rows.forEach(r => {
-        if (!q) {
-          r.style.display = '';
-          visibleCount++;
-        } else {
-          const title = r.querySelector('.sb-lib-title')?.textContent?.toLowerCase() || '';
-          const sub = r.querySelector('.sb-lib-sub')?.textContent?.toLowerCase() || '';
-          const match = title.includes(q) || sub.includes(q);
-          r.style.display = match ? '' : 'none';
-          if (match) visibleCount++;
-        }
-      });
-      f.classList.toggle('sb-feed-sparse', visibleCount <= 4);
-    }
-    window.applySidebarLibFilter = applySidebarLibFilter;
-
-    const updateSidebarSortWidth = () => {
-      if (!btnSbSort || !searchWrap) return;
-      const w = btnSbSort.offsetWidth || 76;
-      searchWrap.style.setProperty('--sb-sort-w', `${w + 8}px`);
-    };
-
-    if (btnSbSearch && searchWrap && searchInput) {
-      btnSbSearch.addEventListener('click', (e) => {
-        e.stopPropagation();
-        updateSidebarSortWidth();
-        const isOpen = searchWrap.classList.toggle('sb-search-open');
-        if (isOpen) {
-          searchInput.focus();
-        } else {
-          if (searchInput.value) {
-            searchInput.value = '';
-            applySidebarLibFilter();
-          }
-        }
-      });
-
-      searchInput.addEventListener('input', () => {
-        applySidebarLibFilter();
-      });
-
-      searchInput.addEventListener('keydown', (e) => {
-        if (e.key === 'Escape') {
-          searchInput.value = '';
-          searchWrap.classList.remove('sb-search-open');
-          applySidebarLibFilter();
-          searchInput.blur();
-        }
-      });
-
-      document.addEventListener('pointerdown', (e) => {
-        if (!searchWrap.classList.contains('sb-search-open')) return;
-        if (searchWrap.contains(e.target) || (btnSbSearch && btnSbSearch.contains(e.target))) return;
-        if (!searchInput.value.trim()) {
-          searchWrap.classList.remove('sb-search-open');
-          searchInput.blur();
-        }
-      });
-    }
-
-    const updateSortLabel = () => {
-      const mode = localStorage.getItem('riff_sb_lib_sort') || 'Recents';
-      if (sortLabel) sortLabel.textContent = typeof t === 'function' ? t(mode) : mode;
-      updateSidebarSortWidth();
-    };
-    updateSortLabel();
-
-    const checkSvg = '<svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" style="margin-right:8px;flex-shrink:0;"><polyline points="20 6 9 17 4 12"/></svg>';
-    const emptySpacer = '<span style="display:inline-block;width:15px;margin-right:8px;flex-shrink:0;"></span>';
-
-    const setSortMode = (mode) => {
-      localStorage.setItem('riff_sb_lib_sort', mode);
-      updateSortLabel();
-      const f = document.getElementById('sidebar-library-feed');
-      if (f) f._lastSig = '';
-      renderSidebarLibraryFeed(false);
-    };
-
-    if (btnSbSort) {
-      btnSbSort.addEventListener('click', (e) => {
-        e.stopPropagation();
-        const curMode = localStorage.getItem('riff_sb_lib_sort') || 'Recents';
-        const sortOptions = [
-          {
-            label: 'Recents',
-            active: curMode === 'Recents',
-            icon: curMode === 'Recents' ? checkSvg : emptySpacer,
-            action: () => setSortMode('Recents')
-          },
-          {
-            label: 'Recently Added',
-            active: curMode === 'Recently Added',
-            icon: curMode === 'Recently Added' ? checkSvg : emptySpacer,
-            action: () => setSortMode('Recently Added')
-          },
-          {
-            label: 'Alphabetical',
-            active: curMode === 'Alphabetical',
-            icon: curMode === 'Alphabetical' ? checkSvg : emptySpacer,
-            action: () => setSortMode('Alphabetical')
-          },
-          {
-            label: 'Custom',
-            active: curMode === 'Custom',
-            icon: curMode === 'Custom' ? checkSvg : emptySpacer,
-            action: () => setSortMode('Custom')
-          }
-        ];
-        showInAppContextMenu(e, sortOptions);
-      });
-    }
   }
 
 
@@ -10641,7 +8981,7 @@ function bindCoverHoldZoom(wrapEl) {
 
 
   function deduplicateSidebarNavIcons() {
-    const curPack = localStorage.getItem('riff_icon_pack') || 'material';
+    const curPack = localStorage.getItem('cremo_icon_pack') || 'material';
     const isMaterial = curPack.startsWith('material');
     document.querySelectorAll('.sidebar-nav .nav-item .nav-indicator').forEach(indicator => {
       const msIcons = Array.from(indicator.querySelectorAll('.ms-injected-icon, [class*="material-symbols-"]'));
@@ -10675,7 +9015,6 @@ function bindCoverHoldZoom(wrapEl) {
 
 
   cleanSidebarNavIcons();
-  initHomeHero();
   applyHomeLayout();
   requestAnimationFrame(() => {
     document.body?.classList.remove('app-skeleton-boot');
@@ -10689,7 +9028,7 @@ function bindCoverHoldZoom(wrapEl) {
   syncOnboardingCallouts();
   initLyricsWarningsSetting();
   if (!state.currentTrack) {
-    const saved = safeJson('riff_last_playback_state', null);
+    const saved = safeJson('cremo_last_playback_state', null);
     const restoreTrack = (saved && saved.track && saved.track.title) ? saved.track : ((state.history && state.history[0]) || null);
     if (restoreTrack) {
       state.currentTrack = restoreTrack;
@@ -10713,7 +9052,6 @@ function bindCoverHoldZoom(wrapEl) {
   initSearchFilterChips();
   initSearchHistory();
   initQueuePanel();
-  initSpotifyPromo();
   initMouseNavInterceptor();
   initDesktopShortcutSetting();
   initDefaultSettingsStudio();
@@ -10727,9 +9065,9 @@ function bindCoverHoldZoom(wrapEl) {
   applyCustomStyles();
   initProxyManager();
   initSongQualitySetting();
-  var initCat = localStorage.getItem('riff_settings_cat');
+  var initCat = localStorage.getItem('cremo_settings_cat');
   if (initCat && initCat !== 'overview') {
-    try { localStorage.setItem('riff_settings_cat', initCat); } catch (_) {}
+    try { localStorage.setItem('cremo_settings_cat', initCat); } catch (_) {}
   }
   refreshStacks();
   requestAnimationFrame(() => requestAnimationFrame(refreshStacks));
@@ -10737,7 +9075,7 @@ function bindCoverHoldZoom(wrapEl) {
   if (typeof m3cInit === 'function') m3cInit();
   requestAnimationFrame(() => requestAnimationFrame(() => updateNavIndicator(false)));
 
-  var heroBanner = document.querySelector('.riff-hero-banner');
+  var heroBanner = document.querySelector('.cremo-hero-banner');
   if (heroBanner) {
     heroBanner.addEventListener('pointermove', (e) => {
       if (document.body.classList.contains('perf')) return;
@@ -10857,7 +9195,7 @@ function bindCoverHoldZoom(wrapEl) {
       } else {
         ['opacity', 'visibility', 'transform', 'color'].forEach(p => svg.style.removeProperty(p));
       }
-      const pack = document.body.getAttribute('data-icon-pack') || localStorage.getItem('riff_icon_pack') || 'material';
+      const pack = document.body.getAttribute('data-icon-pack') || localStorage.getItem('cremo_icon_pack') || 'material';
       if (pack.startsWith('material')) {
         let ms = ind.querySelector('.ms-injected-icon');
         if (!ms) {
@@ -10916,25 +9254,9 @@ function bindCoverHoldZoom(wrapEl) {
     }
 
      
-    var autoCollapsed = false;
-    var checkAutoCompactSidebar = () => {
-      if (typeof window.applySidebarWidth !== 'function') return;
-      if (window.innerWidth <= 980) {
-        if (document.body.classList.contains('sidebar-expanded')) {
-          autoCollapsed = true;
-          window.applySidebarWidth(84, false);
-        }
-      } else if (autoCollapsed) {
-        autoCollapsed = false;
-        const w = parseInt(localStorage.getItem('riff_sidebar_width') || '288', 10);
-        if (w >= 180) window.applySidebarWidth(w, false);
-      }
-    };
-    window.addEventListener('resize', checkAutoCompactSidebar);
-    checkAutoCompactSidebar();
 
      
-    localStorage.removeItem('riff_tvk_viscosity');
+    localStorage.removeItem('cremo_tvk_viscosity');
     var oldViscSlider = document.getElementById('tvk-viscosity');
     if (oldViscSlider) {
       const row = oldViscSlider.closest('.tvk-row');
@@ -11017,7 +9339,7 @@ function bindCoverHoldZoom(wrapEl) {
       { code: 'global', name: 'Global', ru: 'Мир', uk: 'Світ' }
     ];
     var getCountryLabel = (code) => {
-      const lang = (localStorage.getItem('riff_ui_lang') || 'en').toLowerCase();
+      const lang = (localStorage.getItem('cremo_ui_lang') || 'en').toLowerCase();
       const c = CHART_COUNTRIES.find(x => x.code === code) || CHART_COUNTRIES[0];
       return (lang === 'ru' && c.ru) ? c.ru : ((lang === 'uk' && c.uk) ? c.uk : c.name);
     };
@@ -11088,7 +9410,7 @@ function bindCoverHoldZoom(wrapEl) {
       } else if (secId === 'sp-trend-sec') {
         if (titleEl) titleEl.textContent = t('Trending now') || 'Trending now';
         const region = detectUserMusicRegion();
-        const cached = (window.HomeCache && window.HomeCache.get('home_trending')) || safeJson('riff_trending_cache', null)?.tracks || [];
+        const cached = (window.HomeCache && window.HomeCache.get('home_trending')) || safeJson('cremo_trending_cache', null)?.tracks || [];
         if (subEl) subEl.textContent = `${cached.length} tracks`;
         if (gridEl) gridEl.classList.add('hidden');
         if (tracksEl) {
@@ -11096,7 +9418,7 @@ function bindCoverHoldZoom(wrapEl) {
           renderTracks(tracksEl, cached, 'search');
         }
       } else if (secId === 'sp-chart-sec') {
-        const country = localStorage.getItem('riff_chart_country') || 'ua';
+        const country = localStorage.getItem('cremo_chart_country') || 'ua';
         if (titleEl) titleEl.textContent = `${t('Top chart') || 'Top chart'} — ${getCountryLabel(country)}`;
         if (subEl) subEl.textContent = `${currentTopChartTracks.length} tracks`;
         if (gridEl) gridEl.classList.add('hidden');
@@ -11161,7 +9483,7 @@ function bindCoverHoldZoom(wrapEl) {
       const row = document.getElementById('sp-chart');
       if (!row) return;
       const port = state.serverPort || 38472;
-      const country = localStorage.getItem('riff_chart_country') || 'ua';
+      const country = localStorage.getItem('cremo_chart_country') || 'ua';
       const lbl = document.getElementById('sp-chart-country-label');
       if (lbl) lbl.textContent = getCountryLabel(country);
       const cacheKey = 'home_chart_v3_' + country;
@@ -11175,7 +9497,7 @@ function bindCoverHoldZoom(wrapEl) {
       }
       const myToken = ++chartLoadToken;
       row._lastHomeSig = '';
-      row.innerHTML = '<div class="m3-spinner-container" style="margin: 24px auto; grid-column: 1 / -1;"><span class="riff-dots-loader lg" aria-hidden="true"><i></i><i></i><i></i></span></div>';
+      row.innerHTML = '<div class="m3-spinner-container" style="margin: 24px auto; grid-column: 1 / -1;"><span class="cremo-dots-loader lg" aria-hidden="true"><i></i><i></i><i></i></span></div>';
       try {
         const res = await fetch(`http://127.0.0.1:${port}/api/top-chart?country=${encodeURIComponent(country)}`, {
           signal: AbortSignal.timeout(12000)
@@ -11209,7 +9531,7 @@ function bindCoverHoldZoom(wrapEl) {
         chartSec = document.createElement('section');
         chartSec.className = 'sp-section';
         chartSec.id = 'sp-chart-sec';
-        const curCode = localStorage.getItem('riff_chart_country') || 'ua';
+        const curCode = localStorage.getItem('cremo_chart_country') || 'ua';
         chartSec.innerHTML = `
           <div class="sp-sec-head sp-sec-clickable">
             <h2>
@@ -11237,7 +9559,7 @@ function bindCoverHoldZoom(wrapEl) {
         const btn = chartSec.querySelector('#btn-sp-chart-country');
         const menu = chartSec.querySelector('#sp-chart-country-menu');
         const rebuild = () => {
-          const activeCode = localStorage.getItem('riff_chart_country') || 'ua';
+          const activeCode = localStorage.getItem('cremo_chart_country') || 'ua';
           menu.innerHTML = '';
           CHART_COUNTRIES.forEach(c => {
             const opt = document.createElement('button');
@@ -11247,7 +9569,7 @@ function bindCoverHoldZoom(wrapEl) {
             opt.textContent = getCountryLabel(c.code);
             opt.addEventListener('click', (ev) => {
               ev.stopPropagation();
-              localStorage.setItem('riff_chart_country', c.code);
+              localStorage.setItem('cremo_chart_country', c.code);
               wrap.classList.remove('open');
               loadCountryChart(true);
             });
